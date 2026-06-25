@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { slugify, mockHash } from "@/lib/utils";
@@ -61,8 +62,8 @@ export async function createAgent(
       currency: data.currency ?? "USD",
       endpointUrl: data.endpointUrl || null,
       mcpServerUrl: data.mcpServerUrl || null,
-      inputSchema: parseJsonObject(data.inputSchema) ?? undefined,
-      outputSchema: parseJsonObject(data.outputSchema) ?? undefined,
+      inputSchema: (parseJsonObject(data.inputSchema) ?? undefined) as Prisma.InputJsonValue | undefined,
+      outputSchema: (parseJsonObject(data.outputSchema) ?? undefined) as Prisma.InputJsonValue | undefined,
       verified: data.verified ?? false,
       status: "active",
       reputationScore: 50,
@@ -112,8 +113,8 @@ export async function updateAgent(
       startingPrice: data.startingPrice,
       endpointUrl: data.endpointUrl || null,
       mcpServerUrl: data.mcpServerUrl || null,
-      inputSchema: parseJsonObject(data.inputSchema) ?? undefined,
-      outputSchema: parseJsonObject(data.outputSchema) ?? undefined,
+      inputSchema: (parseJsonObject(data.inputSchema) ?? undefined) as Prisma.InputJsonValue | undefined,
+      outputSchema: (parseJsonObject(data.outputSchema) ?? undefined) as Prisma.InputJsonValue | undefined,
     },
   });
   revalidateAll(`/agents/${agentId}`, "/seller", "/marketplace");
@@ -164,10 +165,11 @@ export async function createTask(
   });
   if (!agent) return { ok: false, error: "Target agent not found" };
 
-  const inputPayload = {
-    instructions: data.inputInstructions ?? "",
-    dataUrl: data.inputDataUrl ?? "",
-  };
+  const instructions = data.inputInstructions?.trim() ?? "";
+  const dataUrl = data.inputDataUrl?.trim() ?? "";
+  const inputPayload: Record<string, string> = {};
+  if (instructions) inputPayload.instructions = instructions;
+  if (dataUrl) inputPayload.dataUrl = dataUrl;
   const outputSchema = { format: data.outputFormat };
   const validationRules = data.validationRules
     ? { rules: data.validationRules.split("\n").map((r) => r.trim()).filter(Boolean) }
@@ -319,7 +321,7 @@ export async function completeTask(taskId: string): Promise<ActionResult> {
       scoreDelta: REPUTATION_DELTAS.taskCompleted,
       reason: "Task completed and payment released.",
     });
-    await recalculateAgentStats(task.sellerAgent.id);
+    await recalculateAgentStats(task.sellerAgent.id, { kind: "task_completed" });
   }
 
   revalidateAll(`/tasks/${taskId}`, "/dashboard", "/seller", "/marketplace");
@@ -366,7 +368,7 @@ export async function openDispute(
       scoreDelta: REPUTATION_DELTAS.disputeOpened,
       reason: "A dispute was opened on a deliverable.",
     });
-    await recalculateAgentStats(task.sellerAgent.id);
+    await recalculateAgentStats(task.sellerAgent.id, { kind: "dispute_opened" });
   }
 
   revalidateAll(`/tasks/${taskId}`, "/admin", "/dashboard", "/seller");
@@ -434,7 +436,10 @@ export async function createReview(
     scoreDelta: REPUTATION_DELTAS.reviewBase + parsed.data.rating,
     reason: `Received a ${parsed.data.rating}-star review.`,
   });
-  await recalculateAgentStats(task.sellerAgentId);
+  await recalculateAgentStats(task.sellerAgentId, {
+    kind: "review_added",
+    rating: parsed.data.rating,
+  });
 
   revalidateAll(`/tasks/${taskId}`, "/marketplace", "/seller");
   return { ok: true, reviewId: review.id };

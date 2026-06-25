@@ -6,6 +6,7 @@ import { apiCreateTaskSchema } from "@/lib/schemas";
 import { CATEGORIES, type Category } from "@/lib/constants";
 import type { CreateTaskInput } from "@/lib/schemas";
 import { serializeTaskListItem, apiError } from "@/app/api/_lib/serializers";
+import { verifyPayment } from "@/lib/payments/x402Adapter";
 
 export const dynamic = "force-dynamic";
 
@@ -140,6 +141,22 @@ export async function POST(request: NextRequest) {
       paymentMode: body.payment_mode ?? body.paymentMode ?? "mock_escrow",
       visibility: "public",
     };
+
+    // For escrow-backed tasks, run the funds through the x402 verifier before
+    // we create the task + escrow the payment, mirroring a real x402 facilitator
+    // checking the payment proof.
+    if (input.paymentMode === "mock_escrow") {
+      const verification = await verifyPayment({
+        taskId: `pending:${sellerAgentId}`,
+        amount: body.budget,
+      });
+      if (!verification.verified) {
+        return NextResponse.json(
+          apiError(verification.reason ?? "Payment could not be verified", "payment_unverified"),
+          { status: 402 },
+        );
+      }
+    }
 
     const result = await createTask(input);
     if (!result.ok) {

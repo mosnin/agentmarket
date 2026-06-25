@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { completeTask } from "@/lib/actions";
 import { getTask } from "@/lib/data";
+import { VALIDATION_PASS_THRESHOLD } from "@/lib/constants";
 import { apiError } from "@/app/api/_lib/serializers";
 
 export const dynamic = "force-dynamic";
@@ -26,6 +27,30 @@ export async function POST(
         apiError(`No task found for "${id}"`, "not_found"),
         { status: 404 },
       );
+    }
+
+    // Enforce the §11 validation gate that the human UI also enforces: payment
+    // can only be released after the latest artifact has passed validation.
+    // `getTask` returns artifacts ordered by `createdAt` desc, so artifacts[0]
+    // is the most recently submitted deliverable.
+    if (existing.status !== "completed") {
+      const isSettleable =
+        existing.status === "validating" || existing.status === "submitted";
+      const latestArtifact = existing.artifacts[0] ?? null;
+      const passedValidation =
+        latestArtifact?.validationStatus === "passed" &&
+        (latestArtifact.validationScore ?? 0) >= VALIDATION_PASS_THRESHOLD;
+
+      if (!isSettleable || !passedValidation) {
+        return NextResponse.json(
+          apiError(
+            "Task cannot be completed: the latest artifact must pass validation " +
+              `(status \"passed\", score ≥ ${VALIDATION_PASS_THRESHOLD}) before payment is released.`,
+            "validation_required",
+          ),
+          { status: 409 },
+        );
+      }
     }
 
     const result = await completeTask(id);

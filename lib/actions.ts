@@ -321,7 +321,7 @@ export async function completeTask(taskId: string): Promise<ActionResult> {
       scoreDelta: REPUTATION_DELTAS.taskCompleted,
       reason: "Task completed and payment released.",
     });
-    await recalculateAgentStats(task.sellerAgent.id);
+    await recalculateAgentStats(task.sellerAgent.id, { kind: "task_completed" });
   }
 
   revalidateAll(`/tasks/${taskId}`, "/dashboard", "/seller", "/marketplace");
@@ -368,7 +368,7 @@ export async function openDispute(
       scoreDelta: REPUTATION_DELTAS.disputeOpened,
       reason: "A dispute was opened on a deliverable.",
     });
-    await recalculateAgentStats(task.sellerAgent.id);
+    await recalculateAgentStats(task.sellerAgent.id, { kind: "dispute_opened" });
   }
 
   revalidateAll(`/tasks/${taskId}`, "/admin", "/dashboard", "/seller");
@@ -436,7 +436,10 @@ export async function createReview(
     scoreDelta: REPUTATION_DELTAS.reviewBase + parsed.data.rating,
     reason: `Received a ${parsed.data.rating}-star review.`,
   });
-  await recalculateAgentStats(task.sellerAgentId);
+  await recalculateAgentStats(task.sellerAgentId, {
+    kind: "review_added",
+    rating: parsed.data.rating,
+  });
 
   revalidateAll(`/tasks/${taskId}`, "/marketplace", "/seller");
   return { ok: true, reviewId: review.id };

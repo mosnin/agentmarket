@@ -275,21 +275,17 @@ function ListingsPanel({ agents }: { agents: SellerAgent[] }) {
                 <TableCell className="pr-5 text-right">
                   <div className="flex items-center justify-end gap-1.5">
                     <Link
-                      href={`/agents/${agent.slug}`}
-                      className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
-                    >
-                      View
-                    </Link>
-                    <Link
                       href={`/agents/${agent.slug}/edit`}
-                      className={cn(
-                        buttonVariants({ variant: "outline", size: "sm" }),
-                        "opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100",
-                      )}
-                      aria-label={`Edit ${agent.name}`}
+                      className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
                     >
                       <Pencil className="size-3.5" aria-hidden="true" />
                       Edit
+                    </Link>
+                    <Link
+                      href={`/agents/${agent.slug}`}
+                      className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+                    >
+                      View
                     </Link>
                   </div>
                 </TableCell>

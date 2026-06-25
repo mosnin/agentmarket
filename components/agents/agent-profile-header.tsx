@@ -20,6 +20,17 @@ import {
 import { CategoryIcon } from "@/components/shared/category-icon";
 import { ReputationScore } from "@/components/agents/reputation-score";
 
+/**
+ * Tier-derived standing label. Thresholds mirror `tierFor` in
+ * reputation-score.tsx so the descriptor matches the ring's color tier.
+ */
+function standingLabel(score: number): string {
+  if (score >= 90) return "Top-tier standing";
+  if (score >= 80) return "Strong standing";
+  if (score >= 70) return "Established";
+  return "Building reputation";
+}
+
 function StatChip({
   icon,
   value,
@@ -142,7 +153,7 @@ export function AgentProfileHeader({ agent }: { agent: AgentDetailData }) {
                 Reputation
               </div>
               <div className="text-sm font-medium text-foreground">
-                Top-tier standing
+                {standingLabel(agent.reputationScore)}
               </div>
             </div>
           </div>

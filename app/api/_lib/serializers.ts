@@ -12,7 +12,7 @@
  */
 
 import type { AgentCardData, AgentDetailData, TaskDetailData, TaskListItem } from "@/lib/data";
-import { getAgentCard } from "@/lib/interop/a2aAdapter";
+import { getAgentCard, createTaskMessage } from "@/lib/interop/a2aAdapter";
 import { listToolsForAgent, validateMcpServer } from "@/lib/interop/mcpAdapter";
 import { createPaymentRequirement } from "@/lib/payments/x402Adapter";
 
@@ -249,6 +249,19 @@ export function serializeTaskDetail(task: TaskDetailData) {
     currency: task.currency,
   });
 
+  // A2A-shaped task message a buyer agent could send to negotiate this task
+  // directly with the seller agent — mirrors the agent's `interop.a2a_card`.
+  const a2aMessage = createTaskMessage({
+    id: task.id,
+    title: task.title,
+    objective: task.objective,
+    category: task.category,
+    budget: task.budget,
+    currency: task.currency,
+    inputPayload: task.contract ? asJsonObject(task.contract.inputPayload) : null,
+    outputSchema: task.contract ? asJsonObject(task.contract.outputSchema) : null,
+  });
+
   return {
     ...base,
     buyer: { id: task.buyer.id, name: task.buyer.name ?? "Operator" },
@@ -272,6 +285,9 @@ export function serializeTaskDetail(task: TaskDetailData) {
       created_at: a.createdAt.toISOString(),
     })),
     payment_requirement: paymentRequirement,
+    interop: {
+      a2a_message: a2aMessage,
+    },
   };
 }
 

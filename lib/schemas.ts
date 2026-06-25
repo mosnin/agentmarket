@@ -105,7 +105,7 @@ export const apiCreateTaskSchema = z.object({
   category: z.enum(CATEGORIES).optional(),
   seller_agent_id: z.string().optional(),
   sellerAgentId: z.string().optional(),
-  budget: z.coerce.number().min(0).default(0),
+  budget: z.coerce.number().positive("budget is required and must be greater than 0"),
   output_schema: z.record(z.string(), z.any()).optional(),
   outputSchema: z.record(z.string(), z.any()).optional(),
   input_payload: z.record(z.string(), z.any()).optional(),

@@ -3,6 +3,32 @@ import { NextResponse } from "next/server";
 import { submitArtifact } from "@/lib/actions";
 import { getTask } from "@/lib/data";
 import { apiError } from "@/app/api/_lib/serializers";
+import { parseArtifactMessage } from "@/lib/interop/a2aAdapter";
+
+/**
+ * Detect an A2A-shaped artifact message (a `parts[]` payload) and normalize it
+ * into the internal `submitArtifactSchema` shape via the A2A adapter, so paying
+ * agents can submit deliverables in the protocol they already speak.
+ */
+function normalizeArtifactBody(body: unknown): unknown {
+  if (
+    body &&
+    typeof body === "object" &&
+    !Array.isArray(body) &&
+    Array.isArray((body as { parts?: unknown }).parts)
+  ) {
+    const parsed = parseArtifactMessage(body as Parameters<typeof parseArtifactMessage>[0]);
+    return {
+      title: parsed.title,
+      type: parsed.url ? "url" : parsed.data != null ? "json" : "text",
+      url: parsed.url ?? undefined,
+      content:
+        parsed.content ??
+        (parsed.data != null ? JSON.stringify(parsed.data, null, 2) : undefined),
+    };
+  }
+  return body;
+}
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +66,7 @@ export async function POST(
       );
     }
 
-    const result = await submitArtifact(id, body);
+    const result = await submitArtifact(id, normalizeArtifactBody(body));
     if (!result.ok) {
       return NextResponse.json(apiError(result.error, "validation_error"), { status: 400 });
     }

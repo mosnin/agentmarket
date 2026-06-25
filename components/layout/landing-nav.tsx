@@ -1,0 +1,177 @@
+"use client";
+
+import * as React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Hexagon, Menu } from "lucide-react";
+
+import { cn } from "@/lib/utils";
+import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { SearchCommand } from "@/components/layout/search-command";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
+
+interface NavLink {
+  label: string;
+  href: string;
+  /** Anchor links never get "active" styling. */
+  anchor?: boolean;
+}
+
+const NAV_LINKS: NavLink[] = [
+  { label: "Marketplace", href: "/marketplace" },
+  { label: "Developers", href: "/developers" },
+  { label: "How it works", href: "/#how-it-works", anchor: true },
+];
+
+function Wordmark({ onClick }: { onClick?: () => void }) {
+  return (
+    <Link
+      href="/"
+      onClick={onClick}
+      className="group flex items-center gap-2.5"
+      aria-label="Agent Market home"
+    >
+      <span className="flex size-8 items-center justify-center rounded-lg bg-brand text-brand-foreground shadow-glow transition-transform group-hover:scale-105">
+        <Hexagon className="size-4.5" />
+      </span>
+      <span className="font-heading text-[15px] font-semibold tracking-tight text-foreground">
+        Agent Market
+      </span>
+    </Link>
+  );
+}
+
+export function LandingNav() {
+  const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = React.useState(false);
+
+  const isActive = (link: NavLink) =>
+    !link.anchor && (pathname === link.href || pathname.startsWith(`${link.href}/`));
+
+  return (
+    <header className="glass sticky top-0 z-50 w-full border-b border-border">
+      <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        {/* Left: wordmark + desktop nav */}
+        <div className="flex items-center gap-8">
+          <Wordmark />
+          <div className="hidden items-center gap-1 md:flex">
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                  isActive(link)
+                    ? "text-foreground"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Right: search, theme, CTAs (desktop) */}
+        <div className="flex items-center gap-2">
+          <SearchCommand />
+          <div className="hidden items-center gap-2 md:flex">
+            <ThemeToggle />
+            <span className="mx-1 h-5 w-px bg-border" aria-hidden />
+            <Link
+              href="/dashboard"
+              className={cn(buttonVariants({ variant: "ghost", size: "default" }))}
+            >
+              Dashboard
+            </Link>
+            <Link
+              href="/agents/new"
+              className={cn(buttonVariants({ variant: "default", size: "default" }))}
+            >
+              List your agent
+            </Link>
+          </div>
+
+          {/* Mobile: theme toggle + hamburger */}
+          <div className="flex items-center gap-1 md:hidden">
+            <ThemeToggle />
+            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+              <SheetTrigger
+                render={
+                  <Button variant="ghost" size="icon" aria-label="Open menu" />
+                }
+              >
+                <Menu className="size-5" />
+              </SheetTrigger>
+              <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-sm">
+                <SheetHeader className="border-b border-border p-4">
+                  <SheetTitle className="text-left">
+                    <Wordmark onClick={() => setMobileOpen(false)} />
+                  </SheetTitle>
+                </SheetHeader>
+
+                <div className="flex flex-col gap-1 p-4">
+                  {NAV_LINKS.map((link) => (
+                    <SheetClose
+                      key={link.href}
+                      render={
+                        <Link
+                          href={link.href}
+                          className={cn(
+                            "rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                            isActive(link)
+                              ? "bg-muted text-foreground"
+                              : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                          )}
+                        />
+                      }
+                    >
+                      {link.label}
+                    </SheetClose>
+                  ))}
+                </div>
+
+                <div className="mt-auto flex flex-col gap-2 border-t border-border p-4">
+                  <SheetClose
+                    render={
+                      <Link
+                        href="/dashboard"
+                        className={cn(
+                          buttonVariants({ variant: "outline", size: "lg" }),
+                          "w-full",
+                        )}
+                      />
+                    }
+                  >
+                    Open dashboard
+                  </SheetClose>
+                  <SheetClose
+                    render={
+                      <Link
+                        href="/agents/new"
+                        className={cn(
+                          buttonVariants({ variant: "default", size: "lg" }),
+                          "w-full",
+                        )}
+                      />
+                    }
+                  >
+                    List your agent
+                  </SheetClose>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+        </div>
+      </nav>
+    </header>
+  );
+}

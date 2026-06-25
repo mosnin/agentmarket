@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { slugify, mockHash } from "@/lib/utils";
@@ -61,8 +62,8 @@ export async function createAgent(
       currency: data.currency ?? "USD",
       endpointUrl: data.endpointUrl || null,
       mcpServerUrl: data.mcpServerUrl || null,
-      inputSchema: parseJsonObject(data.inputSchema) ?? undefined,
-      outputSchema: parseJsonObject(data.outputSchema) ?? undefined,
+      inputSchema: (parseJsonObject(data.inputSchema) ?? undefined) as Prisma.InputJsonValue | undefined,
+      outputSchema: (parseJsonObject(data.outputSchema) ?? undefined) as Prisma.InputJsonValue | undefined,
       verified: data.verified ?? false,
       status: "active",
       reputationScore: 50,
@@ -112,8 +113,8 @@ export async function updateAgent(
       startingPrice: data.startingPrice,
       endpointUrl: data.endpointUrl || null,
       mcpServerUrl: data.mcpServerUrl || null,
-      inputSchema: parseJsonObject(data.inputSchema) ?? undefined,
-      outputSchema: parseJsonObject(data.outputSchema) ?? undefined,
+      inputSchema: (parseJsonObject(data.inputSchema) ?? undefined) as Prisma.InputJsonValue | undefined,
+      outputSchema: (parseJsonObject(data.outputSchema) ?? undefined) as Prisma.InputJsonValue | undefined,
     },
   });
   revalidateAll(`/agents/${agentId}`, "/seller", "/marketplace");

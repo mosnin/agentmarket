@@ -1,0 +1,320 @@
+// Agent Market — Prisma schema
+// Marketplace where AI agents discover, hire, pay, and verify other agents.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ----------------------------- Enums -----------------------------
+
+enum AgentStatus {
+  draft
+  active
+  suspended
+  archived
+}
+
+enum PricingModel {
+  per_task
+  subscription
+  bounty
+  free
+}
+
+enum TaskStatus {
+  draft
+  pending
+  accepted
+  running
+  submitted
+  validating
+  completed
+  disputed
+  cancelled
+}
+
+enum Visibility {
+  public
+  private
+  unlisted
+}
+
+enum PaymentMode {
+  mock_escrow
+  pay_per_task
+  subscription
+  bounty
+}
+
+enum PaymentStatus {
+  pending
+  escrowed
+  released
+  refunded
+  failed
+}
+
+enum ValidationStatus {
+  pending
+  passed
+  failed
+}
+
+enum ArtifactType {
+  file
+  json
+  text
+  url
+  report
+}
+
+enum DisputeStatus {
+  open
+  resolved
+  rejected
+}
+
+enum ReputationEventType {
+  task_completed
+  review_received
+  dispute_opened
+  dispute_resolved
+  validation_passed
+  validation_failed
+  agent_verified
+  manual_adjustment
+}
+
+// ----------------------------- Models -----------------------------
+
+model User {
+  id             String        @id @default(cuid())
+  email          String        @unique
+  name           String?
+  image          String?
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  ownedAgents  Agent[]          @relation("AgentOwner")
+  buyerTasks   Task[]           @relation("TaskBuyer")
+  reviews      Review[]
+  disputes     Dispute[]        @relation("DisputeOpener")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Organization {
+  id          String  @id @default(cuid())
+  name        String
+  slug        String  @unique
+  description String?
+
+  users  User[]
+  agents Agent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Agent {
+  id               String       @id @default(cuid())
+  name             String
+  slug             String       @unique
+  shortDescription String
+  longDescription  String
+  category         String
+  status           AgentStatus  @default(active)
+  verified         Boolean      @default(false)
+  endpointUrl      String?
+  mcpServerUrl     String?
+  inputSchema      Json?
+  outputSchema     Json?
+  pricingModel     PricingModel @default(per_task)
+  startingPrice    Float        @default(0)
+  currency         String       @default("USD")
+
+  // Trust + performance metrics
+  averageRating         Float @default(0)
+  reputationScore       Int   @default(50)
+  completionRate        Float @default(0)
+  averageLatencyMinutes Int   @default(0)
+  schemaComplianceScore Float @default(0)
+  disputeRate           Float @default(0)
+  totalTasksCompleted   Int   @default(0)
+
+  ownerId        String
+  owner          User          @relation("AgentOwner", fields: [ownerId], references: [id])
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  capabilities     AgentCapability[]
+  tasks            Task[]            @relation("TaskSellerAgent")
+  reviews          Review[]
+  reputationEvents ReputationEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([reputationScore])
+  @@index([verified])
+}
+
+model Capability {
+  id          String  @id @default(cuid())
+  name        String
+  slug        String  @unique
+  description String?
+  category    String
+
+  agents AgentCapability[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AgentCapability {
+  id           String @id @default(cuid())
+  agentId      String
+  capabilityId String
+
+  agent      Agent      @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  capability Capability @relation(fields: [capabilityId], references: [id], onDelete: Cascade)
+
+  @@unique([agentId, capabilityId])
+  @@index([capabilityId])
+}
+
+model Task {
+  id         String     @id @default(cuid())
+  title      String
+  objective  String
+  category   String
+  status     TaskStatus @default(pending)
+  visibility Visibility @default(public)
+  budget     Float      @default(0)
+  currency   String     @default("USD")
+  deadline   DateTime?
+
+  buyerId       String
+  buyer         User    @relation("TaskBuyer", fields: [buyerId], references: [id])
+  sellerAgentId String?
+  sellerAgent   Agent?  @relation("TaskSellerAgent", fields: [sellerAgentId], references: [id])
+
+  contract         TaskContract?
+  artifacts        Artifact[]
+  payment          Payment?
+  reviews          Review[]
+  reputationEvents ReputationEvent[]
+  disputes         Dispute[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([buyerId])
+  @@index([sellerAgentId])
+  @@index([category])
+}
+
+model TaskContract {
+  id              String      @id @default(cuid())
+  taskId          String      @unique
+  task            Task        @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  inputPayload    Json?
+  outputSchema    Json?
+  validationRules Json?
+  paymentMode     PaymentMode @default(mock_escrow)
+  successCriteria String?
+  contractHash    String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Artifact {
+  id               String           @id @default(cuid())
+  taskId           String
+  task             Task             @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  title            String
+  type             ArtifactType     @default(file)
+  url              String?
+  content          String?
+  validationStatus ValidationStatus @default(pending)
+  validationScore  Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([taskId])
+}
+
+model Payment {
+  id              String        @id @default(cuid())
+  taskId          String        @unique
+  task            Task          @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  amount          Float
+  currency        String        @default("USD")
+  status          PaymentStatus @default(pending)
+  mode            PaymentMode   @default(mock_escrow)
+  provider        String        @default("mock_x402")
+  transactionHash String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Review {
+  id      String  @id @default(cuid())
+  taskId  String
+  task    Task    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  agentId String
+  agent   Agent   @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  userId  String
+  user    User    @relation(fields: [userId], references: [id])
+  rating  Int
+  comment String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([taskId, userId])
+  @@index([agentId])
+}
+
+model ReputationEvent {
+  id         String              @id @default(cuid())
+  agentId    String
+  agent      Agent               @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  taskId     String?
+  task       Task?               @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  type       ReputationEventType
+  scoreDelta Float               @default(0)
+  reason     String
+
+  createdAt DateTime @default(now())
+
+  @@index([agentId])
+}
+
+model Dispute {
+  id         String        @id @default(cuid())
+  taskId     String
+  task       Task          @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  openedById String
+  openedBy   User          @relation("DisputeOpener", fields: [openedById], references: [id])
+  reason     String
+  status     DisputeStatus @default(open)
+  resolution String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([taskId])
+}

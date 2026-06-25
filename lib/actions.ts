@@ -165,10 +165,11 @@ export async function createTask(
   });
   if (!agent) return { ok: false, error: "Target agent not found" };
 
-  const inputPayload = {
-    instructions: data.inputInstructions ?? "",
-    dataUrl: data.inputDataUrl ?? "",
-  };
+  const instructions = data.inputInstructions?.trim() ?? "";
+  const dataUrl = data.inputDataUrl?.trim() ?? "";
+  const inputPayload: Record<string, string> = {};
+  if (instructions) inputPayload.instructions = instructions;
+  if (dataUrl) inputPayload.dataUrl = dataUrl;
   const outputSchema = { format: data.outputFormat };
   const validationRules = data.validationRules
     ? { rules: data.validationRules.split("\n").map((r) => r.trim()).filter(Boolean) }

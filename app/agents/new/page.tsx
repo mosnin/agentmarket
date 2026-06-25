@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, BadgeCheck, Coins, ScrollText, Workflow } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { getCurrentOrganization } from "@/lib/auth";
 import { buttonVariants } from "@/components/ui/button";
 import { LandingNav } from "@/components/layout/landing-nav";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -42,7 +43,9 @@ const CHECKLIST: { icon: typeof Coins; title: string; body: string }[] = [
   },
 ];
 
-export default function NewAgentPage() {
+export default async function NewAgentPage() {
+  const organization = await getCurrentOrganization();
+
   return (
     <div className="flex min-h-dvh flex-col bg-background">
       <LandingNav />
@@ -74,7 +77,10 @@ export default function NewAgentPage() {
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-10">
             {/* Form column */}
             <div className="min-w-0">
-              <AgentForm />
+              <AgentForm
+                organizationId={organization?.id ?? null}
+                organizationName={organization?.name ?? null}
+              />
             </div>
 
             {/* Guidance rail */}

@@ -54,8 +54,12 @@ function capabilityNames(
 
 /**
  * The canonical public agent shape. Consumed by `GET /api/agents`, the search
- * palette and the developer docs. `completion_rate` is rounded to two decimals
- * (it is stored as a 0–1 fraction) and reputation is an integer 0–100.
+ * palette and the developer docs. `completion_rate` is stored as a percentage
+ * in the 0–100 range (e.g. 98.2, not 0.982) and is emitted as-is; the
+ * `Math.round(x * 10) / 10` is a pure 1-decimal-place rounding to match the
+ * storage precision (see lib/reputation.ts / lib/seed.ts), NOT a fraction->
+ * percent conversion. `average_rating` is a 0–5 star value. `reputation_score`
+ * is an integer 0–100.
  */
 export function serializeAgent(agent: AgentCardData): PublicAgent {
   return {
@@ -73,7 +77,7 @@ export function serializeAgent(agent: AgentCardData): PublicAgent {
     trust: {
       verified: agent.verified,
       reputation_score: agent.reputationScore,
-      completion_rate: Math.round(agent.completionRate * 100) / 100,
+      completion_rate: Math.round(agent.completionRate * 10) / 10,
       average_rating: Math.round(agent.averageRating * 100) / 100,
     },
     endpoint: {
@@ -136,8 +140,10 @@ export function serializeAgentDetail(agent: AgentDetailData) {
     metrics: {
       reputation_score: agent.reputationScore,
       average_rating: Math.round(agent.averageRating * 100) / 100,
-      completion_rate: Math.round(agent.completionRate * 100) / 100,
-      dispute_rate: Math.round(agent.disputeRate * 100) / 100,
+      // completion_rate / dispute_rate are 0–100 percentages; round to 1 decimal
+      // to match storage precision (lib/reputation.ts), not a unit conversion.
+      completion_rate: Math.round(agent.completionRate * 10) / 10,
+      dispute_rate: Math.round(agent.disputeRate * 10) / 10,
       schema_compliance_score: Math.round(agent.schemaComplianceScore),
       average_latency_minutes: agent.averageLatencyMinutes,
       total_tasks_completed: agent.totalTasksCompleted,

@@ -43,6 +43,7 @@ import {
   ARTIFACT_TYPES,
   VALIDATION_PASS_THRESHOLD,
   type TaskStatusValue,
+  type ValidationStatusValue,
 } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
@@ -85,6 +86,8 @@ export interface TaskActionsProps {
     status: TaskStatusValue | string;
     hasReview: boolean;
     hasArtifact: boolean;
+    /** Validation status of the most recently submitted artifact, if any. */
+    latestValidationStatus: ValidationStatusValue | null;
   };
 }
 
@@ -136,10 +139,19 @@ export function TaskActions({ task }: TaskActionsProps) {
   const [disputeOpen, setDisputeOpen] = React.useState(false);
 
   const status = task.status;
-  const copy = NEXT_STEP_COPY[status] ?? {
-    headline: "Task status",
-    hint: "Manage this task through its lifecycle as the agent delivers and the contract settles.",
-  };
+  const validationFailed =
+    status === "validating" && task.latestValidationStatus === "failed";
+
+  const copy =
+    validationFailed
+      ? {
+          headline: "Validation failed",
+          hint: `The latest artifact scored below the ${VALIDATION_PASS_THRESHOLD} bar. Resubmit a stronger deliverable to re-run validation before payment can be released.`,
+        }
+      : NEXT_STEP_COPY[status] ?? {
+          headline: "Task status",
+          hint: "Manage this task through its lifecycle as the agent delivers and the contract settles.",
+        };
 
   // "Open dispute" is sensible once a deliverable exists or is being settled.
   const canDispute =
@@ -265,15 +277,39 @@ export function TaskActions({ task }: TaskActionsProps) {
           />
         )}
 
-        {status === "validating" && (
-          <PrimaryButton
-            onClick={handleComplete}
-            pending={isPending}
-            icon={CircleDollarSign}
-            label="Complete task & release payment"
-            pendingLabel="Releasing payment…"
-          />
-        )}
+        {status === "validating" &&
+          (validationFailed ? (
+            <>
+              <SubmitArtifactDialog
+                open={submitOpen}
+                onOpenChange={setSubmitOpen}
+                taskId={task.id}
+                onSuccess={() => {
+                  setSubmitOpen(false);
+                  router.refresh();
+                }}
+              >
+                <Button type="button" size="lg" className="w-full">
+                  <Upload className="size-4" />
+                  Resubmit artifact
+                  <ArrowRight className="size-4 opacity-80" />
+                </Button>
+              </SubmitArtifactDialog>
+              <div className="flex items-center gap-2 rounded-lg border border-rose-500/20 bg-rose-500/5 px-3 py-2.5 text-xs text-rose-300">
+                <ScanSearch className="size-4 shrink-0" aria-hidden />
+                Validation didn&apos;t pass. Payment stays escrowed until a
+                resubmitted artifact clears validation.
+              </div>
+            </>
+          ) : (
+            <PrimaryButton
+              onClick={handleComplete}
+              pending={isPending}
+              icon={CircleDollarSign}
+              label="Complete task & release payment"
+              pendingLabel="Releasing payment…"
+            />
+          ))}
 
         {status === "completed" && (
           <>

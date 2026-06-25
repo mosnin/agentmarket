@@ -15,6 +15,7 @@ import {
   Layers,
   MessageSquareQuote,
   Network,
+  Package,
   Server,
   ShieldAlert,
   ShieldCheck,
@@ -55,6 +56,7 @@ import { CapabilityBadge } from "@/components/agents/capability-badge";
 import { ReputationScore } from "@/components/agents/reputation-score";
 import { TaskStatusBadge } from "@/components/tasks/task-status-badge";
 import { ReviewCard } from "@/components/tasks/review-card";
+import { ArtifactCard } from "@/components/tasks/artifact-card";
 
 import { ProfileTabs, type ProfileTab } from "./profile-tabs";
 
@@ -276,6 +278,27 @@ export default async function AgentProfilePage({
 
   const recentTasks = agent.tasks;
   const reviews = agent.reviews;
+
+  // Example deliverables: flatten artifacts across this agent's recent tasks,
+  // surface validated work first, and keep a small, representative set.
+  const exampleArtifacts = agent.tasks
+    .flatMap((task) =>
+      task.artifacts.map((artifact) => ({
+        artifact,
+        taskId: task.id,
+        taskTitle: task.title,
+      })),
+    )
+    .sort((a, b) => {
+      const aPassed = a.artifact.validationStatus === "passed" ? 0 : 1;
+      const bPassed = b.artifact.validationStatus === "passed" ? 0 : 1;
+      if (aPassed !== bPassed) return aPassed - bPassed;
+      return (
+        new Date(b.artifact.createdAt).getTime() -
+        new Date(a.artifact.createdAt).getTime()
+      );
+    })
+    .slice(0, 4);
 
   // Long description split into readable paragraphs.
   const paragraphs = agent.longDescription
@@ -616,6 +639,53 @@ export default async function AgentProfilePage({
     </SectionCard>
   );
 
+  const artifactsContent = (
+    <SectionCard
+      title="Artifacts examples"
+      icon={<Package className="size-4.5" />}
+      description={
+        exampleArtifacts.length > 0
+          ? "Sample deliverables this agent has produced on recent tasks, with their validation status."
+          : "Validated deliverables from completed tasks will appear here as examples of this agent's work."
+      }
+    >
+      {exampleArtifacts.length > 0 ? (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {exampleArtifacts.map(({ artifact, taskId, taskTitle }) => (
+            <div key={artifact.id} className="flex flex-col gap-1.5">
+              <ArtifactCard artifact={artifact} />
+              <Link
+                href={`/tasks/${taskId}`}
+                className="group inline-flex items-center gap-1 px-1 text-xs text-muted-foreground hover:text-foreground"
+              >
+                <span className="truncate">From task · {taskTitle}</span>
+                <ArrowRight
+                  className="size-3 shrink-0 transition-transform group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
+              </Link>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <EmptyState
+          icon={Package}
+          title="No artifacts yet"
+          description="This agent hasn't submitted any deliverables. Once it completes work, example artifacts will be shown here."
+          action={
+            <Link
+              href={`/tasks/new?agent=${agent.id}`}
+              className={cn(buttonVariants({ variant: "outline", size: "default" }))}
+            >
+              Hire to see results
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
+          }
+        />
+      )}
+    </SectionCard>
+  );
+
   const machineReadableContent = (
     <div className="space-y-5">
       <SectionCard
@@ -686,6 +756,12 @@ export default async function AgentProfilePage({
       label: "Reviews",
       icon: <MessageSquareQuote className="size-4" aria-hidden="true" />,
       content: reviewsContent,
+    },
+    {
+      value: "artifacts",
+      label: "Artifacts",
+      icon: <Package className="size-4" aria-hidden="true" />,
+      content: artifactsContent,
     },
     {
       value: "machine",

@@ -3,12 +3,12 @@
 import * as React from "react";
 import Link from "next/link";
 import {
-  ArrowUpRight,
   Bot,
   CheckCircle2,
   GitPullRequestArrow,
   Inbox,
   MessageSquareQuote,
+  Pencil,
   Plus,
   ShieldCheck,
   Sparkles,
@@ -281,15 +281,15 @@ function ListingsPanel({ agents }: { agents: SellerAgent[] }) {
                       View
                     </Link>
                     <Link
-                      href={`/agents/${agent.slug}`}
+                      href={`/agents/${agent.slug}/edit`}
                       className={cn(
                         buttonVariants({ variant: "outline", size: "sm" }),
                         "opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100",
                       )}
-                      aria-label={`Manage ${agent.name}`}
+                      aria-label={`Edit ${agent.name}`}
                     >
-                      Manage
-                      <ArrowUpRight className="size-3.5" aria-hidden="true" />
+                      <Pencil className="size-3.5" aria-hidden="true" />
+                      Edit
                     </Link>
                   </div>
                 </TableCell>

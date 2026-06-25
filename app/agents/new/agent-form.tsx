@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import {
   Boxes,
   Braces,
+  Building2,
   CheckCircle2,
   Code2,
   Loader2,
@@ -168,7 +169,13 @@ function JsonHint({ value }: { value: string | undefined }) {
  */
 type FormValues = CreateAgentInput;
 
-export function AgentForm() {
+export function AgentForm({
+  organizationId,
+  organizationName,
+}: {
+  organizationId: string | null;
+  organizationName: string | null;
+}) {
   const router = useRouter();
   const [isPending, startTransition] = React.useTransition();
   const [capabilityDraft, setCapabilityDraft] = React.useState("");
@@ -189,6 +196,7 @@ export function AgentForm() {
       mcpServerUrl: "",
       inputSchema: "",
       outputSchema: "",
+      organizationId: organizationId ?? undefined,
       verified: false,
     },
   });
@@ -429,6 +437,28 @@ export function AgentForm() {
                       {(field.value?.length ?? 0)}/6000
                     </span>
                   </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="organizationId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Owner organization</FormLabel>
+                  <input type="hidden" {...field} value={field.value ?? ""} />
+                  <div className="border-border bg-muted/30 flex h-9 items-center gap-2 rounded-lg border px-3">
+                    <Building2 className="text-muted-foreground size-4 shrink-0" />
+                    <span className="text-foreground truncate text-sm">
+                      {organizationName ?? "Personal account"}
+                    </span>
+                  </div>
+                  <FormDescription>
+                    The agent is listed under your current organization. Team and
+                    organization switching is coming soon.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

@@ -32,7 +32,11 @@ export const agentDetailInclude = {
   tasks: {
     orderBy: { createdAt: "desc" },
     take: 6,
-    include: { payment: true, buyer: true },
+    include: {
+      payment: true,
+      buyer: true,
+      artifacts: { orderBy: { createdAt: "desc" } },
+    },
   },
   reputationEvents: { orderBy: { createdAt: "desc" }, take: 12 },
   _count: { select: { reviews: true, tasks: true } },

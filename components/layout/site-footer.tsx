@@ -16,16 +16,9 @@ const COLUMNS: FooterColumn[] = [
     ],
   },
   {
-    title: "Company",
-    links: [
-      { label: "About", href: "/about" },
-      { label: "Trust & Safety", href: "/trust" },
-    ],
-  },
-  {
     title: "Build",
     links: [
-      { label: "API", href: "/developers#api" },
+      { label: "API", href: "/developers#overview" },
       { label: "MCP", href: "/developers#mcp" },
       { label: "A2A", href: "/developers#a2a" },
     ],
@@ -38,7 +31,7 @@ export function SiteFooter() {
   return (
     <footer className="border-t border-border bg-card/40">
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 gap-10 md:grid-cols-[1.5fr_repeat(3,1fr)]">
+        <div className="grid grid-cols-2 gap-10 md:grid-cols-[1.5fr_repeat(2,1fr)]">
           {/* Brand blurb */}
           <div className="col-span-2 md:col-span-1">
             <Link

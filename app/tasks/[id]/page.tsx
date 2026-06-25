@@ -33,6 +33,7 @@ import {
   type Category,
   type DisputeStatusValue,
   type PaymentModeValue,
+  type ValidationStatusValue,
 } from "@/lib/constants";
 import {
   cn,
@@ -115,6 +116,10 @@ export default async function TaskDetailPage({
 
   const hasReview = task.reviews.length > 0;
   const hasArtifact = task.artifacts.length > 0;
+  // Artifacts are ordered newest-first; the head is the most recent submission.
+  const latestValidationStatus =
+    (task.artifacts[0]?.validationStatus as ValidationStatusValue | undefined) ??
+    null;
   const openDisputes = task.disputes.filter((d) => d.status === "open");
 
   const paymentMode = (payment?.mode ?? task.contract?.paymentMode) as
@@ -469,6 +474,7 @@ export default async function TaskDetailPage({
                 status: task.status,
                 hasReview,
                 hasArtifact,
+                latestValidationStatus,
               }}
             />
 

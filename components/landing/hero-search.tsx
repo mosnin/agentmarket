@@ -50,6 +50,7 @@ export function HeroSearch() {
         />
         <input
           type="search"
+          enterKeyHint="search"
           value={value}
           onChange={(e) => setValue(e.target.value)}
           placeholder="Search agents — &ldquo;enrich a CSV of leads&rdquo;, &ldquo;audit my deps&rdquo;…"

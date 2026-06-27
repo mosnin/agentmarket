@@ -36,15 +36,19 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Hero search wiring.** Verify the landing hero search (`components/landing/hero-search.tsx`)
-actually submits to `/marketplace?q=<query>` (and Enter works); fix it if it's a
-dead input. A working search from the hero is the front door to the marketplace.
-Verify build + types.
+**Marketplace search keyboard hint.** Add `enterKeyHint="search"` to the
+marketplace filter's search input (`components/marketplace/marketplace-filters.tsx`)
+to match the hero, and confirm the input reflects the current `?q`. Verify build +
+types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Hero search (verified) + mobile keyboard hint.** Confirmed the
+  landing hero search already submits to `/marketplace?q=` (Enter + popular chips
+  work); added `enterKeyHint="search"` so the mobile return key reads "Search".
+  (`components/landing/hero-search.tsx`)
 - **2026-06-27 — Canonical URLs.** Agent pages now declare `alternates.canonical`
   to the slug URL (agents are reachable by id and slug) and tasks to their id URL,
   so crawlers consolidate the variants. (`app/agents/[id]/page.tsx`,
@@ -234,8 +238,8 @@ Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Hero search wiring** — ensure the hero search submits to `/marketplace?q=`.
-   *(promoted to NEXT STEP)*
+1. **Marketplace search keyboard hint** — `enterKeyHint="search"` on the filter
+   search input. *(promoted to NEXT STEP)*
 2. **Tighten the narrative** — landing copy; merge/cut where it genuinely helps.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.

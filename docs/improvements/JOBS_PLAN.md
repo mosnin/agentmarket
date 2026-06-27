@@ -36,10 +36,11 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Re-walk the 404 + error pages.** Check `app/not-found.tsx` and the route-level `error.tsx` /
-`not-found.tsx` files read clearly and offer a way forward — a clear message plus primary links
-back to the marketplace/dashboard, and a retry on error boundaries. Fix the weakest one. Lens:
-never a dead end. Verify with `npm test` + build + types.
+**Add a loading skeleton for the agent edit route.** The new `/agents/[id]/edit` route (loop
+#72) has no `loading.tsx`, so navigating to it shows no skeleton during the `getAgent` fetch —
+inconsistent with the rest of the app's layout-stable loading. Add `app/agents/[id]/edit/loading.tsx`
+(mirror the create-form chrome) and confirm the other create routes (`/agents/new`, `/tasks/new`)
+have one too. Lens: no janky transitions. Verify with `npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -48,6 +49,12 @@ never a dead end. Verify with `npm test` + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Escape link on the dashboard/seller/admin error boundaries.** Re-walked the
+  404 + error pages — the root 404, per-resource 404s, and the root/marketplace/agents/tasks
+  error boundaries are all polished (clear copy + escape CTAs). Closed the one consistency gap:
+  the dashboard, seller and admin `error.tsx` had only "Try again", no way out. Added a "Back to
+  marketplace" link next to retry (matching the root error boundary), so a persistent error is
+  never a dead end. (`app/dashboard/error.tsx`, `app/seller/error.tsx`, `app/admin/error.tsx`)
 - **2026-06-27 — Extract + test the chart's all-zero guard.** Pulled the "all-zero dataset =
   empty" logic out of `DashboardChart` into a pure `hasChartData(data, series)`
   (`components/dashboard/chart-data.ts`, no Recharts) and pointed the chart at it. Added
@@ -604,8 +611,8 @@ never a dead end. Verify with `npm test` + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Re-walk the 404 + error pages** (never a dead end). *(NEXT STEP. Chart all-zero guard
-   extracted + tested ✓ — 187 tests across 23 files; all real logic now covered.)*
+1. **Add the agent-edit loading skeleton** (layout-stable transitions). *(NEXT STEP. 404 +
+   error pages re-walked; dashboard/seller/admin errors now have an escape link ✓.)*
 2. **Reassess** — the app is feature-complete + comprehensively tested + CI-gated + documented;
    prefer genuine micro-improvements over make-work, with restraint.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;

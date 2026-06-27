@@ -1,10 +1,11 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { AlertTriangle, RotateCcw } from "lucide-react";
 
 import { AppShell } from "@/components/layout/app-shell";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 
 /**
  * Error boundary for /dashboard. A failed metrics/activity read renders an
@@ -41,6 +42,9 @@ export default function DashboardError({
               <RotateCcw aria-hidden="true" />
               Try again
             </Button>
+            <Link href="/marketplace" className={buttonVariants({ variant: "outline" })}>
+              Back to marketplace
+            </Link>
           </div>
         </div>
       </div>

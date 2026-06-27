@@ -36,10 +36,11 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Add a pull request template.** Complement the CI gate with `.github/pull_request_template.md`
-— concise sections (Summary, Changes, Testing, Notes) that prompt a contributor to describe the
-change and confirm `npm test` + build are green. Standard repo hygiene now that CI is in place;
-the harness also mirrors a PR template when one exists. Verify with build (markdown only).
+**Test the debounced marketplace search.** The filter bar's last untested behavior: typing in
+the search box debounces (~300ms) into a `?q=` URL push. Extend `marketplace-filters.test.tsx`
+with fake timers — fire a change on the search input, advance 300ms, and assert `router.push`
+is called with the `q` param. Covers the core search interaction. If fake-timers + the Base UI
+form prove fiddly, discard and pick a smaller step. Verify with `npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -48,6 +49,9 @@ the harness also mirrors a PR template when one exists. Verify with build (markd
 
 ## DONE LOG
 
+- **2026-06-27 — Pull request template.** Added `.github/pull_request_template.md` (Summary /
+  Changes / Testing checklist / Notes) to pair with the CI gate — prompts a contributor to
+  describe the change and confirm test/typecheck/build are green. (`.github/pull_request_template.md`)
 - **2026-06-27 — Document testing & CI in the README.** Added a "Testing" section (+ TOC entry
   + `npm test` in the scripts table): the run commands, what the Vitest + Testing Library suite
   covers (pure logic, the public API contract, key UI components), the `jsdom` docblock
@@ -584,8 +588,8 @@ the harness also mirrors a PR template when one exists. Verify with build (markd
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Add a PR template** (repo hygiene to pair with CI). *(NEXT STEP. README now documents
-   testing & CI ✓.)*
+1. **Test the debounced marketplace search** (last client-logic gap). *(NEXT STEP. PR
+   template + CI + README docs all shipped ✓.)*
 2. **Reassess** — the app is feature-complete + comprehensively tested + CI-gated + documented;
    prefer genuine micro-improvements over make-work, with restraint.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;

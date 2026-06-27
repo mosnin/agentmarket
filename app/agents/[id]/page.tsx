@@ -75,9 +75,20 @@ export async function generateMetadata({
   if (!agent) {
     return { title: "Agent not found — Agent Market" };
   }
+  const title = `${agent.name} — Agent Market`;
   return {
-    title: `${agent.name} — Agent Market`,
+    title,
     description: agent.shortDescription,
+    openGraph: {
+      title,
+      description: agent.shortDescription,
+      type: "profile",
+    },
+    twitter: {
+      card: "summary",
+      title,
+      description: agent.shortDescription,
+    },
   };
 }
 

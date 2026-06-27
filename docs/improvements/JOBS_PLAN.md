@@ -36,14 +36,19 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Copy the full A2A Agent Card.** Add a `CopyButton` to the "Agent Card (A2A)"
-JSON block on `app/agents/[id]` so an integrator can copy the whole machine-
-readable card in one click. Verify build + types.
+**Rich previews for shared tasks.** Mirror the Open Graph + Twitter metadata on
+the task detail page (`app/tasks/[id]/page.tsx`'s `generateMetadata`) so a shared
+task link previews with its title/objective. Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Rich link previews for agents.** The agent profile now emits Open
+  Graph + Twitter card metadata, so a shared agent link renders a proper
+  title/description preview. (Also confirmed the A2A card — and every JSON block —
+  is already copyable via `JsonViewer`'s built-in copy, so no redundant button.)
+  (`app/agents/[id]/page.tsx`)
 - **2026-06-27 — Copy the A2A agent id.** The "Endpoint & interop" section's agent
   id now has a one-click `CopyButton`, so integrators can grab the id they POST to
   `/api/tasks` without hand-selecting. (`app/agents/[id]/page.tsx`)
@@ -134,8 +139,8 @@ readable card in one click. Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Copy the full A2A Agent Card** — copy button on the Agent Card JSON block.
-   *(promoted to NEXT STEP)*
+1. **Rich previews for shared tasks** — Open Graph metadata on the task detail
+   page. *(promoted to NEXT STEP)*
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

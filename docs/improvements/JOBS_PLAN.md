@@ -36,14 +36,18 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Drop the redundant date-input color-scheme.** Now that `colorScheme: "dark"` is
-global, remove the local `[color-scheme:dark]` override on the task form's date
-input — one source of truth. Verify build + types.
+**Theme-aware color-scheme.** In `globals.css`, set `color-scheme: light` on
+`:root` and `color-scheme: dark` on `.dark` so native controls follow the theme
+toggle (the static viewport `colorScheme` stays as the pre-paint default). Fixes
+light-mode native widgets rendering dark. Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — One source of truth for color-scheme.** Removed the local
+  `[color-scheme:dark]` override on the task form's date input now that
+  `colorScheme: "dark"` is global. (`app/tasks/new/task-form.tsx`)
 - **2026-06-27 — colorScheme: dark.** Added `colorScheme: "dark"` to the root
   viewport so native UI (form controls, scrollbars, date pickers) renders in dark
   mode, matching the dark-first design. (`app/layout.tsx`)
@@ -248,7 +252,8 @@ input — one source of truth. Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Drop redundant date-input color-scheme** — now global. *(promoted to NEXT STEP)*
+1. **Theme-aware color-scheme** — `color-scheme` on :root/.dark in globals.css.
+   *(promoted to NEXT STEP)*
 2. **Optimistic feedback polish** — consider optimistic UI on lifecycle actions
    (currently toast + refresh).
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;

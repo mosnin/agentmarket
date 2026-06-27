@@ -36,14 +36,19 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Consistent siteName on detail previews.** Add `siteName: "Agent Market"` to the
-agent and task detail `openGraph` blocks so their shared link previews match the
-site-wide default. Verify build + types.
+**Copyable API on the developers page.** On `app/developers/page.tsx`, make the
+request examples / endpoints copyable (reuse `CopyButton` or `JsonViewer`/the
+`ApiCodePanel` copy) so a developer can grab a curl/endpoint without
+hand-selecting. Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Consistent siteName on detail previews.** Added
+  `siteName: "Agent Market"` to the agent and task `openGraph`, so their shared
+  previews carry the brand like the site default. (`app/agents/[id]/page.tsx`,
+  `app/tasks/[id]/page.tsx`)
 - **2026-06-27 — Press / to search.** The command palette now also opens on `/`
   (when not typing in a field), matching the familiar GitHub-style shortcut
   alongside ⌘K. (`components/layout/search-command.tsx`)
@@ -151,9 +156,8 @@ site-wide default. Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **siteName on detail OG** — add `siteName: "Agent Market"` to the agent/task
-   page openGraph so they match the site default. *(promoted to NEXT STEP)*
-2. **Developers page** — make endpoints/examples copyable.
+1. **Developers page** — make endpoints/examples copyable.
+   *(promoted to NEXT STEP)*
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

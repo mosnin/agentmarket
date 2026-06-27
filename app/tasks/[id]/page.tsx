@@ -84,7 +84,7 @@ export async function generateMetadata({
   return {
     title,
     description,
-    openGraph: { title, description, type: "article" },
+    openGraph: { title, description, type: "article", siteName: "Agent Market" },
     twitter: { card: "summary", title, description },
   };
 }

@@ -51,17 +51,15 @@ export function formatLatency(minutes: number): string {
 }
 
 /**
- * Completion rate for display. A brand-new agent has `completionRate` 0 by
- * default; rendering "0%" would misread "no track record" as total failure, so
- * an agent with no task history (`taskCount === 0`) shows an em dash instead.
- * Genuine rates (the agent has tasks) are shown as-is, so real underperformance
- * is never hidden.
+ * A performance rate for display, degraded to an em dash when there's no
+ * evidence behind it. A brand-new agent has these scores at their 0 default;
+ * rendering "0%" would misread "no track record" as total failure (or, for
+ * dispute rate, falsely reward a clean record), so with no task history
+ * (`taskCount === 0`) it shows "—". Genuine rates (the agent has tasks) are
+ * shown as-is, so real performance — good or bad — is never hidden.
  */
-export function formatCompletionRate(
-  completionRate: number,
-  taskCount: number,
-): string {
-  return taskCount > 0 ? formatPercent(completionRate) : "—";
+export function formatRateOrDash(rate: number, taskCount: number): string {
+  return taskCount > 0 ? formatPercent(rate) : "—";
 }
 
 export function formatDate(date: Date | string | number): string {

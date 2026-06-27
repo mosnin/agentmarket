@@ -3,7 +3,7 @@ import { BadgeCheck, Building2, Clock, Star } from "lucide-react";
 
 import type { AgentCardData } from "@/lib/data";
 import { CATEGORY_META, type Category } from "@/lib/constants";
-import { cn, formatCompletionRate, formatLatency, formatRating } from "@/lib/utils";
+import { cn, formatRateOrDash, formatLatency, formatRating } from "@/lib/utils";
 import { formatAgentPrice } from "@/lib/pricing";
 
 import { buttonVariants } from "@/components/ui/button";
@@ -106,7 +106,7 @@ export function AgentCard({ agent }: { agent: AgentCardData }) {
         </span>
         <span className="inline-flex items-center gap-1" title="Completion rate">
           <span className="font-medium tabular-nums text-foreground">
-            {formatCompletionRate(agent.completionRate, agent._count.tasks)}
+            {formatRateOrDash(agent.completionRate, agent._count.tasks)}
           </span>
           <span>completion</span>
         </span>

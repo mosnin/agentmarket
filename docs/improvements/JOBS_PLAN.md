@@ -36,14 +36,13 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Finish the new-agent zero-state sweep — profile schema-compliance (`app/agents/[id]/page.tsx`).**
-The last instance of the "0% = total failure" misread for a brand-new agent: the public profile's
-"Performance & trust metrics" still shows `schemaComplianceScore` as "0%" (defaults to 0) when there
-is no task history. Apply the same no-history → "—" treatment (gate on `_count.tasks > 0`); consider
-generalizing the `formatCompletionRate` helper into a shared `formatRateOrDash(value, taskCount)` if
-that reads cleaner. Dispute rate (0% = no disputes) is genuinely fine — leave it. This closes the
-theme; afterwards return to a fresh surface (e.g. the dashboard or seller inbound-task flow). Lens:
-consistency — finish what you start. Verify with tsc + build.
+**Re-walk the dashboard — the buyer's command center (`app/dashboard/`).** Fresh surface after the
+zero-state sweep. This is where a returning buyer lands; take a fresh look: is the thing that needs
+attention *now* (overdue / due-soon / awaiting-validation tasks) front and center, are the metrics
+meaningful (and do they degrade gracefully for a new account), do empty states guide the first
+action, and is the primary next action one tap away? Fix the single biggest focus/clarity gap, or
+tighten the weakest detail. Lens: make the core loop magical, not the chrome — surface intent, don't
+just list data. Verify with tsc + build.
 
 > Backlog note: `deadline` is still only client-guarded (the date input's `min`). A server-side
 > schema refine rejecting past dates would be defense-in-depth — a candidate step if a real gap
@@ -53,6 +52,15 @@ consistency — finish what you start. Verify with tsc + build.
 
 ## DONE LOG
 
+- **2026-06-27 — Close the new-agent zero-state sweep (profile schema + dispute).** Generalized the
+  `formatCompletionRate` helper into `formatRateOrDash(rate, taskCount)` — its logic was already
+  exactly that — and applied it to the public profile's last two misleading zeros: schema compliance
+  ("0%" read as never-compliant) and dispute rate (a green "good" 0% that *falsely rewarded* a clean
+  record with no evidence), neutralizing the dispute tile's tone when there's no history. Now every
+  surface — card, profile, seller scorecard — shows "—" for an agent with no track record and colors
+  only real data. Dropped the now-unused `formatPercent` import. (`lib/utils.ts`, `lib/utils.test.ts`,
+  `app/agents/[id]/page.tsx`, `components/agents/agent-card.tsx`,
+  `components/agents/agent-profile-header.tsx`)
 - **2026-06-27 — Seller scorecard no longer grades a fresh listing on zero evidence.** The Seller
   Studio performance table rendered threshold-colored zeros for brand-new agents — a red "0%"
   completion / schema-compliance, a falsely-green "0%" dispute rate, and a "0.0" rating. Added a

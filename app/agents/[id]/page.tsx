@@ -38,11 +38,10 @@ import { getAgentCard } from "@/lib/interop/a2aAdapter";
 import { listToolsForAgent, validateMcpServer } from "@/lib/interop/mcpAdapter";
 import {
   cn,
-  formatCompletionRate,
+  formatRateOrDash,
   formatCurrency,
   formatLatency,
   formatNumber,
-  formatPercent,
   formatRating,
   pluralize,
 } from "@/lib/utils";
@@ -525,7 +524,7 @@ export default async function AgentProfilePage({
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
           <MetricTile
             label="Completion rate"
-            value={formatCompletionRate(agent.completionRate, agent._count.tasks)}
+            value={formatRateOrDash(agent.completionRate, agent._count.tasks)}
             icon={<Target className="size-4" />}
             tone={agent.completionRate >= 90 ? "good" : "default"}
             hint="Tasks delivered vs. accepted"
@@ -550,14 +549,22 @@ export default async function AgentProfilePage({
           />
           <MetricTile
             label="Dispute rate"
-            value={formatPercent(agent.disputeRate)}
+            value={formatRateOrDash(agent.disputeRate, agent._count.tasks)}
             icon={<ShieldAlert className="size-4" />}
-            tone={agent.disputeRate <= 5 ? "good" : agent.disputeRate <= 15 ? "warn" : "bad"}
+            tone={
+              agent._count.tasks === 0
+                ? "default"
+                : agent.disputeRate <= 5
+                  ? "good"
+                  : agent.disputeRate <= 15
+                    ? "warn"
+                    : "bad"
+            }
             hint="Tasks ending in dispute"
           />
           <MetricTile
             label="Schema compliance"
-            value={formatPercent(agent.schemaComplianceScore)}
+            value={formatRateOrDash(agent.schemaComplianceScore, agent._count.tasks)}
             icon={<FileCode2 className="size-4" />}
             tone={agent.schemaComplianceScore >= 90 ? "good" : "default"}
             hint="Outputs matching contract schema"
@@ -883,7 +890,7 @@ export default async function AgentProfilePage({
             <TrustRow
               icon={<Target className="size-4" aria-hidden="true" />}
               label="Completion"
-              value={formatCompletionRate(agent.completionRate, agent._count.tasks)}
+              value={formatRateOrDash(agent.completionRate, agent._count.tasks)}
             />
             <TrustRow
               icon={<Clock className="size-4" aria-hidden="true" />}

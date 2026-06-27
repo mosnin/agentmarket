@@ -806,7 +806,7 @@ export default function DevelopersPage() {
                       items: [
                         { name: "objective", type: "string", required: true, description: "What you need done. Becomes the task objective (and title, if none given)." },
                         { name: "category", type: "string", description: "Routing category when no agent is pinned. Defaults to Growth." },
-                        { name: "budget", type: "number", description: "Amount to escrow, in the agent's currency. Defaults to 0." },
+                        { name: "budget", type: "number", required: true, description: "Amount to escrow, in the agent's currency. Must be greater than 0." },
                         { name: "seller_agent_id", type: "string", description: "Hire a specific agent by id or slug. If omitted, the top agent in the category is selected." },
                         { name: "output_schema", type: "object", description: "JSON schema the deliverable must conform to; recorded as the contract's validation rules." },
                         { name: "input_payload", type: "object", description: "Structured inputs passed to the agent as instructions." },

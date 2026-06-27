@@ -36,12 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Verify the Developers / API docs match reality.** The `/developers` page documents
-the API + protocols. Cross-check the documented endpoints, request/response shapes and
-field names against the actual `app/api/*` routes and `apiCreateTaskSchema` (which
-accepts snake_case *or* camelCase and requires a positive budget). Fix any drift so a
-developer copying the docs succeeds first try. Lens: clarify state / correctness.
-Verify with `npm test` (still green) + build + types.
+**Re-walk the agent edit flow (`/agents/[slug]/edit`).** Seller Studio links each
+listing to an edit route. Confirm it exists, pre-fills every field from the current
+listing, and reuses the create form cleanly (no divergence) — then fix the single
+biggest gap (a missing pre-fill, a 404, a "Publish" verb that should read "Save").
+Lens: remove friction + clarify state. Verify with `npm test` (still green) + build +
+types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -50,6 +50,13 @@ Verify with `npm test` (still green) + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Fix API doc drift: budget is required.** Cross-checked the
+  `/developers` API docs against the real routes + `apiCreateTaskSchema`: the
+  create-task `budget` param was documented as "Defaults to 0", but the schema requires
+  `.positive()` — a developer omitting it would hit a 400 ("budget is required and must
+  be greater than 0"). Marked it `required` and corrected the copy to "Must be greater
+  than 0". (Verified category→Growth and payment_mode→mock_escrow defaults are
+  accurate.) (`app/developers/page.tsx`)
 - **2026-06-27 — Sensible default price on agent creation.** Re-walked `/agents/new`:
   the form is genuinely polished (4 consistent steps, capability tag input +
   suggestions, JSON format + live validity hint, character counters, free auto-zeros
@@ -405,10 +412,9 @@ Verify with `npm test` (still green) + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Verify Developers/API docs vs reality** — endpoint/field drift. *(NEXT STEP.
-   Agent creation ✓ — sensible price default.)*
+1. **Re-walk the agent edit flow** (`/agents/[slug]/edit`) — pre-fill + reuse.
+   *(NEXT STEP. API docs ✓ — budget-required drift fixed.)*
 2. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs.
-3. **Re-walk the agent edit flow** (`/agents/[slug]/edit`).
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

@@ -36,12 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Test the `TaskTimeline` lifecycle view.** `components/tasks/task-timeline.tsx` renders
-the lifecycle steps and marks which are complete / current / upcoming from the task status.
-Add a render test: for a mid-lifecycle status (e.g. `running`) prior steps read as done and
-later ones as upcoming/current; a terminal `completed` marks the whole happy path done; a
-`cancelled`/`disputed` status renders without crashing. Protects the most visible lifecycle
-affordance. Verify with `npm test` + build + types.
+**Test `ReputationScore` tier logic.** It maps a 0–100 score to a visual tier (top-tier
+≥90 / strong ≥80 / established ≥70 / building) shown across cards, profiles and dashboards.
+Add a test asserting the score renders and — via whatever it exposes (accessible
+label / title / text) — the tier is right at the band boundaries (92, 85, 72, 50). If the
+tier is purely visual, assert the displayed score renders for each band without error and
+pin any exported threshold helper. Verify with `npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -50,6 +50,12 @@ affordance. Verify with `npm test` + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Test the TaskTimeline lifecycle view.** Added `task-timeline.test.tsx` —
+  6 tests: renders all six happy-path steps (Pending→Completed); flags the current step
+  "In progress" (and not once completed); appends a terminal node for cancelled / disputed;
+  and renders an unknown status (draft) with no active step. Protects the stepper's
+  done/active/upcoming/off-path logic. 153 tests across 17 files.
+  (`components/tasks/task-timeline.test.tsx`)
 - **2026-06-27 — Extract + test the rating StarPicker.** Pulled the 1–5 star rating input
   out of `task-actions.tsx` into a reusable `components/tasks/star-picker.tsx` (the review
   dialog imports it). Added `star-picker.test.tsx` — 4 tests: five radios + a "Tap to rate"
@@ -513,8 +519,8 @@ affordance. Verify with `npm test` + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Test the `TaskTimeline`** lifecycle view (step done/current/upcoming logic). *(NEXT
-   STEP. StarPicker decoupled + tested ✓ — 147 tests across 16 files.)*
+1. **Test `ReputationScore`** tier logic. *(NEXT STEP. TaskTimeline lifecycle view
+   covered ✓ — 153 tests across 17 files.)*
 2. **Consistency pass** — destructive confirmations + toasts across the new dialogs.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.

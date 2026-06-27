@@ -36,17 +36,22 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Frictionless "Hire" from the marketplace grid.** Add an accessible primary
-"Hire" affordance to `AgentCard` (components/agents/agent-card.tsx) that deep-links
-to `/tasks/new?agent=<slug>` so a buyer goes from browsing straight to a
-pre-filled contract — without the profile detour. Use the stretched-link pattern
-(card body remains the link to the profile; a separate, higher-z "Hire" button
-sits on top) so there's no nested-anchor a11y violation. Verify build + types.
+**One-tap budget.** Under the budget field in the task form
+(`app/tasks/new/task-form.tsx`), add quick chips that set the budget to sensible
+multiples of the selected agent's starting price (e.g. 1× / 2× / 5×) so a good
+budget is one click, not a guess. Only show them when an agent is selected with a
+non-zero starting price. Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Hire from the grid.** `AgentCard` now carries a one-tap "Hire"
+  action that deep-links to a contract pre-filled with that agent
+  (`/tasks/new?agent=<slug>`) — browse → hire with no profile detour. Built with
+  the stretched-link pattern: the card body still opens the profile, the Hire
+  button is raised above it (accessible, no nested anchors).
+  (`components/agents/agent-card.tsx`)
 - **2026-06-27 — Smart self-drafting task contract.** The task form now drafts
   itself around the chosen specialist: selecting an agent (or arriving via the
   "Hire this agent" deep link) auto-adopts the agent's **category** and suggests
@@ -58,31 +63,30 @@ sits on top) so there's no nested-anchor a11y violation. Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Hire from the grid** — accessible "Hire" CTA on AgentCard → pre-filled
-   contract. *(promoted to NEXT STEP)*
-2. **One-tap budget** — under the budget field, quick chips (1× / 2× / 5× the
+1. **One-tap budget** — under the budget field, quick chips (1× / 2× / 5× the
    agent's starting price) so a sensible budget is one click, not a guess.
-3. **Unmistakable next action on the task detail page** — surface the single
+   *(promoted to NEXT STEP)*
+2. **Unmistakable next action on the task detail page** — surface the single
    primary lifecycle action (accept / submit / validate / complete) as one bold
    button tied to the current state; demote everything else.
-4. **No dead ends** — audit every empty/zero state so each offers the obvious
+3. **No dead ends** — audit every empty/zero state so each offers the obvious
    next action (browse agents, post a task, list an agent).
-5. **⌘K covers the verbs** — ensure the command palette exposes the primary
+4. **⌘K covers the verbs** — ensure the command palette exposes the primary
    actions (Post a task, List an agent, Dashboard, jump to any agent), not just
    navigation.
-6. **Layout-stable loading** — skeletons that match final layout, so nothing
+5. **Layout-stable loading** — skeletons that match final layout, so nothing
    jumps when data lands.
-7. **Optimistic, consistent feedback** — every lifecycle action gives immediate,
+6. **Optimistic, consistent feedback** — every lifecycle action gives immediate,
    uniform toast/inline feedback; no silent waits.
-8. **Instant marketplace filtering** — live result count, immediate feedback,
+7. **Instant marketplace filtering** — live result count, immediate feedback,
    and a one-tap "clear filters".
-9. **Reduce-motion + a11y sweep** — honor `prefers-reduced-motion` in Reveal,
+8. **Reduce-motion + a11y sweep** — honor `prefers-reduced-motion` in Reveal,
    tighten focus-visible and aria labels.
-10. **Earned delight at completion** — a subtle success moment when a task
-    settles (the peak of the loop), tasteful not gimmicky.
-11. **Tighten the narrative** — the landing page says a lot; cut/merge sections
+9. **Earned delight at completion** — a subtle success moment when a task
+   settles (the peak of the loop), tasteful not gimmicky.
+10. **Tighten the narrative** — the landing page says a lot; cut/merge sections
     so the story is inevitable, not exhaustive.
-12. **Number craft** — tabular-nums and consistent currency/latency formatting
+11. **Number craft** — tabular-nums and consistent currency/latency formatting
     everywhere a value can change.
 
 _Re-prioritize freely as the product reveals what it needs. The list serves the

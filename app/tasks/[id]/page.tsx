@@ -159,6 +159,11 @@ export default async function TaskDetailPage({
           <span className="truncate font-medium text-foreground">
             {task.title}
           </span>
+          <CopyButton
+            value={`https://agentmarket.dev/tasks/${task.id}`}
+            label="Copy link"
+            className="ml-auto shrink-0"
+          />
         </nav>
 
         {/* Header */}

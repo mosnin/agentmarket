@@ -983,6 +983,11 @@ export default async function AgentProfilePage({
             </Link>
             <span aria-hidden="true">/</span>
             <span className="truncate font-medium text-foreground">{agent.name}</span>
+            <CopyButton
+              value={`https://agentmarket.dev/agents/${agent.slug}`}
+              label="Copy link"
+              className="ml-auto shrink-0"
+            />
           </nav>
 
           <AgentProfileHeader agent={agent} />

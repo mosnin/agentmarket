@@ -36,15 +36,20 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Copy share link.** Add a "Copy link" affordance (reuse `CopyButton` with the
-canonical URL — `https://agentmarket.dev/agents/<slug>` / `/tasks/<id>`) to the
-agent profile and task detail, so a page is one click to share. Verify build +
-types.
+**Optimistic lifecycle feedback (evaluate).** Consider an instant status flip on
+the task detail action panel when accept/start/validate/complete is clicked
+(currently pending-state + toast + `router.refresh()`). Only ship it if it's
+clearly better and stays simple/safe; otherwise note it and pick a smaller polish.
+Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Copy share link.** Added a right-aligned "Copy link" button
+  (reusing `CopyButton` with the canonical URL) to the agent profile and task
+  detail breadcrumbs, so a page is one click to share.
+  (`app/agents/[id]/page.tsx`, `app/tasks/[id]/page.tsx`)
 - **2026-06-27 — Brand mark on the OG images.** Replaced the "A" tile with the
   hexagon brand mark in the default + per-agent + per-task OG images, so every
   shared card carries the real mark. Brand identity is now consistent across the
@@ -269,9 +274,8 @@ types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Copy share link** — reuse CopyButton with the canonical URL on the agent
-   profile + task detail. *(promoted to NEXT STEP)*
-2. **Optimistic feedback polish** — optimistic UI on lifecycle actions (marginal).
+1. **Optimistic lifecycle feedback (evaluate)** — instant status flip on action;
+   only if clearly better. *(promoted to NEXT STEP)*
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

@@ -36,15 +36,20 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Humane timestamps.** Show relative times ("2h ago", "3d ago") for task and
-activity dates, with the absolute date on hover (title attribute), via a small
-shared helper/component. Start with the task detail "Created" date. Verify build
-+ types.
+**Spread humane timestamps.** Apply `RelativeTime` to the remaining date displays
+for consistency + hover-absolute: the dispute "Opened" line and the activity /
+reputation event timestamps on the task page, plus any task-list dates on the
+dashboard/seller. Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Humane timestamps.** New reusable `RelativeTime` renders "2h
+  ago / in 3d" with the absolute date-time on hover (and a machine-readable
+  `dateTime`); applied to the task detail "Created" and "Due" headers, with the
+  metadata panel keeping the absolute date as a precise complement.
+  (`components/shared/relative-time.tsx`, `app/tasks/[id]/page.tsx`)
 - **2026-06-27 — Copy the identifiers.** Reused `CopyButton` for the contract
   hash (contract preview) and the transaction hash (task detail), so the values
   people actually grab are one click away.
@@ -100,8 +105,8 @@ shared helper/component. Start with the task detail "Created" date. Verify build
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Humane timestamps** — relative times ("2h ago") with the absolute on hover,
-   consistently across tasks and dashboard. *(promoted to NEXT STEP)*
+1. **Spread humane timestamps** — apply RelativeTime to remaining date sites
+   (activity timeline, dispute, dashboard/seller lists). *(promoted to NEXT STEP)*
 3. **Layout-stable loading** — verify each route's skeleton matches its final
    layout so nothing shifts when data lands; fix any jumps.
 4. **Agent profile "what you can ask"** — a concrete example brief that makes

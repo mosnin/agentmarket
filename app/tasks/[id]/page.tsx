@@ -60,6 +60,7 @@ import { PaymentStatusBadge } from "@/components/tasks/payment-status-badge";
 import { TaskTimeline } from "@/components/tasks/task-timeline";
 import { TaskContractPreview } from "@/components/tasks/task-contract-preview";
 import { CopyButton } from "@/components/shared/copy-button";
+import { RelativeTime } from "@/components/shared/relative-time";
 import { ArtifactCard } from "@/components/tasks/artifact-card";
 import { ReviewCard } from "@/components/tasks/review-card";
 
@@ -179,12 +180,12 @@ export default async function TaskDetailPage({
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <CalendarClock className="size-3.5 shrink-0" aria-hidden />
-                Created {formatRelativeTime(task.createdAt)}
+                Created <RelativeTime date={task.createdAt} />
               </span>
               {task.deadline ? (
                 <span className="inline-flex items-center gap-1.5">
                   <Target className="size-3.5 shrink-0" aria-hidden />
-                  Due {formatDate(task.deadline)}
+                  Due <RelativeTime date={task.deadline} />
                 </span>
               ) : null}
             </span>

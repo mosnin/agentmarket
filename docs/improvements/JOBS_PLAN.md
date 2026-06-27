@@ -36,12 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Extract + test the rating `StarPicker`.** It's a real interactive form control buried
-inside `app/tasks/[id]/task-actions.tsx`. Pull it into `components/tasks/star-picker.tsx`
-(radiogroup of 1–5 stars, hover preview, label), point the review dialog at it, and add
-`star-picker.test.tsx`: clicking a star calls `onChange` with that value, sets the right
-`aria-checked`, and the label reflects the active rating. Decouple + cover the rating input.
-Verify with `npm test` + build + types.
+**Test the `TaskTimeline` lifecycle view.** `components/tasks/task-timeline.tsx` renders
+the lifecycle steps and marks which are complete / current / upcoming from the task status.
+Add a render test: for a mid-lifecycle status (e.g. `running`) prior steps read as done and
+later ones as upcoming/current; a terminal `completed` marks the whole happy path done; a
+`cancelled`/`disputed` status renders without crashing. Protects the most visible lifecycle
+affordance. Verify with `npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -50,6 +50,13 @@ Verify with `npm test` + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Extract + test the rating StarPicker.** Pulled the 1–5 star rating input
+  out of `task-actions.tsx` into a reusable `components/tasks/star-picker.tsx` (the review
+  dialog imports it). Added `star-picker.test.tsx` — 4 tests: five radios + a "Tap to rate"
+  prompt when unset; clicking a star calls `onChange` with its value; the active rating is
+  `aria-checked` and labelled ("4 · Great"); one star uses the singular ("1 star" / "1 ·
+  Poor"). 147 tests across 16 files. (`components/tasks/star-picker.tsx`, `…/star-picker.test.tsx`,
+  `app/tasks/[id]/task-actions.tsx`)
 - **2026-06-27 — Test AgentCard (marketplace card composition).** Added
   `agent-card.test.tsx` — 5 tests: renders name/category/description and the
   `formatAgentPrice` label ("$25/task"); shows the first three capabilities + a "+1 more"
@@ -506,8 +513,8 @@ Verify with `npm test` + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Extract + test the rating `StarPicker`** (decouple from task-actions). *(NEXT STEP.
-   AgentCard composition + deep-links covered ✓ — 143 tests across 15 files.)*
+1. **Test the `TaskTimeline`** lifecycle view (step done/current/upcoming logic). *(NEXT
+   STEP. StarPicker decoupled + tested ✓ — 147 tests across 16 files.)*
 2. **Consistency pass** — destructive confirmations + toasts across the new dialogs.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.

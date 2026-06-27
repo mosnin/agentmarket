@@ -79,6 +79,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { StarPicker } from "@/components/tasks/star-picker";
 
 /** Resolver *input* shape for the review form (rating is coerced to a number). */
 type ReviewFormInput = z.input<typeof reviewSchema>;
@@ -803,57 +804,6 @@ function ReviewDialog({
         </Form>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function StarPicker({
-  value,
-  onChange,
-}: {
-  value: number;
-  onChange: (value: number) => void;
-}) {
-  const [hover, setHover] = React.useState<number | null>(null);
-  const active = hover ?? value;
-  const labels = ["", "Poor", "Fair", "Good", "Great", "Excellent"];
-
-  return (
-    <div className="flex items-center gap-3">
-      <div
-        className="flex items-center gap-1"
-        role="radiogroup"
-        aria-label="Star rating"
-        onMouseLeave={() => setHover(null)}
-      >
-        {[1, 2, 3, 4, 5].map((star) => {
-          const filled = star <= active;
-          return (
-            <button
-              key={star}
-              type="button"
-              role="radio"
-              aria-checked={value === star}
-              aria-label={`${star} star${star === 1 ? "" : "s"}`}
-              onClick={() => onChange(star)}
-              onMouseEnter={() => setHover(star)}
-              className="rounded-md p-0.5 outline-none transition-transform hover:scale-110 focus-visible:ring-3 focus-visible:ring-ring/40"
-            >
-              <Star
-                className={cn(
-                  "size-7 transition-colors",
-                  filled
-                    ? "fill-amber-400 text-amber-400"
-                    : "fill-transparent text-muted-foreground/40",
-                )}
-              />
-            </button>
-          );
-        })}
-      </div>
-      <span className="text-sm font-medium tabular-nums text-muted-foreground">
-        {active > 0 ? `${active} · ${labels[active]}` : "Tap to rate"}
-      </span>
-    </div>
   );
 }
 

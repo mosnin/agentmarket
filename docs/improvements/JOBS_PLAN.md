@@ -36,12 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Test `lib/contract`.** Add `lib/contract.test.ts` covering
-`buildStructuredContract` — the deterministic transform that turns a task's
-objective + output format into the structured contract the marketplace executes
-against. Assert the output shape is stable and that the same inputs always
-produce the same contract (no hidden nondeterminism). Verify with `npm test` +
-build + types.
+**Test `lib/mockValidation`.** Add `lib/mockValidation.test.ts` covering the
+deterministic scoring engine: `computeValidationScore(seed)` returns the same
+score for the same seed (and varies by seed), and `runMockValidation(input)`
+produces a stable result whose `passed` flag agrees with the marketplace
+threshold (80). This is the gate every artifact passes through — it must be
+reproducible. Verify with `npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -50,6 +50,14 @@ build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Test `lib/contract` (the task-structuring transform).** Added
+  `lib/contract.test.ts` — 8 tests pinning `buildStructuredContract`: it's
+  deterministic (same input → identical contract via deep equal), defaults the
+  category to Research, selects a category-specific output schema (and falls back
+  to a generic one for unknown categories), derives the title (trimmed, capitalized,
+  first clause, max 9 words), echoes a trimmed objective, honors a positive budget
+  else defaults to 25, and always emits the 5-step plan + required `objective`
+  input. 34 tests pass total. (`lib/contract.test.ts`)
 - **2026-06-27 — Test `lib/schemas` (the validation contract).** Added a `@/`
   path alias to a new `vitest.config.ts` (so tests import modules the way the app
   does) and `lib/schemas.test.ts` — 16 tests covering the zod contracts that guard
@@ -291,9 +299,8 @@ build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Test `lib/contract`** — `buildStructuredContract` output shape. *(promoted to NEXT STEP)*
-2. **Test `lib/mockValidation`** — deterministic scoring (same input → same score).
-3. **Test the reputation deltas** — `REPUTATION_DELTAS` + the blend math.
+1. **Test `lib/mockValidation`** — deterministic scoring (same input → same score). *(promoted to NEXT STEP)*
+2. **Test the reputation deltas** — `REPUTATION_DELTAS` + the blend math.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

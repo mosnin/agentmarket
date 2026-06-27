@@ -36,13 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Add component-test infrastructure + a first UI test.** The 130 tests cover pure logic +
-the API contract, but zero UI behavior. Wire a DOM environment into Vitest (jsdom or
-happy-dom) + `@testing-library/react`, then write one small focused component test (e.g.
-`CopyButton` copies + flips to a confirmation, or `EmptyState` renders title/description/
-action). This unlocks testing form + dialog logic next. If the dependency install or env
-config gets fiddly, discard and pick a smaller polish step. Verify with `npm test` + build
-+ types.
+**Test `CopyButton` (first interactive UI test).** Now that component testing works, cover
+an interactive component: `components/shared/copy-button.tsx` should copy its `value` to the
+clipboard on click and flip to a confirmation state, then reset. Mock `navigator.clipboard.writeText`,
+fire a click (`@testing-library/user-event` or `fireEvent`), assert the write + the confirmed
+label, and use fake timers for the ~1.5s reset. Proves the infra handles events, async, and
+timers. Verify with `npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -51,6 +50,14 @@ config gets fiddly, discard and pick a smaller polish step. Verify with `npm tes
 
 ## DONE LOG
 
+- **2026-06-27 — Component-test infrastructure + first UI test.** Wired a DOM testing path
+  into Vitest: `@vitejs/plugin-react` (transforms `.tsx`, since Next's tsconfig uses
+  `jsx: preserve` which esbuild alone can't consume) + `@testing-library/react` + `jsdom`.
+  Component tests opt into jsdom via a `// @vitest-environment jsdom` docblock so the
+  pure-logic suites stay on the fast `node` env. First test: `empty-state.test.tsx` (5
+  tests — title, optional description present/absent, action node, icon). 135 tests across
+  13 files; unlocks testing form + dialog behavior. (`vitest.config.ts`, `package.json`,
+  `components/shared/empty-state.test.tsx`)
 - **2026-06-27 — Global reduced-motion guard for CSS animation.** `globals.css` had no
   `prefers-reduced-motion` handling, so decorative CSS motion (the pulsing `running`/
   `validating` status dots, hover/scroll transitions) ignored the user's setting despite
@@ -486,10 +493,10 @@ config gets fiddly, discard and pick a smaller polish step. Verify with `npm tes
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Component-test infrastructure + first UI test** (jsdom + testing-library).
-   *(NEXT STEP. Reduced-motion now honored across JS + CSS ✓.)*
-2. **Consistency pass** — confirm destructive confirmations + toasts read consistently
-   across the new dialogs (cancel, dispute, archive).
+1. **Test `CopyButton`** — first interactive UI test (click → copy → confirm → reset).
+   *(NEXT STEP. Component-test infra live ✓ — 135 tests across 13 files.)*
+2. **Test a form/dialog flow** — e.g. the review StarPicker or a validation path.
+3. **Consistency pass** — destructive confirmations + toasts across the new dialogs.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

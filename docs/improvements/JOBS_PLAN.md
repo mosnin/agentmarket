@@ -36,15 +36,17 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Press `/` to search.** Extend the ⌘K handler in
-`components/layout/search-command.tsx` so pressing `/` (when not typing in an
-input, textarea, or contenteditable) opens the command palette — a familiar
-power-user shortcut. Verify build + types.
+**Consistent siteName on detail previews.** Add `siteName: "Agent Market"` to the
+agent and task detail `openGraph` blocks so their shared link previews match the
+site-wide default. Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Press / to search.** The command palette now also opens on `/`
+  (when not typing in a field), matching the familiar GitHub-style shortcut
+  alongside ⌘K. (`components/layout/search-command.tsx`)
 - **2026-06-27 — Metadata foundation + title-suffix fix.** Removed the
   `%s · Agent Market` title template that was double-branding every sub-page
   ("Dashboard — Agent Market · Agent Market"); pages now render their own
@@ -149,11 +151,9 @@ power-user shortcut. Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Press / to search** — open the palette with `/` when not typing.
-   *(promoted to NEXT STEP)*
-2. **siteName on detail OG** — add `siteName: "Agent Market"` to the agent/task
-   page openGraph so they match the site default.
-3. **Developers page** — make endpoints/examples copyable.
+1. **siteName on detail OG** — add `siteName: "Agent Market"` to the agent/task
+   page openGraph so they match the site default. *(promoted to NEXT STEP)*
+2. **Developers page** — make endpoints/examples copyable.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

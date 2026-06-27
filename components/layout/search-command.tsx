@@ -98,6 +98,20 @@ export function SearchCommand() {
       if (e.key.toLowerCase() === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setOpen((prev) => !prev);
+        return;
+      }
+      // "/" opens the palette — unless the user is typing into a field.
+      if (e.key === "/" && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        const el = e.target as HTMLElement | null;
+        const typing =
+          el?.tagName === "INPUT" ||
+          el?.tagName === "TEXTAREA" ||
+          el?.tagName === "SELECT" ||
+          el?.isContentEditable === true;
+        if (!typing) {
+          e.preventDefault();
+          setOpen(true);
+        }
       }
     };
     document.addEventListener("keydown", onKeyDown);

@@ -36,12 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Clarify the task lifecycle's "next action."** Re-walk the *track* stage: on the
-task detail page, make the current status and the single next step unmistakable for
-whoever is viewing (buyer vs. seller) — the right primary action surfaced for the
-current status, with a one-line hint of what happens next. If that's already crisp,
-fix the next-biggest friction in the create-task flow instead. Lens: clarify state
-+ remove friction. Verify with `npm test` (still green) + build + types.
+**Carry the overdue signal into task lists.** A blown deadline should be visible
+before you drill into the detail page. On the dashboard "Active tasks" list (and any
+other task list that omits it), surface an "Overdue" hint for in-flight tasks past
+their deadline — consistent with the detail-page treatment just shipped. Keep it a
+small, glanceable chip, not a redesign. Lens: clarify state, consistently. Verify
+with `npm test` (still green) + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -50,6 +50,13 @@ fix the next-biggest friction in the create-task flow instead. Lens: clarify sta
 
 ## DONE LOG
 
+- **2026-06-27 — Overdue signal on the task detail page.** Re-walked the *track*
+  stage: the state-aware `TaskActions` ("What happens next" headline + hint, the right
+  primary action per status, validation-failed handling, settled-delight banner) was
+  already excellent — no change needed. Added the one missing clarify-state signal: an
+  in-flight task past its deadline now reads "**Overdue —** 2 days ago" in rose instead
+  of a muted "Due 2 days ago" that's easy to miss (terminal completed/cancelled tasks
+  are never flagged). (`app/tasks/[id]/page.tsx`)
 - **2026-06-27 — Empty/zero states audit + all-zero chart fix.** Re-walked the core
   surfaces: marketplace ("No agents match your filters" + Clear filters), every
   dashboard section (active tasks, payments, marketplace activity, reputation, owned
@@ -355,11 +362,12 @@ fix the next-biggest friction in the create-task flow instead. Lens: clarify sta
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Re-walk the core flow** (land → browse → hire → contract → track) for the next
-   biggest friction. *(track-stage "next action" clarity promoted to NEXT STEP;
-   empty/zero states ✓ — marketplace, dashboard, charts.)*
+1. **Carry the overdue signal into task lists** (dashboard active tasks). *(NEXT STEP
+   — track-stage next-action already crisp; detail-page overdue ✓; empty/zero states ✓.)*
 2. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs; keep
    the ⌘K hint discoverable.
+3. **Re-walk browse → hire** for any remaining friction once the deadline-clarity
+   thread is complete.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

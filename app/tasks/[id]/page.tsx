@@ -129,6 +129,15 @@ export default async function TaskDetailPage({
   const latestValidationScore = task.artifacts[0]?.validationScore ?? null;
   const openDisputes = task.disputes.filter((d) => d.status === "open");
 
+  // Flag a blown deadline so it reads at a glance — but only while the task is
+  // still in flight (a completed or cancelled contract can't be "overdue").
+  const isTerminalStatus =
+    task.status === "completed" || task.status === "cancelled";
+  const isOverdue =
+    !!task.deadline &&
+    !isTerminalStatus &&
+    new Date(task.deadline).getTime() < Date.now();
+
   const paymentMode = (payment?.mode ?? task.contract?.paymentMode) as
     | PaymentModeValue
     | undefined;
@@ -192,9 +201,15 @@ export default async function TaskDetailPage({
                 Created <RelativeTime date={task.createdAt} />
               </span>
               {task.deadline ? (
-                <span className="inline-flex items-center gap-1.5">
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1.5",
+                    isOverdue && "font-medium text-rose-400",
+                  )}
+                >
                   <Target className="size-3.5 shrink-0" aria-hidden />
-                  Due <RelativeTime date={task.deadline} />
+                  {isOverdue ? "Overdue —" : "Due"}{" "}
+                  <RelativeTime date={task.deadline} />
                 </span>
               ) : null}
             </span>

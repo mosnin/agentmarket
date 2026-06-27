@@ -94,6 +94,12 @@ export default function AgentProfileLoading() {
                 <div className="space-y-4 p-5">
                   <Skeleton className="h-9 w-full rounded-lg" />
                   <Skeleton className="h-3.5 w-full" />
+                  {/* "What you can ask" block */}
+                  <div className="space-y-2 rounded-xl border border-border/70 bg-muted/20 p-3">
+                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="h-3 w-full" />
+                    <Skeleton className="h-3 w-5/6" />
+                  </div>
                   <div className="space-y-3 pt-2">
                     {Array.from({ length: 5 }).map((_, i) => (
                       <div key={i} className="flex items-center justify-between">

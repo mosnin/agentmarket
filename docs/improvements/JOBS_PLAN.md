@@ -36,15 +36,19 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Loading parity sweep.** Check the remaining `loading.tsx` skeletons (agent,
-dashboard, seller, developers, task) against their pages for drift — especially any
-AgentCard skeletons that, like the marketplace one, predate the Hire button. Fix
-any mismatch; if all match, note it and move on. Verify build + types.
+**Canonical URLs.** Agents are reachable by id *and* slug — set
+`alternates.canonical` to the slug URL in the agent page's `generateMetadata` (and
+a canonical on the task page) so search engines consolidate the variants. Verify
+build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Layout-stable loading (agent profile).** The hire-card skeleton
+  predated the "What you can ask" block — added a matching placeholder so the
+  sidebar height matches on load. (Swept the other skeletons; only marketplace +
+  agent had drifted.) (`app/agents/[id]/loading.tsx`)
 - **2026-06-27 — README refresh.** Added a "Craft & polish" section documenting the
   loop's experience work — frictionless hiring, ⌘K/"/" palette, copy affordances,
   humane timestamps, marketplace flow, shareable/SEO cards, and a11y. (`README.md`)
@@ -226,9 +230,9 @@ any mismatch; if all match, note it and move on. Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Loading parity sweep** — check remaining skeletons vs their pages; fix drift.
+1. **Canonical URLs** — `alternates.canonical` on agent (slug) + task pages.
    *(promoted to NEXT STEP)*
-2. **Tighten the narrative** — landing page; cut/merge sections where it helps.
+2. **Tighten the narrative** — landing copy; merge/cut where it genuinely helps.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

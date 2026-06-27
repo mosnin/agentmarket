@@ -36,12 +36,13 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Extend reduced-motion to decorative CSS animations.** The chart JS animation now
-respects it; verify the CSS ones do too — the pulsing status dots (`animate-pulse` on
-running/validating) and any landing float/marquee. If `app/globals.css` lacks a
-`@media (prefers-reduced-motion: reduce)` guard, add a scoped one that calms decorative
-motion (shorten/remove) without freezing essential feedback like the loading spinner.
-Lens: honest a11y. Verify with `npm test` + build + types.
+**Add component-test infrastructure + a first UI test.** The 130 tests cover pure logic +
+the API contract, but zero UI behavior. Wire a DOM environment into Vitest (jsdom or
+happy-dom) + `@testing-library/react`, then write one small focused component test (e.g.
+`CopyButton` copies + flips to a confirmation, or `EmptyState` renders title/description/
+action). This unlocks testing form + dialog logic next. If the dependency install or env
+config gets fiddly, discard and pick a smaller polish step. Verify with `npm test` + build
++ types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -50,6 +51,13 @@ Lens: honest a11y. Verify with `npm test` + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Global reduced-motion guard for CSS animation.** `globals.css` had no
+  `prefers-reduced-motion` handling, so decorative CSS motion (the pulsing `running`/
+  `validating` status dots, hover/scroll transitions) ignored the user's setting despite
+  the README's claim. Added a scoped `@media (prefers-reduced-motion: reduce)` block that
+  near-instantly settles animations + transitions (essential text feedback like "Saving…"
+  is unaffected). With the chart fix, reduced-motion is now honored across JS + CSS.
+  (`app/globals.css`)
 - **2026-06-27 — Reduced-motion guard on the dashboard charts.** Recharts area/bar/line
   charts animate on mount by default, contradicting the README's `prefers-reduced-motion`
   claim. `DashboardChart` now reads `useReducedMotion()` and passes
@@ -478,8 +486,8 @@ Lens: honest a11y. Verify with `npm test` + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Extend reduced-motion to decorative CSS animations** (status-dot pulse, etc.).
-   *(NEXT STEP. Chart JS animation now guarded ✓.)*
+1. **Component-test infrastructure + first UI test** (jsdom + testing-library).
+   *(NEXT STEP. Reduced-motion now honored across JS + CSS ✓.)*
 2. **Consistency pass** — confirm destructive confirmations + toasts read consistently
    across the new dialogs (cancel, dispute, archive).
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;

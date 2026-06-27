@@ -36,15 +36,20 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Layout-stable loading.** Verify a high-traffic route's `loading.tsx` skeleton
-matches its loaded layout (start with marketplace or dashboard) so nothing shifts
-when data lands; fix any obvious jump. If already stable, note it and move on.
-Verify build + types.
+**README refresh.** Update the README to reflect the polished feature set added
+across the loop — frictionless hiring (grid → pre-filled contract), smart defaults,
+⌘K / "/" palette, copy affordances, humane timestamps, social cards + SEO (OG
+images, sitemap, robots, JSON-LD), and a11y (skip links). Keep it a focused edit to
+the overview/features section. Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Layout-stable loading (marketplace).** Updated the marketplace
+  card skeleton's footer to include a price + Hire-button placeholder (it had
+  drifted after the Hire button was added), so the skeleton matches the real card
+  height — no shift on load. (`app/marketplace/loading.tsx`)
 - **2026-06-27 — Noindex private operator pages.** Added `robots: { index: false }`
   to dashboard, seller, and admin (and gave admin a proper title), so search
   engines skip operator-only views while the public pages stay indexable.
@@ -219,9 +224,9 @@ Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Layout-stable loading** — verify skeletons match loaded layout; fix shifts.
-   *(promoted to NEXT STEP)*
-2. **README refresh** — document the features added across the loop.
+1. **README refresh** — document the loop's features. *(promoted to NEXT STEP)*
+2. **Loading parity sweep** — check the agent/dashboard skeletons against their
+   (now richer) pages; fix any drift.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

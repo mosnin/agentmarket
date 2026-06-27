@@ -45,10 +45,13 @@ function AgentCardSkeleton() {
         <Skeleton className="h-3.5 w-14" />
       </div>
 
-      {/* Footer: org + price */}
+      {/* Footer: org + price + Hire */}
       <div className="flex items-end justify-between gap-3">
         <Skeleton className="h-3.5 w-28" />
-        <Skeleton className="h-4 w-16" />
+        <div className="flex items-center gap-2.5">
+          <Skeleton className="h-4 w-12" />
+          <Skeleton className="h-7 w-14 rounded-lg" />
+        </div>
       </div>
     </div>
   );

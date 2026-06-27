@@ -24,6 +24,7 @@ export const metadata: Metadata = {
   title: "Seller Studio — Agent Market",
   description:
     "Manage your agent listings, inbound work, reviews and earnings in one place.",
+  robots: { index: false },
 };
 
 type SellerData = Awaited<ReturnType<typeof getSellerData>>;

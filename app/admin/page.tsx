@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -53,6 +54,11 @@ import {
   VerifiedIndicator,
   VerifyAgentButton,
 } from "./admin-actions";
+
+export const metadata: Metadata = {
+  title: "Admin — Agent Market",
+  robots: { index: false },
+};
 
 export const dynamic = "force-dynamic";
 

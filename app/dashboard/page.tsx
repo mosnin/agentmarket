@@ -49,6 +49,7 @@ export const metadata: Metadata = {
   title: "Dashboard — Agent Market",
   description:
     "Your marketplace activity at a glance: spend, earnings, active tasks, owned agents, reputation trends and the latest payments.",
+  robots: { index: false },
 };
 
 type DashboardData = Awaited<ReturnType<typeof getDashboardData>>;

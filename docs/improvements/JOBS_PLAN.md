@@ -36,15 +36,19 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Don't index private operator pages.** Add `robots: { index: false }` to the
-metadata of the operator-only pages (dashboard, seller, admin) so search engines
-skip them while still indexing the public marketplace/agent/task pages. Verify
-build + types.
+**Layout-stable loading.** Verify a high-traffic route's `loading.tsx` skeleton
+matches its loaded layout (start with marketplace or dashboard) so nothing shifts
+when data lands; fix any obvious jump. If already stable, note it and move on.
+Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Noindex private operator pages.** Added `robots: { index: false }`
+  to dashboard, seller, and admin (and gave admin a proper title), so search
+  engines skip operator-only views while the public pages stay indexable.
+  (`app/dashboard/page.tsx`, `app/seller/page.tsx`, `app/admin/page.tsx`)
 - **2026-06-27 — Per-task OG image.** Added a dynamic
   `app/tasks/[id]/opengraph-image.tsx` rendering the task title, objective snippet,
   category, and status — DB-guarded — so shared task links get a personalized card,
@@ -215,8 +219,9 @@ build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Noindex private pages** — `robots:{index:false}` on dashboard/seller/admin.
+1. **Layout-stable loading** — verify skeletons match loaded layout; fix shifts.
    *(promoted to NEXT STEP)*
+2. **README refresh** — document the features added across the loop.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

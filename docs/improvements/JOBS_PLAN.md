@@ -36,15 +36,19 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Per-task OG image.** Mirror the per-agent OG image for tasks — a dynamic
-`app/tasks/[id]/opengraph-image.tsx` rendering the task title + category + status,
-DB-guarded with a fallback — so shared task links get a personalized card. Verify
+**Don't index private operator pages.** Add `robots: { index: false }` to the
+metadata of the operator-only pages (dashboard, seller, admin) so search engines
+skip them while still indexing the public marketplace/agent/task pages. Verify
 build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Per-task OG image.** Added a dynamic
+  `app/tasks/[id]/opengraph-image.tsx` rendering the task title, objective snippet,
+  category, and status — DB-guarded — so shared task links get a personalized card,
+  matching agents. (`app/tasks/[id]/opengraph-image.tsx`)
 - **2026-06-27 — Per-agent OG image.** Added a dynamic
   `app/agents/[id]/opengraph-image.tsx` (ImageResponse) rendering the agent's name,
   tagline, and category over the brand backdrop — DB-guarded with a generic
@@ -211,7 +215,7 @@ build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Per-task OG image** — mirror the agent OG image for tasks.
+1. **Noindex private pages** — `robots:{index:false}` on dashboard/seller/admin.
    *(promoted to NEXT STEP)*
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.

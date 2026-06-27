@@ -36,11 +36,11 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Add a loading skeleton for the agent edit route.** The new `/agents/[id]/edit` route (loop
-#72) has no `loading.tsx`, so navigating to it shows no skeleton during the `getAgent` fetch —
-inconsistent with the rest of the app's layout-stable loading. Add `app/agents/[id]/edit/loading.tsx`
-(mirror the create-form chrome) and confirm the other create routes (`/agents/new`, `/tasks/new`)
-have one too. Lens: no janky transitions. Verify with `npm test` + build + types.
+**Re-walk the landing page.** Take a fresh look at the marketing front door (`app/page.tsx` +
+the `components/landing/*` sections) — the hero/search, value props, the agent showcase, and the
+final CTA. Confirm the story is tight and every CTA lands somewhere sensible; fix the single
+biggest clarity/friction gap, or tighten the weakest detail (copy, a CTA target, an a11y nuance).
+Lens: the story should feel inevitable, not exhaustive. Verify with `npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -49,6 +49,11 @@ have one too. Lens: no janky transitions. Verify with `npm test` + build + types
 
 ## DONE LOG
 
+- **2026-06-27 — Loading skeleton for the agent edit route.** The `/agents/[id]/edit` route
+  inherited the agent-*profile* skeleton from the parent `[id]` segment — a brief mismatch
+  before the edit *form*. Added `app/agents/[id]/edit/loading.tsx` mirroring the edit page chrome
+  (header band + a form-card skeleton) so the transition is layout-stable and on-shape. (The
+  create routes intentionally have no loader — fast auth-only reads.) (`app/agents/[id]/edit/loading.tsx`)
 - **2026-06-27 — Escape link on the dashboard/seller/admin error boundaries.** Re-walked the
   404 + error pages — the root 404, per-resource 404s, and the root/marketplace/agents/tasks
   error boundaries are all polished (clear copy + escape CTAs). Closed the one consistency gap:
@@ -611,8 +616,8 @@ have one too. Lens: no janky transitions. Verify with `npm test` + build + types
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Add the agent-edit loading skeleton** (layout-stable transitions). *(NEXT STEP. 404 +
-   error pages re-walked; dashboard/seller/admin errors now have an escape link ✓.)*
+1. **Re-walk the landing page** for the biggest clarity/friction gap. *(NEXT STEP. Agent-edit
+   loading skeleton shipped ✓.)*
 2. **Reassess** — the app is feature-complete + comprehensively tested + CI-gated + documented;
    prefer genuine micro-improvements over make-work, with restraint.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;

@@ -36,12 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Re-walk the agent edit flow (`/agents/[slug]/edit`).** Seller Studio links each
-listing to an edit route. Confirm it exists, pre-fills every field from the current
-listing, and reuses the create form cleanly (no divergence) — then fix the single
-biggest gap (a missing pre-fill, a 404, a "Publish" verb that should read "Save").
-Lens: remove friction + clarify state. Verify with `npm test` (still green) + build +
-types.
+**Surface "Edit" on the agent profile (for the owner).** The edit flow now exists but
+is only reachable from Seller Studio. Add an owner-only "Edit" action to the agent
+profile header (show it when the viewer owns the agent — `agent.ownerId === currentUser.id`)
+so you can jump straight to `/agents/[id]/edit` from where you view the listing. Lens:
+remove friction — reach edit from where you are. Verify with `npm test` (still green) +
+build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -50,6 +50,14 @@ types.
 
 ## DONE LOG
 
+- **2026-06-27 — Build the agent edit flow (fix a dead link).** Seller Studio linked
+  every listing to `/agents/[slug]/edit`, but no such route existed — the "Edit" button
+  404'd. Built it: extended `AgentForm` to accept optional pre-filled `initial` values
+  and branch create vs. update (via the existing `updateAgent` action), with edit-aware
+  copy ("Save changes" / "Saving…"). Added `app/agents/[id]/edit/page.tsx` — loads the
+  agent via `getAgent`, maps it to the form (capabilities → names, stored JSON schemas →
+  pretty strings), and renders the form in edit mode. A real, dead-end-to-working-feature
+  fix. (`app/agents/new/agent-form.tsx`, `app/agents/[id]/edit/page.tsx`)
 - **2026-06-27 — Fix API doc drift: budget is required.** Cross-checked the
   `/developers` API docs against the real routes + `apiCreateTaskSchema`: the
   create-task `budget` param was documented as "Defaults to 0", but the schema requires
@@ -412,8 +420,8 @@ types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Re-walk the agent edit flow** (`/agents/[slug]/edit`) — pre-fill + reuse.
-   *(NEXT STEP. API docs ✓ — budget-required drift fixed.)*
+1. **Surface "Edit" on the agent profile** (owner-only). *(NEXT STEP. Edit flow now
+   built + reachable from Seller Studio.)*
 2. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.

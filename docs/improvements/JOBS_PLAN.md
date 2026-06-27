@@ -36,14 +36,18 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Rich previews for shared tasks.** Mirror the Open Graph + Twitter metadata on
-the task detail page (`app/tasks/[id]/page.tsx`'s `generateMetadata`) so a shared
-task link previews with its title/objective. Verify build + types.
+**Solidify the metadata foundation.** In the root layout (`app/layout.tsx`), set
+`metadataBase` and a default `openGraph` (siteName "Agent Market", type website)
+plus a baseline description, so every page inherits a sensible social/SEO baseline
+and relative OG URLs resolve. Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Rich previews for shared tasks.** The task detail page now emits
+  Open Graph + Twitter metadata (title + objective), matching the agent profile —
+  shared task links preview cleanly. (`app/tasks/[id]/page.tsx`)
 - **2026-06-27 — Rich link previews for agents.** The agent profile now emits Open
   Graph + Twitter card metadata, so a shared agent link renders a proper
   title/description preview. (Also confirmed the A2A card — and every JSON block —
@@ -139,8 +143,8 @@ task link previews with its title/objective. Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Rich previews for shared tasks** — Open Graph metadata on the task detail
-   page. *(promoted to NEXT STEP)*
+1. **Metadata foundation** — metadataBase + default Open Graph in the root layout.
+   *(promoted to NEXT STEP)*
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

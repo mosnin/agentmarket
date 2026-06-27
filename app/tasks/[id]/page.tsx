@@ -79,9 +79,13 @@ export async function generateMetadata({
   if (!task) {
     return { title: "Task not found — Agent Market" };
   }
+  const title = `${task.title} — Agent Market`;
+  const description = task.objective.slice(0, 160);
   return {
-    title: `${task.title} — Agent Market`,
-    description: task.objective.slice(0, 160),
+    title,
+    description,
+    openGraph: { title, description, type: "article" },
+    twitter: { card: "summary", title, description },
   };
 }
 

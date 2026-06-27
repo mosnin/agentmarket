@@ -36,12 +36,13 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Re-walk the discover step — the marketplace (`app/marketplace/`).** This is the front of the
-core loop: Discover → hire → verify → pay. Take a fresh look at search + filters: do results update
-predictably, is it obvious how to clear active filters, does the zero-results state guide the buyer
-forward (not a dead end), and is the path from a result into "hire" one tap? Fix the single biggest
-friction/clarity gap, or tighten the weakest detail. Lens: the obvious next action is always one tap
-away. Verify with tsc + build.
+**Re-walk the AgentCard — the unit of discovery (`components/agents/agent-card.tsx`).** This tile is
+the bridge from discover → hire and appears everywhere (marketplace grid, landing showcase,
+dashboard). Take a fresh look: is the most important signal (reputation / price / category)
+instantly scannable, is the card's primary action ("Hire" / view) clear and one tap, and does it
+degrade gracefully across edge cases (no capabilities, free pricing, unverified, long names)? Fix
+the single biggest scannability/friction gap, or tighten the weakest detail. Lens: craft in the
+details — the 1% that signals the whole. Verify with tsc + build.
 
 > Backlog note: `deadline` is still only client-guarded (the date input's `min`). A server-side
 > schema refine rejecting past dates would be defense-in-depth — a candidate step if a real gap
@@ -51,6 +52,14 @@ away. Verify with tsc + build.
 
 ## DONE LOG
 
+- **2026-06-27 — Dedicated "clear search" button on the marketplace filters.** Re-walked the
+  discover step (`app/marketplace`) and found it strong: debounced search, four labeled filter
+  selects, a verified toggle, removable filter chips, an `aria-live` result count, and distinct
+  empty states for "no match" vs "none listed". The one real friction: clearing your *search text*
+  meant either manual select-delete (the native `type="search"` clear button is inconsistent across
+  browsers) or hitting "Clear", which also wiped category/pricing/rating/sort. Added a one-tap
+  clear-search (X) button inside the field that clears only the query immediately, leaving the other
+  filters intact; suppressed the inconsistent native WebKit clear button. (`components/marketplace/marketplace-filters.tsx`)
 - **2026-06-27 — Block past-dated deadlines in the hire form.** Re-walked task creation
   (`app/tasks/new`) — the hire step — and found it genuinely frictionless: selecting an agent seeds
   the category and budget, a live contract preview builds as you type, budget multiplier chips

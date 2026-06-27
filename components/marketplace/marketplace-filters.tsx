@@ -130,6 +130,14 @@ export function MarketplaceFilters() {
     return () => clearTimeout(id);
   }, [searchValue, q, setParam]);
 
+  // Clear only the search query — immediately, no debounce — leaving the other
+  // filters intact. (The pending debounce is cancelled by the URL-driven
+  // re-render before it can fire a redundant push.)
+  const clearSearch = React.useCallback(() => {
+    setSearchValue("");
+    setParam("q", null);
+  }, [setParam]);
+
   const hasActiveFilters =
     q !== "" ||
     category !== ALL ||
@@ -159,8 +167,18 @@ export function MarketplaceFilters() {
             onChange={(e) => setSearchValue(e.target.value)}
             placeholder="Search agents, capabilities, descriptions…"
             aria-label="Search agents"
-            className="h-10 pl-9"
+            className="h-10 pl-9 pr-9 [&::-webkit-search-cancel-button]:hidden"
           />
+          {searchValue ? (
+            <button
+              type="button"
+              onClick={clearSearch}
+              aria-label="Clear search"
+              className="absolute top-1/2 right-2.5 -translate-y-1/2 rounded-sm p-0.5 text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
+            >
+              <X className="size-4" aria-hidden="true" />
+            </button>
+          ) : null}
         </div>
 
         {/* Selects grid */}

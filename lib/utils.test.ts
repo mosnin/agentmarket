@@ -13,6 +13,9 @@ import {
   truncate,
   pluralize,
   mockHash,
+  formatDate,
+  formatDateTime,
+  hashString,
 } from "./utils";
 
 describe("formatCurrency", () => {
@@ -130,5 +133,39 @@ describe("mockHash", () => {
   });
   it("differs for different seeds", () => {
     expect(mockHash("0x", "a")).not.toBe(mockHash("0x", "b"));
+  });
+});
+
+// A noon-UTC instant so the calendar day + month are stable across timezones.
+const NOON_UTC = "2026-06-15T12:00:00Z";
+
+describe("formatDate", () => {
+  it("formats as 'Mon D, YYYY' and is agnostic to the input form", () => {
+    const out = formatDate(NOON_UTC);
+    expect(out).toContain("2026");
+    expect(out).toContain("Jun");
+    const d = new Date(NOON_UTC);
+    expect(formatDate(d)).toBe(out);
+    expect(formatDate(d.getTime())).toBe(out);
+  });
+});
+
+describe("formatDateTime", () => {
+  it("includes the date and a time, agnostic to the input form", () => {
+    const out = formatDateTime(NOON_UTC);
+    expect(out).toContain("2026");
+    expect(out).toMatch(/:\d{2}/); // minutes are 2-digit
+    expect(formatDateTime(new Date(NOON_UTC).getTime())).toBe(out);
+  });
+});
+
+describe("hashString", () => {
+  it("is deterministic and non-negative", () => {
+    expect(hashString("seed")).toBe(hashString("seed"));
+    expect(hashString("seed")).toBeGreaterThanOrEqual(0);
+  });
+  it("returns 0 for an empty string and varies by input", () => {
+    expect(hashString("")).toBe(0);
+    expect(hashString("a")).not.toBe(hashString("b"));
   });
 });

@@ -36,12 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Test the remaining `lib/utils` pure helpers.** `formatDate`, `formatDateTime`, and
-`hashString` underpin timestamps and every deterministic mock id / validation score but are
-still uncovered. Extend `lib/utils.test.ts`: `formatDate`/`formatDateTime` format a known date
-stably (assert tz-safe substrings like the year, and that they accept Date | string | number);
-`hashString` is deterministic, non-negative, and varies by input. Verify with `npm test` +
-build + types.
+**Extract + test the chart's all-zero guard.** The "treat an all-zero dataset as empty" logic
+(so a brand-new account sees "No data to display yet" instead of a flat line — loop #63) lives
+inline in `DashboardChart`. Pull it into a pure `hasChartData(data, series)` (new
+`components/dashboard/chart-data.ts`, no Recharts import), point the chart at it, and test it:
+real values → true; all-zero rows → false; empty data/series → false. Decouple + cover the
+logic without rendering Recharts. Verify with `npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -50,6 +50,11 @@ build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Test the remaining `lib/utils` pure helpers.** Extended `lib/utils.test.ts`
+  — 4 tests: `formatDate`/`formatDateTime` format a noon-UTC instant stably (year + month
+  substrings, minute pattern) and are agnostic to Date | string | epoch input; `hashString`
+  is deterministic, non-negative, returns 0 for "", and varies by input. The pure
+  formatters + hash are now fully covered. 183 tests across 22 files. (`lib/utils.test.ts`)
 - **2026-06-27 — Test the debounced marketplace search.** Extended `marketplace-filters.test.tsx`
   with a fake-timers test: typing in the search box fires nothing immediately, then after 300ms
   pushes `/marketplace?q=research`. The filter bar's interactive logic — active-state, clear-all,
@@ -594,8 +599,8 @@ build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Test the remaining `lib/utils` helpers** (`formatDate`/`formatDateTime`/`hashString`).
-   *(NEXT STEP. Marketplace filter bar fully covered ✓ — 179 tests.)*
+1. **Extract + test the chart's all-zero guard** (`hasChartData`). *(NEXT STEP. All pure
+   `lib/utils` helpers now covered ✓ — 183 tests.)*
 2. **Reassess** — the app is feature-complete + comprehensively tested + CI-gated + documented;
    prefer genuine micro-improvements over make-work, with restraint.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;

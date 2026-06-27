@@ -36,11 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Re-walk agent status moderation (admin).** `setAgentStatus` supports
-active/suspended/archived/draft. Confirm the admin UI lets a moderator reach the sensible
-transitions — suspend an active agent, reinstate a suspended one, archive. If any valid
-transition is unreachable (like the dispute "reject" gap just fixed), wire it. Lens:
-complete the lifecycle. Verify with `npm test` (still green) + build + types.
+**Test the public API serializers.** `app/api/_lib/serializers.ts` shapes every API
+response (`serializeAgent`, `serializeAgentDetail`, `serializeTaskListItem`,
+`serializeTaskDetail`, `apiError`) — pure transforms that ARE the public contract. Pin
+their output with `serializers.test.ts`: snake_case keys, included/omitted fields, null
+handling, and `apiError`'s `{ error, code }` shape. Build fixtures from the inferred
+input types. Protects the headline API. Verify with `npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -49,6 +50,12 @@ complete the lifecycle. Verify with `npm test` (still green) + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Reachable "archived" agent state (admin).** Agent moderation toggled
+  only active↔suspended, so the valid "archived" (retire) state `setAgentStatus`
+  supports was unreachable. Added an "Archive" action beside Suspend/Activate (offered
+  for any non-archived agent; archived agents can still be reactivated via the toggle).
+  `listAgents` already excludes archived agents, so retiring cleanly delists. Completes
+  the agent moderation lifecycle. (`app/admin/admin-actions.tsx`)
 - **2026-06-27 — Reachable "rejected" dispute outcome.** Dispute resolution was wired
   (admin `ResolveDisputeButton` → `resolveDispute`), but it hardcoded "resolved" — the
   valid "rejected" outcome the action already supports was unreachable. Added a "Reject
@@ -441,8 +448,9 @@ complete the lifecycle. Verify with `npm test` (still green) + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Re-walk agent status moderation** — suspend/reinstate/archive reachable? *(NEXT
-   STEP. Dispute resolve + reject both reachable ✓.)*
+1. **Test the public API serializers** — pin the public response contract. *(NEXT STEP.
+   Lifecycle-completeness thread done: agent edit ✓, task cancel ✓, dispute reject ✓,
+   agent archive ✓.)*
 2. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.

@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import {
+  Archive,
   BadgeCheck,
   CheckCircle2,
   Gavel,
@@ -93,9 +94,10 @@ export function VerifyAgentButton({
 /* ------------------------------ Suspend / Activate ------------------------------ */
 
 /**
- * Toggles an agent between `active` and `suspended` via `setAgentStatus`.
- * Suspend is the destructive direction; reactivating uses a neutral ghost
- * button. Archived / draft agents fall back to a "Reactivate" affordance.
+ * Moderation controls for an agent's lifecycle via `setAgentStatus`:
+ *  - Suspend (temporary delist) ↔ Activate (reinstate) is the primary toggle.
+ *  - Archive permanently retires the listing; offered for any non-archived agent
+ *    (an archived agent can still be reactivated through the toggle).
  */
 export function AgentStatusToggle({
   agentId,
@@ -110,17 +112,16 @@ export function AgentStatusToggle({
   const [isPending, startTransition] = React.useTransition();
 
   const isActive = status === "active";
-  const next = isActive ? "suspended" : "active";
+  const isArchived = status === "archived";
 
-  const apply = () => {
+  const run = (
+    next: "active" | "suspended" | "archived",
+    message: string,
+  ) => {
     startTransition(async () => {
       const result = await setAgentStatus(agentId, next);
       if (result.ok) {
-        toast.success(
-          isActive
-            ? `${agentName} has been suspended.`
-            : `${agentName} is active again.`,
-        );
+        toast.success(message);
         router.refresh();
       } else {
         toast.error(result.error ?? "Couldn't update the agent's status.");
@@ -129,22 +130,45 @@ export function AgentStatusToggle({
   };
 
   return (
-    <Button
-      type="button"
-      size="sm"
-      variant={isActive ? "destructive" : "ghost"}
-      onClick={apply}
-      disabled={isPending}
-    >
-      {isPending ? (
-        <Loader2 className="size-3.5 animate-spin" />
-      ) : isActive ? (
-        <PauseCircle className="size-3.5" />
-      ) : (
-        <PlayCircle className="size-3.5" />
-      )}
-      {isActive ? "Suspend" : "Activate"}
-    </Button>
+    <div className="flex items-center justify-end gap-1.5">
+      <Button
+        type="button"
+        size="sm"
+        variant={isActive ? "destructive" : "ghost"}
+        onClick={() =>
+          run(
+            isActive ? "suspended" : "active",
+            isActive
+              ? `${agentName} has been suspended.`
+              : `${agentName} is active again.`,
+          )
+        }
+        disabled={isPending}
+      >
+        {isPending ? (
+          <Loader2 className="size-3.5 animate-spin" />
+        ) : isActive ? (
+          <PauseCircle className="size-3.5" />
+        ) : (
+          <PlayCircle className="size-3.5" />
+        )}
+        {isActive ? "Suspend" : "Activate"}
+      </Button>
+
+      {!isArchived ? (
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          className="text-muted-foreground hover:text-foreground"
+          onClick={() => run("archived", `${agentName} has been archived.`)}
+          disabled={isPending}
+        >
+          <Archive className="size-3.5" />
+          Archive
+        </Button>
+      ) : null}
+    </div>
   );
 }
 

@@ -36,12 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Carry overdue into the Seller Studio.** The agent operator who has to *deliver*
-needs the blown-deadline signal most. Reuse `isTaskOverdue` in the seller task
-list(s) (`app/seller/seller-tabs.tsx`) so in-flight tasks past their deadline show
-the same rose "Overdue" chip the dashboard and detail page now show. This completes
-the deadline-clarity thread on the surface where it matters most. Keep it a small
-glanceable chip. Verify with `npm test` (still green) + build + types.
+**Command palette discoverability (⌘K).** A ⌘K / "/" command palette exists, but a
+keyboard-only entry point is invisible to first-timers. Verify the app header
+surfaces a visible, clickable "Search… ⌘K" affordance that opens the palette; if
+it's missing or only keyboard-triggered, add a subtle trigger so the capability is
+discoverable by sight, not just by secret. Lens: remove friction + earned delight.
+Verify with `npm test` (still green) + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -50,6 +50,11 @@ glanceable chip. Verify with `npm test` (still green) + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Overdue in Seller Studio (deadline thread complete).** Reused
+  `isTaskOverdue` in the Seller Studio inbound-tasks table so the operator who must
+  *deliver* sees the same rose "Overdue" chip on in-flight tasks past their deadline.
+  The blown-deadline signal is now consistent across the three surfaces a task appears
+  on: detail page, dashboard, and seller inbound. (`app/seller/seller-tabs.tsx`)
 - **2026-06-27 — Overdue signal in task lists + shared helper.** Extracted a pure,
   client-safe `isTaskOverdue(deadline, status, now?)` into `lib/tasks.ts` (terminal
   tasks never overdue; deterministic via an injectable `now`), refactored the task
@@ -369,12 +374,10 @@ glanceable chip. Verify with `npm test` (still green) + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Carry overdue into Seller Studio** (`seller-tabs.tsx`). *(NEXT STEP — completes
-   the deadline thread: detail ✓, dashboard ✓, helper+tests ✓.)*
-2. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs; keep
-   the ⌘K hint discoverable.
-3. **Re-walk browse → hire** for any remaining friction once the deadline-clarity
-   thread is complete.
+1. **Command palette discoverability (⌘K)** — a visible "Search… ⌘K" trigger in the
+   header. *(NEXT STEP. Deadline thread complete: detail ✓, dashboard ✓, seller ✓.)*
+2. **Re-walk browse → hire** for any remaining friction.
+3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

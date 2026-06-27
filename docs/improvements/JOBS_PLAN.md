@@ -36,15 +36,17 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Default OG image.** Add a branded `app/opengraph-image.tsx` (Next.js
-`ImageResponse`, system fonts only, brand colors + wordmark) so shared links show
-an image card, not just text. Keep it simple to stay build-safe; if `ImageResponse`
-fights the build, revert and pick a smaller step. Verify build + types.
+**Large Twitter cards.** Now that a default OG image exists, upgrade the Twitter
+card type from `summary` to `summary_large_image` in the root layout (and the
+agent/task pages) so X/Twitter shows the big image card. Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Default OG image.** Added `app/opengraph-image.tsx` (Next.js
+  ImageResponse, system font, brand gradient + wordmark + tagline) so shared links
+  show a branded 1200×630 image card, not just text. (`app/opengraph-image.tsx`)
 - **2026-06-27 — Removable filter chips on the marketplace.** Active filters
   (search, category, pricing, rating, verified) now render as chips with an ×,
   each linking to the query minus that one filter — remove one at a time, or
@@ -175,8 +177,8 @@ fights the build, revert and pick a smaller step. Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Default OG image** — a branded `app/opengraph-image` so shared links show an
-   image card, not just text. *(promoted to NEXT STEP)*
+1. **Large Twitter cards** — upgrade to `summary_large_image` now an OG image
+   exists. *(promoted to NEXT STEP)*
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

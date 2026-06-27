@@ -10,6 +10,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
   BadgeCheck,
+  Ban,
   CheckCircle2,
   CircleDollarSign,
   FlagTriangleRight,
@@ -31,6 +32,7 @@ import {
   completeTask,
   createReview,
   openDispute,
+  cancelTask,
 } from "@/lib/actions";
 import {
   submitArtifactSchema,
@@ -140,6 +142,7 @@ export function TaskActions({ task }: TaskActionsProps) {
   const [submitOpen, setSubmitOpen] = React.useState(false);
   const [reviewOpen, setReviewOpen] = React.useState(false);
   const [disputeOpen, setDisputeOpen] = React.useState(false);
+  const [cancelOpen, setCancelOpen] = React.useState(false);
 
   const status = task.status;
   const validationFailed =
@@ -161,6 +164,11 @@ export function TaskActions({ task }: TaskActionsProps) {
     status === "submitted" ||
     status === "validating" ||
     status === "completed";
+
+  // Cancelling is sensible while the task is in flight, before a deliverable
+  // exists — the escrow is refunded to the buyer.
+  const canCancel =
+    status === "pending" || status === "accepted" || status === "running";
 
   const runSimpleAction = (
     action: () => Promise<{ ok: boolean; error?: string }>,
@@ -383,6 +391,28 @@ export function TaskActions({ task }: TaskActionsProps) {
               Open a dispute
             </Button>
           </DisputeDialog>
+        )}
+
+        {/* Cancel a task that's still in flight — refunds the escrow. */}
+        {canCancel && (
+          <CancelTaskDialog
+            open={cancelOpen}
+            onOpenChange={setCancelOpen}
+            taskId={task.id}
+            onSuccess={() => {
+              setCancelOpen(false);
+              router.refresh();
+            }}
+          >
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full text-muted-foreground hover:text-foreground"
+            >
+              <Ban className="size-4" />
+              Cancel task
+            </Button>
+          </CancelTaskDialog>
         )}
       </div>
     </div>
@@ -824,6 +854,75 @@ function StarPicker({
         {active > 0 ? `${active} · ${labels[active]}` : "Tap to rate"}
       </span>
     </div>
+  );
+}
+
+/* --------------------------------- Cancel task --------------------------------- */
+
+function CancelTaskDialog({
+  open,
+  onOpenChange,
+  taskId,
+  children,
+  onSuccess,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  taskId: string;
+  children: React.ReactElement;
+  onSuccess: () => void;
+}) {
+  const [isPending, startTransition] = React.useTransition();
+
+  const handleConfirm = () => {
+    startTransition(async () => {
+      const result = await cancelTask(taskId);
+      if (result.ok) {
+        toast.success("Task cancelled — escrowed funds were refunded.");
+        onSuccess();
+      } else {
+        toast.error(result.error ?? "Couldn't cancel the task.");
+      }
+    });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogTrigger render={children} />
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Cancel this task?</DialogTitle>
+          <DialogDescription>
+            The contract is closed and any escrowed funds are refunded to you.
+            This can&apos;t be undone.
+          </DialogDescription>
+        </DialogHeader>
+
+        <DialogFooter>
+          <DialogClose render={<Button variant="ghost" type="button" />}>
+            Keep task
+          </DialogClose>
+          <Button
+            type="button"
+            variant="destructive"
+            disabled={isPending}
+            onClick={handleConfirm}
+          >
+            {isPending ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Cancelling…
+              </>
+            ) : (
+              <>
+                <Ban className="size-4" />
+                Cancel task
+              </>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

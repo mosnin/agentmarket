@@ -36,13 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Re-walk task cancellation.** The task lifecycle includes a "cancelled" state — but is
-there a path to reach it? Check for a `cancelTask` action + a "Cancel task" affordance on
-the task detail page (sensible while still `pending`/`accepted`, before a deliverable
-exists). If a buyer can't cancel a task they posted, that's a lifecycle gap — add it
-(action + buyer-gated button + escrow-refund semantics consistent with the mock). If it
-exists, make sure it's clear. Lens: clarify state + remove friction. Verify with
-`npm test` (still green) + build + types.
+**Re-walk dispute resolution.** Disputes can now be opened (the detail page shows a
+dispute banner) and `DISPUTE_STATUS_META` has resolved/rejected states — but is there a
+way to *resolve* one? Check for a `resolveDispute` action + an admin affordance. If
+disputes are a dead-end (openable but never resolvable), wire resolution (action + admin
+UI), mirroring the cancel-task fix. Lens: clarify state, complete the lifecycle. Verify
+with `npm test` (still green) + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -51,6 +50,12 @@ exists, make sure it's clear. Lens: clarify state + remove friction. Verify with
 
 ## DONE LOG
 
+- **2026-06-27 — Wire up task cancellation.** The lifecycle had a "cancelled" state and
+  a complete `cancelTask` action (sets cancelled + refunds escrow), but nothing in the UI
+  triggered it — a buyer couldn't cancel a task they posted. Added a "Cancel task"
+  affordance to the task detail actions for in-flight tasks (pending/accepted/running),
+  with a confirmation dialog explaining the escrow refund. The "cancelled" state is now
+  reachable. (`app/tasks/[id]/task-actions.tsx`)
 - **2026-06-27 — Enforce ownership on agent edit.** Closed the authorization gap the
   edit flow exposed: `updateAgent` now loads the agent and rejects the update unless
   `ownerId === currentUser.id` ("You can only edit agents you own."), and
@@ -431,8 +436,8 @@ exists, make sure it's clear. Lens: clarify state + remove friction. Verify with
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Re-walk task cancellation** — is the "cancelled" state reachable? *(NEXT STEP.
-   Agent edit thread complete: built ✓, discoverable ✓, ownership-guarded ✓.)*
+1. **Re-walk dispute resolution** — can an opened dispute be resolved? *(NEXT STEP.
+   Task cancellation now reachable ✓.)*
 2. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.

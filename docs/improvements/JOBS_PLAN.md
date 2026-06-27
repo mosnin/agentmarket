@@ -36,14 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Empty states — start with marketplace "no results."** With the safety net in
-place, return to the experience. Re-walk the core flow and fix the single biggest
-unclear/empty state: when a marketplace search + filter combination returns zero
-agents, show a clear, friendly empty state ("No agents match your filters") with a
-one-click "Clear filters" reset — not a blank grid. If that's already handled well,
-fix the next-weakest zero state instead (dashboard with no tasks, seller with no
-agents). Lens: clarify state + remove friction. Verify with `npm test` (still
-green) + build + types.
+**Clarify the task lifecycle's "next action."** Re-walk the *track* stage: on the
+task detail page, make the current status and the single next step unmistakable for
+whoever is viewing (buyer vs. seller) — the right primary action surfaced for the
+current status, with a one-line hint of what happens next. If that's already crisp,
+fix the next-biggest friction in the create-task flow instead. Lens: clarify state
++ remove friction. Verify with `npm test` (still green) + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -52,6 +50,14 @@ green) + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Empty/zero states audit + all-zero chart fix.** Re-walked the core
+  surfaces: marketplace ("No agents match your filters" + Clear filters), every
+  dashboard section (active tasks, payments, marketplace activity, reputation, owned
+  agents), and the chart no-rows case were already excellent. Found and fixed the one
+  real gap: `DashboardChart` treated an all-zero dataset as "has data," so a brand-new
+  account saw a flat line hugging the axis (reads as broken) — it now shows the "No
+  data to display yet" placeholder unless at least one real value exists.
+  (`components/dashboard/dashboard-chart.tsx`)
 - **2026-06-27 — Test the remaining `lib/utils` helpers (coverage arc complete).**
   Extended `lib/utils.test.ts` with 12 tests for the string helpers the UI leans on:
   `slugify` (lowercase + hyphenate, strips punctuation, collapses whitespace runs,
@@ -349,12 +355,11 @@ green) + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Empty / zero states audit** — start with marketplace "no results" + "Clear
-   filters" (NEXT STEP), then any other blank list (dashboard, seller). Clarify
-   state + remove friction. *(Pure-logic coverage arc complete: utils ✓ schemas ✓
-   contract ✓ mockValidation ✓ reputation ✓ A2A ✓ MCP ✓ x402 ✓ — 92 tests.)*
-2. **Re-walk the core flow** (land → browse → hire → contract → track) for the next
-   biggest friction once empty states are solid.
+1. **Re-walk the core flow** (land → browse → hire → contract → track) for the next
+   biggest friction. *(track-stage "next action" clarity promoted to NEXT STEP;
+   empty/zero states ✓ — marketplace, dashboard, charts.)*
+2. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs; keep
+   the ⌘K hint discoverable.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

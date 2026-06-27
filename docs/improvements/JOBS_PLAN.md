@@ -36,12 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Test `MarketplaceFilters` clear-all + active state.** The filter bar's last untested
-client logic: it computes `hasActiveFilters` across 6 params and offers a "Clear" reset. Mock
-`next/navigation` (`useRouter` push spy, `usePathname` → "/marketplace", `useSearchParams`),
-render the bar, and assert the "Clear" affordance shows when a filter is active and routes back
-to a bare `/marketplace`, and is absent when nothing is set. Covers the reset logic on a core
-surface. Verify with `npm test` + build + types.
+**Add a CI workflow.** Institutionalize the loop's quality gate: add `.github/workflows/ci.yml`
+running on PRs + `main` — `npm ci`, typecheck, lint, `npm test`, `npm run build` (with a dummy
+`DATABASE_URL`, since the data pages are `force-dynamic` and the build doesn't connect). Makes
+the 178 tests + green build enforced automatically on every PR (including this loop's PR #2).
+Confirm a `package-lock.json` exists for `npm ci`. Verify locally with tsc + build (the YAML
+doesn't affect them); CI runs on GitHub.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -50,6 +50,12 @@ surface. Verify with `npm test` + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Test MarketplaceFilters clear-all + active state.** Added
+  `marketplace-filters.test.tsx` (mocks `next/navigation` via `vi.hoisted` so the active params
+  vary per test): with no params it reads "No filters" and shows no Clear button; with a
+  `category` filter it reads "Filters active", shows "Clear", and clicking it routes back to a
+  bare `/marketplace`. Covers the filter bar's reset logic on a core surface. 178 tests across
+  22 files. (`components/marketplace/marketplace-filters.test.tsx`)
 - **2026-06-27 — Test RelativeTime (the `<time>` contract).** Added `relative-time.test.tsx`
   — 3 tests: renders a `<time>` with a machine-readable `dateTime` (ISO), the humane relative
   text as content ("…ago"), and the exact date-time as `title`; accepts a string date; forwards
@@ -571,10 +577,10 @@ surface. Verify with `npm test` + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Test `MarketplaceFilters`** clear-all + active state. *(NEXT STEP. RelativeTime
-   contract pinned ✓ — 176 tests across 21 files.)*
-2. **Reassess** — the app is feature-complete; prefer genuine gaps over make-work (a real
-   missing capability, a correctness fix, or coverage for untested real logic).
+1. **Add a CI workflow** (typecheck + lint + test + build on PRs). *(NEXT STEP. Client-logic
+   coverage complete — 178 tests across 22 files; the marketplace filter bar is now tested.)*
+2. **Reassess** — the app is feature-complete + comprehensively tested; prefer genuine gaps
+   over make-work (a real missing capability, a correctness fix, or institutional quality).
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

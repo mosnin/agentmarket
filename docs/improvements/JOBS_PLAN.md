@@ -36,11 +36,11 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Re-walk the admin console.** Walk `/admin` end to end — agent moderation, dispute
-resolution, payments review, suspicious-tasks. Confirm every action works and every panel
-reads clearly; fix the single biggest remaining gap (a dead control, an unclear empty/zero
-state, a missing affordance), as with the earlier seller-edit and dispute-reject fixes. If
-it's all solid, tighten the weakest panel. Verify with `npm test` + build + types.
+**Test `RelativeTime`.** It's rendered on every timestamp in the app and carries a
+semantics/a11y contract worth pinning: a `<time>` element with a machine-readable `dateTime`
+attribute, the humane relative text ("2h ago") as its content, and the exact date-time as a
+`title` (hover). Add `relative-time.test.tsx` asserting all three for a known date. Clean
+render test, no mocks. Verify with `npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -49,6 +49,13 @@ it's all solid, tighten the weakest panel. Verify with `npm test` + build + type
 
 ## DONE LOG
 
+- **2026-06-27 — Copyable transaction hashes in the admin ledger.** Re-walked `/admin`
+  (moderation, disputes, suspicious tasks, payments, reputation — all solid). Closed the one
+  gap: the payments ledger showed each tx hash with only a hover `title` (mouse-only, not
+  copyable), unlike the task-detail page. Added a reusable `srLabel` to `CopyButton`
+  (descriptive accessible name for a truncated visible label) and used it so each ledger hash
+  is now one-click copyable + keyboard/touch reachable. 173 tests. (`components/shared/copy-button.tsx`,
+  `…/copy-button.test.tsx`, `app/admin/page.tsx`)
 - **2026-06-27 — Urgency-sort the Seller Studio inbound.** Mirrored the dashboard:
   `getSellerData` now returns the inbound tasks sorted by `taskUrgencyRank` (overdue →
   due-soon → rest, stable so recency holds within each band), so the deliverer's at-risk work
@@ -558,9 +565,9 @@ it's all solid, tighten the weakest panel. Verify with `npm test` + build + type
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Re-walk the admin console** for any remaining dead-end / unclear state. *(NEXT STEP.
-   Urgency thread complete across dashboard + seller ✓.)*
-2. **Reassess** — the app is near-complete; prefer genuine gaps over make-work (a real
+1. **Test `RelativeTime`** (the `<time>` semantics + title contract). *(NEXT STEP. Admin
+   console re-walked + ledger hashes now copyable ✓ — 173 tests.)*
+2. **Reassess** — the app is feature-complete; prefer genuine gaps over make-work (a real
    missing capability, a correctness fix, or coverage for untested real logic).
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.

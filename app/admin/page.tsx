@@ -10,7 +10,6 @@ import {
   CircleDollarSign,
   Coins,
   Gavel,
-  Hash,
   History,
   ScrollText,
   ShieldAlert,
@@ -29,6 +28,7 @@ import {
 } from "@/lib/constants";
 import { cn, formatCurrency, formatDateTime } from "@/lib/utils";
 import { RelativeTime } from "@/components/shared/relative-time";
+import { CopyButton } from "@/components/shared/copy-button";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
@@ -625,13 +625,12 @@ function PaymentsTable({ payments }: { payments: AdminPayment[] }) {
 
                 <TableCell className="hidden md:table-cell">
                   {hash ? (
-                    <span
-                      className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground"
-                      title={payment.transactionHash ?? undefined}
-                    >
-                      <Hash className="size-3 shrink-0 text-muted-foreground/70" aria-hidden />
-                      {hash}
-                    </span>
+                    <CopyButton
+                      value={payment.transactionHash ?? ""}
+                      label={hash}
+                      srLabel="Copy transaction hash"
+                      className="font-mono"
+                    />
                   ) : (
                     <span className="text-xs text-muted-foreground/60">—</span>
                   )}

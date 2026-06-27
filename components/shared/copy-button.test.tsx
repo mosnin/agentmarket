@@ -30,6 +30,11 @@ describe("CopyButton", () => {
     expect(await screen.findByRole("button", { name: "Copied" })).toBeTruthy();
   });
 
+  it("uses srLabel as the accessible name when the visible label isn't descriptive", () => {
+    render(<CopyButton value="0xabc123" label="0x…123" srLabel="Copy transaction hash" />);
+    expect(screen.getByRole("button", { name: "Copy transaction hash" })).toBeTruthy();
+  });
+
   it("stays on the label when the clipboard write fails", async () => {
     writeText.mockRejectedValueOnce(new Error("denied"));
     render(<CopyButton value="x" label="Copy" />);

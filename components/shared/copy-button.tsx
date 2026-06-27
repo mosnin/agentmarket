@@ -13,10 +13,14 @@ import { cn } from "@/lib/utils";
 export function CopyButton({
   value,
   label = "Copy",
+  srLabel,
   className,
 }: {
   value: string;
   label?: string;
+  /** Accessible name, when the visible `label` isn't descriptive on its own
+   *  (e.g. a truncated hash). Falls back to `label`. */
+  srLabel?: string;
   className?: string;
 }) {
   const [copied, setCopied] = React.useState(false);
@@ -44,7 +48,7 @@ export function CopyButton({
     <button
       type="button"
       onClick={onCopy}
-      aria-label={copied ? "Copied" : label}
+      aria-label={copied ? "Copied" : (srLabel ?? label)}
       className={cn(
         "inline-flex items-center gap-1.5 rounded-md border border-border/80 bg-card/40 px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:border-border hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:outline-none",
         className,

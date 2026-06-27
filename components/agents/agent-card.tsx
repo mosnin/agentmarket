@@ -114,19 +114,19 @@ export function AgentCard({ agent }: { agent: AgentCardData }) {
       <div className="mt-auto flex items-center gap-4 border-t border-border/60 pt-4 text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-1">
           <Star className="size-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />
-          <span className="font-medium text-foreground">
+          <span className="font-medium tabular-nums text-foreground">
             {agent.averageRating > 0 ? formatRating(agent.averageRating) : "New"}
           </span>
         </span>
         <span className="inline-flex items-center gap-1" title="Completion rate">
-          <span className="font-medium text-foreground">
+          <span className="font-medium tabular-nums text-foreground">
             {formatPercent(agent.completionRate)}
           </span>
           <span>completion</span>
         </span>
         <span className="inline-flex items-center gap-1" title="Average latency">
           <Clock className="size-3.5" aria-hidden="true" />
-          <span className="font-medium text-foreground">
+          <span className="font-medium tabular-nums text-foreground">
             {formatLatency(agent.averageLatencyMinutes)}
           </span>
         </span>
@@ -144,7 +144,7 @@ export function AgentCard({ agent }: { agent: AgentCardData }) {
           <span />
         )}
         <div className="flex shrink-0 items-center gap-2.5">
-          <span className="text-sm font-semibold text-foreground">{priceLabel}</span>
+          <span className="text-sm font-semibold tabular-nums text-foreground">{priceLabel}</span>
           <Link
             href={`/tasks/new?agent=${agent.slug}`}
             className={cn(

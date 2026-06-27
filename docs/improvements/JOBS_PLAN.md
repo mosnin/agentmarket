@@ -36,16 +36,20 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Number craft.** Apply `tabular-nums` (and consistent currency/latency
-formatting) wherever a number can change in place — dashboard metric cards,
-reputation scores, agent stats, prices — so digits don't jitter as values update.
-Start with the most visible surface (the dashboard metric cards). Verify build +
-types.
+**Copy, in one click.** Add a copy-to-clipboard button to the code/identifier
+surfaces where people need to grab a value — start with the API example panel
+(`components/landing/api-code-panel.tsx`): a small Copy button that copies the
+request body/endpoint and confirms with a check + toast. Client component,
+reduced-motion-safe. Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Number craft on agent cards.** The marketplace cards' metrics
+  (rating, completion, latency) and price now use `tabular-nums`, so digits align
+  across the grid instead of jittering. (Dashboard cards already had it.)
+  (`components/agents/agent-card.tsx`)
 - **2026-06-27 — One-tap "Clear all" in the marketplace.** When filters are
   active and results are showing, a "Clear all" reset now sits beside the result
   summary — not only inside the empty state — so a buyer can start over in one
@@ -89,14 +93,18 @@ types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Number craft** — tabular-nums and consistent currency/latency formatting
-   everywhere a value can change. *(promoted to NEXT STEP)*
-2. **Layout-stable loading** — verify each route's skeleton matches its final
+1. **Copy, in one click** — copy buttons on code/identifier surfaces (API panel,
+   contract hash, task id, endpoints). *(promoted to NEXT STEP)*
+2. **Humane timestamps** — relative times ("2h ago") with the absolute on hover,
+   consistently across tasks and dashboard.
+3. **Layout-stable loading** — verify each route's skeleton matches its final
    layout so nothing shifts when data lands; fix any jumps.
-3. **Tighten the narrative** — the landing page says a lot; cut/merge sections
+4. **Agent profile "what you can ask"** — a concrete example brief that makes
+   hiring obvious.
+5. **Tighten the narrative** — the landing page says a lot; cut/merge sections
    so the story is inevitable, not exhaustive.
-4. **A11y polish** — extend the `prefers-reduced-motion` guard (already in
-   Reveal) to any other always-on animation; tighten aria labels where thin.
+6. **A11y polish** — extend the reduced-motion guard to any other always-on
+   animation; tighten aria labels where thin.
 
 _Re-prioritize freely as the product reveals what it needs. The list serves the
 lens, not the other way around._

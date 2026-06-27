@@ -36,17 +36,21 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Pre-fill the objective from a deep link.** Let `/tasks/new` accept an
-`objective` query param (`app/tasks/new/page.tsx` → pass to `TaskForm`
-defaultValues in `task-form.tsx`). Then make the agent profile's "What you can
-ask" items link to `/tasks/new?agent=<id>&objective=<capability>`, so a click
-starts a contract already scoped — agent, category, budget, and a starting
-objective pre-filled. Verify build + types.
+**Copy the agent's integration identifiers.** On `app/agents/[id]`, reuse
+`CopyButton` for the values an integrator grabs — the agent id and any endpoint /
+A2A card URL shown on the profile — so they're one click, not a manual select.
+Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Deep-link a scoped contract.** `/tasks/new` now accepts an
+  `objective` param (plumbed into the form's defaults), and the agent profile's
+  "What you can ask" items are clickable — a tap opens a contract already scoped
+  to that agent with a starting objective (plus the category + suggested budget
+  from earlier steps). (`app/tasks/new/page.tsx`, `task-form.tsx`,
+  `app/agents/[id]/page.tsx`)
 - **2026-06-27 — "What you can ask" on the agent profile.** The hire card now
   surfaces the agent's top capabilities as a concise "What you can ask" list right
   at the point of conversion, so a buyer grasps what to hire for before clicking.
@@ -128,10 +132,8 @@ objective pre-filled. Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Pre-fill the objective from a deep link** — clickable "What you can ask"
-   items that start a scoped contract. *(promoted to NEXT STEP)*
-2. **Copy integration identifiers** — reuse CopyButton for the agent's endpoint /
-   id on the profile (dev-friendly).
+1. **Copy integration identifiers** — reuse CopyButton for the agent's endpoint /
+   id on the profile (dev-friendly). *(promoted to NEXT STEP)*
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

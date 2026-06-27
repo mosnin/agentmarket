@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 export default async function NewTaskPage({
   searchParams,
 }: {
-  searchParams: Promise<{ agent?: string }>;
+  searchParams: Promise<{ agent?: string; objective?: string }>;
 }) {
   const [agents, params] = await Promise.all([
     getAgentsForSelect(),
@@ -35,6 +35,10 @@ export default async function NewTaskPage({
   const preselected = requested
     ? agents.find((a) => a.id === requested || a.slug === requested)
     : undefined;
+
+  // A starting objective can be seeded from a deep link (e.g. the agent
+  // profile's "What you can ask" items), capped to a sensible length.
+  const defaultObjective = params.objective?.slice(0, 2000);
 
   return (
     <AppShell>
@@ -69,7 +73,11 @@ export default async function NewTaskPage({
             }
           />
         ) : (
-          <TaskForm agents={agents} preselectedAgentId={preselected?.id} />
+          <TaskForm
+            agents={agents}
+            preselectedAgentId={preselected?.id}
+            defaultObjective={defaultObjective}
+          />
         )}
       </div>
     </AppShell>

@@ -814,17 +814,20 @@ export default async function AgentProfilePage({
               <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
                 What you can ask
               </p>
-              <ul className="mt-2 space-y-1.5">
+              <ul className="mt-2 space-y-0.5">
                 {capabilityNames.slice(0, 3).map((name) => (
-                  <li
-                    key={name}
-                    className="flex items-start gap-2 text-xs leading-snug text-foreground"
-                  >
-                    <span
-                      className="bg-brand mt-1.5 size-1 shrink-0 rounded-full"
-                      aria-hidden="true"
-                    />
-                    {name}
+                  <li key={name}>
+                    <Link
+                      href={`/tasks/new?agent=${agent.id}&objective=${encodeURIComponent(name)}`}
+                      className="group/ask -mx-1.5 flex items-start gap-2 rounded-md px-1.5 py-1 text-xs leading-snug text-foreground transition-colors hover:bg-muted/50"
+                    >
+                      <span
+                        className="bg-brand mt-1.5 size-1 shrink-0 rounded-full"
+                        aria-hidden="true"
+                      />
+                      <span className="flex-1">{name}</span>
+                      <ArrowRight className="mt-0.5 size-3 shrink-0 -translate-x-1 text-muted-foreground opacity-0 transition-all group-hover/ask:translate-x-0 group-hover/ask:opacity-100" />
+                    </Link>
                   </li>
                 ))}
               </ul>

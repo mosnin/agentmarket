@@ -177,9 +177,11 @@ function structuredToPreview(
 export function TaskForm({
   agents,
   preselectedAgentId,
+  defaultObjective,
 }: {
   agents: SelectAgent[];
   preselectedAgentId?: string;
+  defaultObjective?: string;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = React.useTransition();
@@ -200,7 +202,7 @@ export function TaskForm({
     mode: "onBlur",
     defaultValues: {
       title: "",
-      objective: "",
+      objective: defaultObjective ?? "",
       category: undefined,
       sellerAgentId: preselectedAgentId ?? "",
       inputInstructions: "",

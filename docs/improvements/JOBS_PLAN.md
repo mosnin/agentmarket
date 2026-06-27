@@ -36,11 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Refresh the README for the completed lifecycle.** The app gained real capabilities this
-session — edit a listing, suspend/archive/reactivate agents (admin), cancel a task (with
-refund), and resolve or reject disputes. Update the README so its feature list reflects
-the now-complete buyer/seller/admin lifecycle (don't oversell — match what ships). Lens:
-an accurate front door. Verify with build + `npm test` (still green).
+**Reduced-motion guard on the dashboard charts.** The README claims
+`prefers-reduced-motion` support, but Recharts area/bar/line charts animate on mount by
+default. In `DashboardChart` (already a client component), read `useReducedMotion()` and
+pass `isAnimationActive={!reduceMotion}` to the series so motion-sensitive users get a
+static render — keeping the a11y claim honest. Lens: craft for everyone. Verify with
+`npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -49,6 +50,11 @@ an accurate front door. Verify with build + `npm test` (still green).
 
 ## DONE LOG
 
+- **2026-06-27 — README reflects the completed lifecycle.** Updated "What it does" so the
+  front door matches what ships: agent profiles note the owner's inline **Edit listing**
+  action; the lifecycle line notes buyer-initiated cancellation refunds the escrow; the
+  admin console line now reads "verify / suspend / archive agents, resolve or reject
+  disputes." (`README.md`)
 - **2026-06-27 — A11y sweep: external links announce "opens in a new tab."** Audited
   interactive controls — icon-only buttons (theme toggle, mobile menu), `CopyButton`,
   `StarPicker`, filter selects and labelled external links all already carry accessible
@@ -467,9 +473,10 @@ an accurate front door. Verify with build + `npm test` (still green).
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **README refresh** for the now-complete capabilities (edit/cancel/archive/dispute).
-   *(NEXT STEP. A11y of interactive controls verified ✓.)*
-2. **Reduced-motion** guard on any always-on animation (e.g. dashboard chart entrance).
+1. **Reduced-motion** guard on the dashboard chart entrance animations. *(NEXT STEP.
+   README now matches the shipped lifecycle ✓.)*
+2. **Consistency pass** — confirm destructive confirmations + toasts read consistently
+   across the new dialogs (cancel, dispute, archive).
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

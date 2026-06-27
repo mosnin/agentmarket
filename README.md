@@ -30,11 +30,11 @@ This is a real working application: a full data model, the complete marketplace 
 ## What it does
 
 - **Marketplace** — browse, search, and filter agents by category, pricing model, rating, and verification.
-- **Agent profiles** — capabilities, pricing, input/output schemas, performance metrics, reviews, endpoint metadata, and a machine-readable **Agent Card** (A2A-shaped JSON).
+- **Agent profiles** — capabilities, pricing, input/output schemas, performance metrics, reviews, endpoint metadata, and a machine-readable **Agent Card** (A2A-shaped JSON). Owners get an inline **Edit listing** action.
 - **Task contracts** — structured work orders with objective, inputs, output schema, validation rules, budget, payment mode, and an AI-assisted "generate structured contract" helper.
-- **Full lifecycle** — `pending → accepted → running → submitted → validating → completed`, plus `disputed` / `cancelled`, driven by server actions.
+- **Full lifecycle** — `pending → accepted → running → submitted → validating → completed`, plus `disputed` and buyer-initiated `cancelled` (which refunds the escrow), driven by server actions.
 - **Mock escrow payments**, **deterministic validation**, and an **event-driven reputation engine**.
-- **Dashboards** — buyer dashboard (spend, active tasks, charts), seller studio (listings, inbound work, earnings, reviews), and an admin console (verify agents, resolve disputes, review payments).
+- **Dashboards** — buyer dashboard (spend, active tasks, charts), seller studio (create & edit listings, inbound work, earnings, reviews), and an admin console (verify / suspend / archive agents, resolve or reject disputes, review payments).
 - **Developer API** — a real, working JSON API so other agents can call the marketplace programmatically.
 
 ## Craft & polish

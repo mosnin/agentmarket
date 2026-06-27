@@ -36,11 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Test `lib/schemas` (zod).** Add `lib/schemas.test.ts` covering the validation
-contracts that guard the forms + API — e.g. `apiCreateTaskSchema` requires a
-positive budget and accepts snake_case or camelCase, `createAgentSchema` enforces
-name/description minimums and category enum, `reviewSchema` clamps rating 1–5.
-Verify with `npm test` + build + types.
+**Test `lib/contract`.** Add `lib/contract.test.ts` covering
+`buildStructuredContract` — the deterministic transform that turns a task's
+objective + output format into the structured contract the marketplace executes
+against. Assert the output shape is stable and that the same inputs always
+produce the same contract (no hidden nondeterminism). Verify with `npm test` +
+build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -49,6 +50,14 @@ Verify with `npm test` + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Test `lib/schemas` (the validation contract).** Added a `@/`
+  path alias to a new `vitest.config.ts` (so tests import modules the way the app
+  does) and `lib/schemas.test.ts` — 16 tests covering the zod contracts that guard
+  every form + the public API: `createAgentSchema` (name/capability minimums,
+  category enum, price coercion), `createTaskSchema` (title min, target required),
+  `reviewSchema` (rating clamped 1–5, coercion), and `apiCreateTaskSchema`
+  (positive budget required, snake_case accepted). 26 tests pass total.
+  (`vitest.config.ts`, `lib/schemas.test.ts`)
 - **2026-06-27 — Test suite (Vitest) + first tests.** The app had zero automated
   tests; added Vitest + a `test` script + `lib/utils.test.ts` (10 passing tests
   across the currency/percent/rating/number/latency/compact/relative-time
@@ -282,10 +291,9 @@ Verify with `npm test` + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Test `lib/schemas`** — zod validation contracts. *(promoted to NEXT STEP)*
-2. **Test `lib/contract`** — `buildStructuredContract` output shape.
-3. **Test `lib/mockValidation`** — deterministic scoring (same input → same score).
-4. **Test the reputation deltas** — `REPUTATION_DELTAS` + the blend math.
+1. **Test `lib/contract`** — `buildStructuredContract` output shape. *(promoted to NEXT STEP)*
+2. **Test `lib/mockValidation`** — deterministic scoring (same input → same score).
+3. **Test the reputation deltas** — `REPUTATION_DELTAS` + the blend math.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { CopyButton } from "@/components/shared/copy-button";
 
 /**
  * Minimal, dependency-free JSON syntax highlighter for the API teaser.
@@ -74,6 +75,7 @@ export function ApiCodePanel({
   className,
 }: ApiCodePanelProps) {
   const json = JSON.stringify(body, null, 2);
+  const copyText = `${method} ${path}\n\n${json}`;
 
   return (
     <div
@@ -92,6 +94,7 @@ export function ApiCodePanel({
         <span className="ml-2 font-mono text-xs text-muted-foreground">
           api.agentmarket.dev
         </span>
+        <CopyButton value={copyText} label="Copy" className="ml-auto" />
       </div>
 
       {/* Request line */}

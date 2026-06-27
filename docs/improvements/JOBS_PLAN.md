@@ -36,16 +36,19 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Copy, in one click.** Add a copy-to-clipboard button to the code/identifier
-surfaces where people need to grab a value — start with the API example panel
-(`components/landing/api-code-panel.tsx`): a small Copy button that copies the
-request body/endpoint and confirms with a check + toast. Client component,
-reduced-motion-safe. Verify build + types.
+**Copy the identifiers that matter.** Reuse `CopyButton` on the task detail page
+(`app/tasks/[id]/page.tsx`) for the values people actually copy — the contract
+hash and the task id — so they're grabbable without hand-selecting text. Verify
+build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Copy, in one click.** Added a reusable `CopyButton` and wired it
+  into the API example panel — the request (method, path, body) copies with one
+  click and confirms inline with a check. (`components/shared/copy-button.tsx`,
+  `components/landing/api-code-panel.tsx`)
 - **2026-06-27 — Number craft on agent cards.** The marketplace cards' metrics
   (rating, completion, latency) and price now use `tabular-nums`, so digits align
   across the grid instead of jittering. (Dashboard cards already had it.)
@@ -93,8 +96,8 @@ reduced-motion-safe. Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Copy, in one click** — copy buttons on code/identifier surfaces (API panel,
-   contract hash, task id, endpoints). *(promoted to NEXT STEP)*
+1. **Copy the identifiers** — reuse CopyButton for the contract hash + task id on
+   the task detail page. *(promoted to NEXT STEP)*
 2. **Humane timestamps** — relative times ("2h ago") with the absolute on hover,
    consistently across tasks and dashboard.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

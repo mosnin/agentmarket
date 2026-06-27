@@ -36,12 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Test `AgentCard` (marketplace card composition).** Render `components/agents/agent-card.tsx`
-with a cast `AgentCardData` fixture and assert it shows the name, the price via
-`formatAgentPrice` (e.g. "$25/task"), capability badges, the **Hire** deep-link to
-`/tasks/new?agent=<id>`, and the profile link to `/agents/<slug>`. This protects the card
-composition + the hire deep-link the whole browse→hire flow depends on. Verify with
-`npm test` + build + types.
+**Extract + test the rating `StarPicker`.** It's a real interactive form control buried
+inside `app/tasks/[id]/task-actions.tsx`. Pull it into `components/tasks/star-picker.tsx`
+(radiogroup of 1–5 stars, hover preview, label), point the review dialog at it, and add
+`star-picker.test.tsx`: clicking a star calls `onChange` with that value, sets the right
+`aria-checked`, and the label reflects the active rating. Decouple + cover the rating input.
+Verify with `npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -50,6 +50,13 @@ composition + the hire deep-link the whole browse→hire flow depends on. Verify
 
 ## DONE LOG
 
+- **2026-06-27 — Test AgentCard (marketplace card composition).** Added
+  `agent-card.test.tsx` — 5 tests: renders name/category/description and the
+  `formatAgentPrice` label ("$25/task"); shows the first three capabilities + a "+1 more"
+  overflow (hiding the 4th); the Hire link deep-links to `/tasks/new?agent=<slug>`; the
+  card body links to `/agents/<slug>`; a brand-new agent shows "New" instead of a rating.
+  Protects the card + the hire deep-link the browse→hire flow depends on. 143 tests across
+  15 files. (`components/agents/agent-card.test.tsx`)
 - **2026-06-27 — Test CopyButton (first interactive UI test).** Added `copy-button.test.tsx`
   — 3 tests: the label doubles as the accessible name; a click calls
   `navigator.clipboard.writeText(value)` and flips the control to "Copied"; a failed write
@@ -499,10 +506,9 @@ composition + the hire deep-link the whole browse→hire flow depends on. Verify
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Test `AgentCard`** — composition + Hire deep-link. *(NEXT STEP. Interactive UI
-   testing proven via CopyButton ✓ — 138 tests across 14 files.)*
-2. **Test a form/dialog flow** — e.g. the review StarPicker or a validation path.
-3. **Consistency pass** — destructive confirmations + toasts across the new dialogs.
+1. **Extract + test the rating `StarPicker`** (decouple from task-actions). *(NEXT STEP.
+   AgentCard composition + deep-links covered ✓ — 143 tests across 15 files.)*
+2. **Consistency pass** — destructive confirmations + toasts across the new dialogs.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

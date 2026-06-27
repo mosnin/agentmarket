@@ -36,14 +36,18 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Label icon-only controls.** Audit icon-only buttons (theme toggle, any nav/menu
-icons) for `aria-label`s and add any that are missing, so screen readers announce
-them. Verify build + types.
+**Sitemap + robots.** Add `app/sitemap.ts` (static routes + agent profiles via a
+slug query) and `app/robots.ts` (allow crawl, point to the sitemap) so search
+engines can discover the marketplace. Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Apple touch icon.** Added `app/apple-icon.tsx` (brand tile,
+  180×180) for iOS home-screen / dock, completing the icon set (favicon + manifest
+  + apple). Confirmed all icon-only controls already have aria-labels/sr-only, so
+  no a11y churn. (`app/apple-icon.tsx`)
 - **2026-06-27 — "Similar agents" on the profile.** Added a `getRelatedAgents`
   query + a "More in {category}" grid (same category, by reputation, excluding the
   current agent) at the bottom of the agent profile, so buyers keep discovering.
@@ -185,8 +189,8 @@ them. Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Label icon-only controls** — aria-labels on theme toggle / icon buttons.
-   *(promoted to NEXT STEP)*
+1. **Sitemap + robots** — `app/sitemap.ts` (routes + agent profiles) and
+   `app/robots.ts`. *(promoted to NEXT STEP)*
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

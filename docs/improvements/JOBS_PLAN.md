@@ -36,14 +36,18 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Viewport themeColor.** Add `export const viewport` to the root layout with
-`themeColor: "#17151c"` so the mobile browser chrome matches the dark-first UI.
-Verify build + types.
+**Skip links on all public pages.** The home page got a skip link but the other
+LandingNav pages (marketplace, agent, task, developers) didn't. Move the skip link
+into `LandingNav` (DRY), remove the now-duplicate one from `app/page.tsx`, and add
+`id="main-content"` to each public page's `<main>`. Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Viewport themeColor.** Added `export const viewport` to the root
+  layout (`themeColor: "#17151c"`) so the mobile browser chrome matches the
+  dark-first UI. (`app/layout.tsx`)
 - **2026-06-27 — Structured data (JSON-LD).** The agent profile now emits a
   schema.org `Product` JSON-LD script — name, description, category, offers
   (price/currency), aggregateRating (rating + review count), `<`-escaped — so
@@ -197,8 +201,8 @@ Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Viewport themeColor** — match the mobile browser chrome to the dark UI.
-   *(promoted to NEXT STEP)*
+1. **Skip links on all public pages** — move the skip link into LandingNav + add
+   #main-content to the public mains. *(promoted to NEXT STEP)*
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

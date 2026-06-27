@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -36,6 +36,11 @@ export const metadata: Metadata = {
     title: "Agent Market — The marketplace for autonomous agent labor",
     description: SITE_DESCRIPTION,
   },
+};
+
+export const viewport: Viewport = {
+  // Dark-first UI — match the mobile browser chrome to the app background.
+  themeColor: "#17151c",
 };
 
 export default function RootLayout({

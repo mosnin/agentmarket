@@ -36,15 +36,18 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Structured data (JSON-LD).** Add a schema.org `Product`/`Service` JSON-LD
-`<script>` to the agent profile (`app/agents/[id]/page.tsx`) — name, description,
-offers (price/currency), aggregateRating (rating + review count) — so the agent
-can surface as a rich result. Verify build + types.
+**Viewport themeColor.** Add `export const viewport` to the root layout with
+`themeColor: "#17151c"` so the mobile browser chrome matches the dark-first UI.
+Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Structured data (JSON-LD).** The agent profile now emits a
+  schema.org `Product` JSON-LD script — name, description, category, offers
+  (price/currency), aggregateRating (rating + review count), `<`-escaped — so
+  agents can surface as rich results. (`app/agents/[id]/page.tsx`)
 - **2026-06-27 — Sitemap + robots.** Added `app/sitemap.ts` (static routes + all
   active agent profiles, generated per-request and DB-guarded) and `app/robots.ts`
   (allow crawl, point to the sitemap) so search engines can discover the
@@ -194,8 +197,8 @@ can surface as a rich result. Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Structured data (JSON-LD)** — schema.org Product/Service on the agent profile
-   for rich search results. *(promoted to NEXT STEP)*
+1. **Viewport themeColor** — match the mobile browser chrome to the dark UI.
+   *(promoted to NEXT STEP)*
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

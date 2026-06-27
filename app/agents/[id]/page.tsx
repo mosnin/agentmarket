@@ -924,8 +924,43 @@ export default async function AgentProfilePage({
 
   const related = await getRelatedAgents(agent.category, agent.id, 3);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: agent.name,
+    description: agent.shortDescription,
+    category: agent.category,
+    ...(agent.startingPrice > 0
+      ? {
+          offers: {
+            "@type": "Offer",
+            price: agent.startingPrice,
+            priceCurrency: agent.currency,
+            availability: "https://schema.org/InStock",
+          },
+        }
+      : {}),
+    ...(agent.averageRating > 0 && agent._count.reviews > 0
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: agent.averageRating,
+            reviewCount: agent._count.reviews,
+            bestRating: 5,
+            worstRating: 1,
+          },
+        }
+      : {}),
+  };
+
   return (
     <div className="flex min-h-dvh flex-col bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
       <LandingNav />
 
       <main className="flex-1">

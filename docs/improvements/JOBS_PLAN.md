@@ -36,16 +36,24 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Optimistic lifecycle feedback (evaluate).** Consider an instant status flip on
-the task detail action panel when accept/start/validate/complete is clicked
-(currently pending-state + toast + `router.refresh()`). Only ship it if it's
-clearly better and stays simple/safe; otherwise note it and pick a smaller polish.
-Verify build + types.
+**Test `lib/schemas` (zod).** Add `lib/schemas.test.ts` covering the validation
+contracts that guard the forms + API — e.g. `apiCreateTaskSchema` requires a
+positive budget and accepts snake_case or camelCase, `createAgentSchema` enforces
+name/description minimums and category enum, `reviewSchema` clamps rating 1–5.
+Verify with `npm test` + build + types.
+
+> The loop has pivoted to **test coverage** (the app had none). Each iteration:
+> add one focused test file for a pure module, run `npm test`, keep build green.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Test suite (Vitest) + first tests.** The app had zero automated
+  tests; added Vitest + a `test` script + `lib/utils.test.ts` (10 passing tests
+  across the currency/percent/rating/number/latency/compact/relative-time
+  formatters). A foundation to protect the 50+ changes from regressions.
+  (`package.json`, `lib/utils.test.ts`)
 - **2026-06-27 — Copy share link.** Added a right-aligned "Copy link" button
   (reusing `CopyButton` with the canonical URL) to the agent profile and task
   detail breadcrumbs, so a page is one click to share.
@@ -274,8 +282,10 @@ Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Optimistic lifecycle feedback (evaluate)** — instant status flip on action;
-   only if clearly better. *(promoted to NEXT STEP)*
+1. **Test `lib/schemas`** — zod validation contracts. *(promoted to NEXT STEP)*
+2. **Test `lib/contract`** — `buildStructuredContract` output shape.
+3. **Test `lib/mockValidation`** — deterministic scoring (same input → same score).
+4. **Test the reputation deltas** — `REPUTATION_DELTAS` + the blend math.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

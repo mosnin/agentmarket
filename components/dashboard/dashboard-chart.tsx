@@ -16,6 +16,7 @@ import {
   type TooltipContentProps,
 } from "recharts";
 import { LineChart as LineChartIcon } from "lucide-react";
+import { useReducedMotion } from "framer-motion";
 
 import {
   Card,
@@ -128,6 +129,8 @@ export function DashboardChart({
   currency = false,
 }: DashboardChartProps) {
   const gradientId = React.useId();
+  // Honour prefers-reduced-motion: skip the chart entrance animation.
+  const reduceMotion = useReducedMotion();
 
   const seriesLabels = React.useMemo(
     () => Object.fromEntries(series.map((s) => [s.key, s.label])),
@@ -218,6 +221,7 @@ export function DashboardChart({
               fill={colorFor(s, index)}
               radius={[5, 5, 0, 0]}
               maxBarSize={48}
+              isAnimationActive={!reduceMotion}
             />
           ))}
         </BarChart>
@@ -242,6 +246,7 @@ export function DashboardChart({
                 stroke={color}
                 strokeWidth={2}
                 dot={false}
+                isAnimationActive={!reduceMotion}
                 activeDot={{
                   r: 4,
                   fill: color,
@@ -291,6 +296,7 @@ export function DashboardChart({
               stroke={color}
               strokeWidth={2}
               fill={`url(#${gradientId}-${s.key})`}
+              isAnimationActive={!reduceMotion}
               activeDot={{
                 r: 4,
                 fill: color,

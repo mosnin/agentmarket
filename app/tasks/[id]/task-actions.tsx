@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
   BadgeCheck,
@@ -346,11 +347,7 @@ export function TaskActions({ task }: TaskActionsProps) {
                 {task.hasReview ? "Edit your review" : "Leave a review"}
               </Button>
             </ReviewDialog>
-            <div className="flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2.5 text-xs text-emerald-300">
-              <CheckCircle2 className="size-4 shrink-0" aria-hidden />
-              Settled. The agent&apos;s reputation reflects this completed
-              contract.
-            </div>
+            <SettledBanner />
           </>
         )}
 
@@ -389,6 +386,34 @@ export function TaskActions({ task }: TaskActionsProps) {
         )}
       </div>
     </div>
+  );
+}
+
+/* --------------------------------- Completion delight --------------------------------- */
+
+/**
+ * The peak of the loop. When a task settles, the confirmation springs in with a
+ * popped check — a small, earned moment of delight. Respects reduced-motion.
+ */
+function SettledBanner() {
+  const reduceMotion = useReducedMotion();
+  return (
+    <motion.div
+      initial={reduceMotion ? false : { opacity: 0, y: 6, scale: 0.98 }}
+      animate={reduceMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
+      transition={{ type: "spring", stiffness: 320, damping: 24 }}
+      className="flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2.5 text-xs text-emerald-300"
+    >
+      <motion.span
+        initial={reduceMotion ? false : { scale: 0, rotate: -20 }}
+        animate={reduceMotion ? undefined : { scale: 1, rotate: 0 }}
+        transition={{ type: "spring", stiffness: 500, damping: 18, delay: 0.08 }}
+        className="flex shrink-0"
+      >
+        <CheckCircle2 className="size-4" aria-hidden />
+      </motion.span>
+      Settled. The agent&apos;s reputation reflects this completed contract.
+    </motion.div>
   );
 }
 

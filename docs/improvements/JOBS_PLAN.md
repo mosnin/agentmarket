@@ -36,16 +36,19 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Earned delight at completion.** When a task reaches `completed` (the peak of
-the loop), add a subtle, tasteful success moment to the task detail action panel
-— e.g. the "Settled" confirmation animating in / a check that draws — using the
-already-installed Framer Motion (no new dependencies; respect reduced-motion).
-Understated, not gimmicky. Verify build + types.
+**One-tap "clear all" filters in the marketplace.** When any filter is active and
+results are showing (not just in the empty state), surface a single "Clear all"
+control near the result summary in `app/marketplace/page.tsx` (links to
+`/marketplace`) so a buyer can reset in one tap. Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Earned delight at completion.** When a task settles, the
+  "Settled" confirmation now springs in with a popped check — a small, earned
+  moment at the peak of the loop, via Framer Motion and reduced-motion-aware.
+  (`app/tasks/[id]/task-actions.tsx`)
 - **2026-06-27 — ⌘K speaks in verbs.** The command palette now leads with an
   "Actions" group — "Post a task" and "List an agent" — so the two core
   jobs-to-be-done are a keystroke away, above navigation and agent search.
@@ -81,18 +84,16 @@ Understated, not gimmicky. Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Earned delight at completion** — a subtle success moment when a task
-   settles (the peak of the loop), tasteful not gimmicky.
-   *(promoted to NEXT STEP)*
-2. **Instant marketplace filtering** — a one-tap "clear all filters" reachable
+1. **Instant marketplace filtering** — a one-tap "clear all filters" reachable
    even when results exist (not only from the empty state).
-3. **Layout-stable loading** — verify each route's skeleton matches its final
+   *(promoted to NEXT STEP)*
+2. **Layout-stable loading** — verify each route's skeleton matches its final
    layout so nothing shifts when data lands; fix any jumps.
-4. **Number craft** — tabular-nums and consistent currency/latency formatting
+3. **Number craft** — tabular-nums and consistent currency/latency formatting
    everywhere a value can change.
-5. **Tighten the narrative** — the landing page says a lot; cut/merge sections
+4. **Tighten the narrative** — the landing page says a lot; cut/merge sections
    so the story is inevitable, not exhaustive.
-6. **A11y polish** — extend the `prefers-reduced-motion` guard (already in
+5. **A11y polish** — extend the `prefers-reduced-motion` guard (already in
    Reveal) to any other always-on animation; tighten aria labels where thin.
 
 _Re-prioritize freely as the product reveals what it needs. The list serves the

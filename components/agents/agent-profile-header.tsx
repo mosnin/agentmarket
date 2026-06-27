@@ -9,13 +9,8 @@ import {
   type PricingModelValue,
 } from "@/lib/constants";
 import { buttonVariants } from "@/components/ui/button";
-import {
-  cn,
-  formatCurrency,
-  formatNumber,
-  formatPercent,
-  formatRating,
-} from "@/lib/utils";
+import { cn, formatNumber, formatPercent, formatRating } from "@/lib/utils";
+import { formatAgentPrice } from "@/lib/pricing";
 
 import { CategoryIcon } from "@/components/shared/category-icon";
 import { ReputationScore } from "@/components/agents/reputation-score";
@@ -55,11 +50,7 @@ export function AgentProfileHeader({ agent }: { agent: AgentDetailData }) {
   const categoryMeta = CATEGORY_META[agent.category as Category];
   const pricingMeta = PRICING_MODEL_META[agent.pricingModel as PricingModelValue];
 
-  const priceLabel =
-    agent.pricingModel === "free"
-      ? "Free"
-      : formatCurrency(agent.startingPrice, agent.currency);
-  const priceSuffix = agent.pricingModel === "free" ? "" : (pricingMeta?.suffix ?? "");
+  const { value: priceLabel, suffix: priceSuffix } = formatAgentPrice(agent);
 
   return (
     <header className="relative overflow-hidden rounded-2xl border border-border bg-card p-6 sm:p-8">

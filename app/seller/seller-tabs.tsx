@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 
 import type { TaskListItem } from "@/lib/data";
-import { PRICING_MODEL_META, type PricingModelValue } from "@/lib/constants";
+import { formatAgentPrice } from "@/lib/pricing";
 import {
   cn,
   formatCurrency,
@@ -84,20 +84,6 @@ interface SellerTabsProps {
   inboundTasks: TaskListItem[];
   openInboundIds: string[];
   reviews: SellerReview[];
-}
-
-function pricingSuffix(model: string): string {
-  return PRICING_MODEL_META[model as PricingModelValue]?.suffix ?? "";
-}
-
-function priceLabel(agent: Pick<SellerAgent, "pricingModel" | "startingPrice" | "currency">) {
-  if (agent.pricingModel === "free" || agent.startingPrice === 0) {
-    return { value: "Free", suffix: "" };
-  }
-  return {
-    value: formatCurrency(agent.startingPrice, agent.currency),
-    suffix: pricingSuffix(agent.pricingModel),
-  };
 }
 
 /* --------------------------------- Shell ---------------------------------- */
@@ -239,7 +225,7 @@ function ListingsPanel({ agents }: { agents: SellerAgent[] }) {
         </TableHeader>
         <TableBody>
           {agents.map((agent) => {
-            const price = priceLabel(agent);
+            const price = formatAgentPrice(agent);
             return (
               <TableRow key={agent.id} className="group">
                 <TableCell className="max-w-[260px] py-3 pl-5">

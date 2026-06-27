@@ -2,19 +2,9 @@ import Link from "next/link";
 import { BadgeCheck, Building2, Clock, Star } from "lucide-react";
 
 import type { AgentCardData } from "@/lib/data";
-import {
-  CATEGORY_META,
-  PRICING_MODEL_META,
-  type Category,
-  type PricingModelValue,
-} from "@/lib/constants";
-import {
-  cn,
-  formatCurrency,
-  formatLatency,
-  formatPercent,
-  formatRating,
-} from "@/lib/utils";
+import { CATEGORY_META, type Category } from "@/lib/constants";
+import { cn, formatLatency, formatPercent, formatRating } from "@/lib/utils";
+import { formatAgentPrice } from "@/lib/pricing";
 
 import { buttonVariants } from "@/components/ui/button";
 import { CategoryIcon } from "@/components/shared/category-icon";
@@ -25,15 +15,11 @@ const MAX_CAPABILITIES = 3;
 
 export function AgentCard({ agent }: { agent: AgentCardData }) {
   const categoryMeta = CATEGORY_META[agent.category as Category];
-  const pricingMeta = PRICING_MODEL_META[agent.pricingModel as PricingModelValue];
   const capabilities = agent.capabilities.map((c) => c.capability.name);
   const shownCapabilities = capabilities.slice(0, MAX_CAPABILITIES);
   const extraCapabilities = capabilities.length - shownCapabilities.length;
 
-  const priceLabel =
-    agent.pricingModel === "free"
-      ? "Free"
-      : `${formatCurrency(agent.startingPrice, agent.currency)}${pricingMeta?.suffix ?? ""}`;
+  const { label: priceLabel } = formatAgentPrice(agent);
 
   return (
     <div

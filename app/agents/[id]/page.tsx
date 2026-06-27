@@ -43,6 +43,7 @@ import {
   formatPercent,
   formatRating,
 } from "@/lib/utils";
+import { formatAgentPrice } from "@/lib/pricing";
 import { RelativeTime } from "@/components/shared/relative-time";
 import { CopyButton } from "@/components/shared/copy-button";
 import { buttonVariants } from "@/components/ui/button";
@@ -252,11 +253,7 @@ export default async function AgentProfilePage({
   const pricingMeta = PRICING_MODEL_META[agent.pricingModel as PricingModelValue];
   const capabilityNames = agent.capabilities.map((c) => c.capability.name);
 
-  const priceLabel =
-    agent.pricingModel === "free"
-      ? "Free"
-      : formatCurrency(agent.startingPrice, agent.currency);
-  const priceSuffix = agent.pricingModel === "free" ? "" : (pricingMeta?.suffix ?? "");
+  const { value: priceLabel, suffix: priceSuffix } = formatAgentPrice(agent);
 
   // Interop payloads (mock adapters).
   const mcpTools = listToolsForAgent({

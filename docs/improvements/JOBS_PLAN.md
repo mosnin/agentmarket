@@ -36,13 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Unify the price/pricing-label logic.** The hire-decision surfaces each format an
-agent's price independently — `seller-tabs.tsx` has `priceLabel`/`pricingSuffix`, and
-`components/agents/agent-card.tsx` (plus possibly the agent profile) likely repeat it.
-Extract one shared, client-safe `formatAgentPrice(agent)` helper (free → "Free", else
-currency + per-model suffix) into `lib/pricing.ts`, point the call sites at it, and add
-`lib/pricing.test.ts`. Simplify-and-decouple + coverage, so price reads identically
-everywhere it appears. Verify with `npm test` + build + types.
+**Re-walk agent creation (the sell-side onboarding).** Walk `/agents/new` — the form
+a new operator fills to list their first agent. Find and fix the single biggest
+friction or unclear state: sensible defaults, clear required-vs-optional, a live
+preview of how the listing will look, and a confident submit. If it's already strong,
+extract + test any pure helper it contains. Lens: remove friction + sensible defaults.
+Verify with `npm test` (still green) + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -51,6 +50,14 @@ everywhere it appears. Verify with `npm test` + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Unify the price/pricing-label logic.** Four hire surfaces each
+  re-derived an agent's price string (agent card, profile header, detail page, seller
+  studio), and only one treated a $0 price as "Free". Extracted a single
+  `formatAgentPrice(agent)` into `lib/pricing.ts` (free model *or* $0 → "Free"; else
+  currency + per-model suffix; returns value / suffix / label) and pointed all four at
+  it — so price reads identically everywhere, and a $0 agent now shows "Free"
+  consistently. +5 tests (114 total). (`lib/pricing.ts`, `lib/pricing.test.ts`,
+  `agent-card.tsx`, `agent-profile-header.tsx`, `app/agents/[id]/page.tsx`, `seller-tabs.tsx`)
 - **2026-06-27 — Decouple + test the marketplace filter logic.** Re-walked browse →
   hire: the marketplace already nails filter clarity (debounced search, removable
   per-filter chips, "Clear all", result count with `aria-live`, sort label). Extracted
@@ -390,8 +397,8 @@ everywhere it appears. Verify with `npm test` + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Unify price/pricing-label logic** into one tested `formatAgentPrice` helper.
-   *(NEXT STEP. Browse side ✓ — filters clear + decoupled + tested.)*
+1. **Re-walk agent creation** (`/agents/new`) — sell-side onboarding friction.
+   *(NEXT STEP. Price logic unified + tested across all hire surfaces.)*
 2. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.

@@ -31,6 +31,7 @@ import {
   PAYMENT_MODE_META,
   VISIBILITY_OPTIONS,
   VISIBILITY_META,
+  type Category,
 } from "@/lib/constants";
 
 import { Button } from "@/components/ui/button";
@@ -116,6 +117,11 @@ function SectionHeader({
       </div>
     </CardHeader>
   );
+}
+
+/** Narrow an agent's stored category string to the Category enum. */
+function isCategory(value: string | undefined): value is Category {
+  return !!value && (CATEGORIES as readonly string[]).includes(value);
 }
 
 /** Build the preview contract from current form values (live, always-on draft). */
@@ -235,6 +241,26 @@ export function TaskForm({
       setGenerated(null);
     }
   }, [values.objective, generated]);
+
+  // Smart defaults — the contract drafts itself around the chosen specialist.
+  // When an agent is selected (including via the "Hire this agent" deep link),
+  // adopt its category and suggest its starting price as the budget, unless the
+  // buyer has already set those fields. "It just works": pick an agent and the
+  // routing, category, and budget are sensible before you type a word.
+  React.useEffect(() => {
+    if (!selectedAgent) return;
+    if (!form.getValues("category") && isCategory(selectedAgent.category)) {
+      form.setValue("category", selectedAgent.category);
+    }
+    if (
+      !form.formState.dirtyFields.budget &&
+      selectedAgent.pricingModel !== "free" &&
+      selectedAgent.startingPrice > 0
+    ) {
+      form.setValue("budget", selectedAgent.startingPrice);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedAgent?.id]);
 
   // The preview shows the generated contract if present, else the live draft.
   // Payment mode is always read live so it reflects the current selection.

@@ -36,15 +36,20 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**One-tap "clear all" filters in the marketplace.** When any filter is active and
-results are showing (not just in the empty state), surface a single "Clear all"
-control near the result summary in `app/marketplace/page.tsx` (links to
-`/marketplace`) so a buyer can reset in one tap. Verify build + types.
+**Number craft.** Apply `tabular-nums` (and consistent currency/latency
+formatting) wherever a number can change in place — dashboard metric cards,
+reputation scores, agent stats, prices — so digits don't jitter as values update.
+Start with the most visible surface (the dashboard metric cards). Verify build +
+types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — One-tap "Clear all" in the marketplace.** When filters are
+  active and results are showing, a "Clear all" reset now sits beside the result
+  summary — not only inside the empty state — so a buyer can start over in one
+  tap. (`app/marketplace/page.tsx`)
 - **2026-06-27 — Earned delight at completion.** When a task settles, the
   "Settled" confirmation now springs in with a popped check — a small, earned
   moment at the peak of the loop, via Framer Motion and reduced-motion-aware.
@@ -84,16 +89,13 @@ control near the result summary in `app/marketplace/page.tsx` (links to
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Instant marketplace filtering** — a one-tap "clear all filters" reachable
-   even when results exist (not only from the empty state).
-   *(promoted to NEXT STEP)*
+1. **Number craft** — tabular-nums and consistent currency/latency formatting
+   everywhere a value can change. *(promoted to NEXT STEP)*
 2. **Layout-stable loading** — verify each route's skeleton matches its final
    layout so nothing shifts when data lands; fix any jumps.
-3. **Number craft** — tabular-nums and consistent currency/latency formatting
-   everywhere a value can change.
-4. **Tighten the narrative** — the landing page says a lot; cut/merge sections
+3. **Tighten the narrative** — the landing page says a lot; cut/merge sections
    so the story is inevitable, not exhaustive.
-5. **A11y polish** — extend the `prefers-reduced-motion` guard (already in
+4. **A11y polish** — extend the `prefers-reduced-motion` guard (already in
    Reveal) to any other always-on animation; tighten aria labels where thin.
 
 _Re-prioritize freely as the product reveals what it needs. The list serves the

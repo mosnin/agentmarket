@@ -164,9 +164,19 @@ export default async function MarketplacePage({
               ) : null}
             </h2>
             {count > 0 ? (
-              <span className="text-xs text-muted-foreground">
-                Sorted by {sortLabel}
-              </span>
+              <div className="flex items-center gap-3">
+                {active ? (
+                  <Link
+                    href="/marketplace"
+                    className="text-xs font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+                  >
+                    Clear all
+                  </Link>
+                ) : null}
+                <span className="text-xs text-muted-foreground">
+                  Sorted by {sortLabel}
+                </span>
+              </div>
             ) : null}
           </div>
 

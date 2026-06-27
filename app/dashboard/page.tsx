@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 
 import { getDashboardData } from "@/lib/data";
-import { cn, formatCurrency, formatRelativeTime } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
@@ -30,6 +30,7 @@ import {
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
+import { RelativeTime } from "@/components/shared/relative-time";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { DashboardChart } from "@/components/dashboard/dashboard-chart";
 import { TaskStatusBadge } from "@/components/tasks/task-status-badge";
@@ -275,7 +276,7 @@ function RecentPaymentsSection({
                     <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
                       <span>{isSpend ? "Spend" : "Earned"}</span>
                       <span aria-hidden="true">·</span>
-                      <span>{formatRelativeTime(payment.createdAt)}</span>
+                      <RelativeTime date={payment.createdAt} />
                     </p>
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-1">
@@ -342,7 +343,7 @@ function MarketplaceActivitySection({
                   <p className="mt-0.5 flex items-center gap-1.5 truncate text-xs text-muted-foreground">
                     <span className="truncate">{task.category}</span>
                     <span aria-hidden="true">·</span>
-                    <span>{formatRelativeTime(task.createdAt)}</span>
+                    <RelativeTime date={task.createdAt} />
                   </p>
                 </div>
                 <TaskStatusBadge status={task.status} />
@@ -412,7 +413,7 @@ function ReputationChangesSection({
                   <p className="mt-0.5 truncate text-xs text-muted-foreground">
                     <span className="text-foreground/80">{event.agent.name}</span>
                     <span aria-hidden="true"> · </span>
-                    {formatRelativeTime(event.createdAt)}
+                    <RelativeTime date={event.createdAt} />
                   </p>
                 </div>
               </li>

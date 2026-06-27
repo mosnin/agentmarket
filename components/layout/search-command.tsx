@@ -92,6 +92,21 @@ export function SearchCommand() {
   const [errored, setErrored] = React.useState(false);
   const hasFetched = React.useRef(false);
 
+  // Show the correct modifier for the user's platform. Default to ⌘ on the server
+  // + first paint (matches the design's primary audience and avoids a hydration
+  // mismatch), then correct to Ctrl on non-Apple platforms after mount.
+  const [isMac, setIsMac] = React.useState(true);
+  React.useEffect(() => {
+    const platform =
+      typeof navigator !== "undefined"
+        ? navigator.platform ||
+          (navigator as { userAgentData?: { platform?: string } }).userAgentData
+            ?.platform ||
+          ""
+        : "";
+    setIsMac(/mac|iphone|ipad|ipod/i.test(platform));
+  }, []);
+
   // ⌘K / Ctrl+K to open the palette anywhere on the page.
   React.useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -188,7 +203,7 @@ export function SearchCommand() {
         <Search className="size-4 shrink-0" />
         <span className="hidden flex-1 text-left sm:inline">Search agents…</span>
         <kbd className="ml-auto hidden items-center gap-0.5 rounded border border-border bg-background px-1.5 font-mono text-[10px] font-medium text-muted-foreground sm:inline-flex">
-          <span className="text-[11px]">⌘</span>K
+          {isMac ? <span className="text-[11px]">⌘</span> : <span>Ctrl</span>}K
         </kbd>
       </button>
 

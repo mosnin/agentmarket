@@ -36,12 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Command palette discoverability (⌘K).** A ⌘K / "/" command palette exists, but a
-keyboard-only entry point is invisible to first-timers. Verify the app header
-surfaces a visible, clickable "Search… ⌘K" affordance that opens the palette; if
-it's missing or only keyboard-triggered, add a subtle trigger so the capability is
-discoverable by sight, not just by secret. Lens: remove friction + earned delight.
-Verify with `npm test` (still green) + build + types.
+**Re-walk browse → hire.** Walk the acquisition path — marketplace → filter/search →
+agent profile → hire. Find and fix the single biggest friction or unclear state.
+Starting point: check the marketplace makes the active filters + result count obvious
+and one-click clearable *even when results exist* (today the "Clear filters" reset
+only appears in the empty state). Lens: remove friction + clarify state. Verify with
+`npm test` (still green) + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -50,6 +50,12 @@ Verify with `npm test` (still green) + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Platform-aware ⌘K hint.** Confirmed the command palette is already
+  discoverable: a visible "Search agents… ⌘K" trigger that opens on click, ⌘K/Ctrl+K,
+  and "/". Fixed the one imprecision — the hint always showed ⌘K even on Windows/Linux
+  where the binding is Ctrl+K; it now shows the correct modifier per platform (⌘ on
+  Apple, Ctrl elsewhere), corrected post-mount so there's no hydration mismatch.
+  (`components/layout/search-command.tsx`)
 - **2026-06-27 — Overdue in Seller Studio (deadline thread complete).** Reused
   `isTaskOverdue` in the Seller Studio inbound-tasks table so the operator who must
   *deliver* sees the same rose "Overdue" chip on in-flight tasks past their deadline.
@@ -374,10 +380,9 @@ Verify with `npm test` (still green) + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Command palette discoverability (⌘K)** — a visible "Search… ⌘K" trigger in the
-   header. *(NEXT STEP. Deadline thread complete: detail ✓, dashboard ✓, seller ✓.)*
-2. **Re-walk browse → hire** for any remaining friction.
-3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs.
+1. **Re-walk browse → hire** — marketplace filters/result-count clarity first.
+   *(NEXT STEP. Command palette ✓ discoverable + platform-aware.)*
+2. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

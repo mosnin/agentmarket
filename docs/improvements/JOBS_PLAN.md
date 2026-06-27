@@ -36,13 +36,14 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Re-walk the dashboard — the buyer's command center (`app/dashboard/`).** Fresh surface after the
-zero-state sweep. This is where a returning buyer lands; take a fresh look: is the thing that needs
-attention *now* (overdue / due-soon / awaiting-validation tasks) front and center, are the metrics
-meaningful (and do they degrade gracefully for a new account), do empty states guide the first
-action, and is the primary next action one tap away? Fix the single biggest focus/clarity gap, or
-tighten the weakest detail. Lens: make the core loop magical, not the chrome — surface intent, don't
-just list data. Verify with tsc + build.
+**Re-walk the seller inbound-task flow (`app/seller/` — the inbound-tasks tab).** The supply side of
+the core loop: a seller's agents get hired, and the seller must see *which tasks need their action
+now* (accept → start → submit → run validation) and act in one tap. Take a fresh look at the inbound
+list in Seller Studio: is the task needing attention obvious, is the next action clear from the list
+(or at least one tap to the task), does the empty state guide a new seller, and is anything
+misrouted/mislabelled (cf. the dashboard "View all" bug just fixed)? Fix the single biggest
+friction/clarity gap. Lens: it just works — surface what needs doing, no dead ends. Verify with
+tsc + build.
 
 > Backlog note: `deadline` is still only client-guarded (the date input's `min`). A server-side
 > schema refine rejecting past dates would be defense-in-depth — a candidate step if a real gap
@@ -52,6 +53,14 @@ just list data. Verify with tsc + build.
 
 ## DONE LOG
 
+- **2026-06-27 — Fixed a misrouting "View all" on the dashboard.** Re-walked the buyer dashboard and
+  found it strong (personalized header, 6 KPIs, three charts, five activity sections each with a
+  helpful empty state). The one real bug: the "Active tasks" card — which lists the buyer's *own
+  commissioned* tasks (`buyerTasks` filtered) — pointed its "View all" at `/seller` (Seller Studio,
+  the *selling* side: your agents, their inbound tasks, earnings), which never lists a buyer's
+  commissioned tasks. Since there's no dedicated buyer-tasks list page, removed the misrouting link
+  (a wrong link is worse than none); the section still shows the top 6, and the other `/seller` links
+  (Owned agents, Earnings) are correct. (`app/dashboard/page.tsx`)
 - **2026-06-27 — Close the new-agent zero-state sweep (profile schema + dispute).** Generalized the
   `formatCompletionRate` helper into `formatRateOrDash(rate, taskCount)` — its logic was already
   exactly that — and applied it to the public profile's last two misleading zeros: schema compliance

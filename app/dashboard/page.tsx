@@ -171,7 +171,6 @@ function ActiveTasksSection({ tasks }: { tasks: DashboardData["activeTasksList"]
     <SectionCard
       title="Active tasks"
       icon={ListChecks}
-      action={tasks.length > 0 ? <ViewAllLink href="/seller" /> : undefined}
     >
       {tasks.length === 0 ? (
         <EmptyState

@@ -985,7 +985,9 @@ export default async function AgentProfilePage({
               {agent.category}
             </Link>
             <span aria-hidden="true">/</span>
-            <span className="truncate font-medium text-foreground">{agent.name}</span>
+            <span aria-current="page" className="truncate font-medium text-foreground">
+              {agent.name}
+            </span>
             <CopyButton
               value={`https://agentmarket.dev/agents/${agent.slug}`}
               label="Copy link"

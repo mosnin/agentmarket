@@ -162,7 +162,10 @@ export default async function TaskDetailPage({
             Tasks
           </Link>
           <ChevronRight className="size-3.5 shrink-0 opacity-60" aria-hidden />
-          <span className="truncate font-medium text-foreground">
+          <span
+            aria-current="page"
+            className="truncate font-medium text-foreground"
+          >
             {task.title}
           </span>
           <CopyButton

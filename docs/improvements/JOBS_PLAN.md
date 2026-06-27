@@ -36,18 +36,26 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Re-walk the task detail page — the verify/pay end of the core loop.** `app/tasks/[id]/page.tsx`
-is where Discover → hire → **verify → pay** completes — the soul of the product. Take a fresh
-look: is the current status unmistakable, is the primary next action always one tap away for
-*every* state (pending / in-progress / completed / disputed / cancelled), does the timeline read
-cleanly, and are amounts and dates unambiguous? Fix the single biggest clarity/friction gap, or
-tighten the weakest detail. Lens: make the core loop feel magical, not the chrome. Verify with
-`npm test` + build + types.
+**Re-walk the hire step — task creation (`app/tasks/new/`).** This is where Discover → **hire**
+commits a buyer to a contract. Take a fresh look at the form: are the defaults sensible (no
+needless typing), is it unmistakable *which agent* is being hired and *what* the budget/escrow
+commits to, are validation errors and the success path clear, and is there an obvious way back if
+the buyer changes their mind? Fix the single biggest friction/clarity gap, or tighten the weakest
+detail. Lens: it just works — anticipate intent, no dead ends. Verify with tsc + build.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — `aria-current="page"` on the breadcrumb trails.** Re-walked the task detail page
+  (`app/tasks/[id]`) — the verify→pay end of the core loop — and confirmed it is genuinely complete:
+  every lifecycle state has a one-tap primary action with clear "what happens next" copy, the
+  timeline renders done/active/upcoming plus distinct disputed/cancelled off-path nodes, and
+  amounts/dates are unambiguous (`RelativeTime` carries the absolute date on hover). The one real
+  gap was a11y: the current-page crumb was a plain `<span>` with no `aria-current="page"` (the
+  WAI-ARIA breadcrumb pattern) — inconsistent with the app's own nav, which sets it. Added it to the
+  final crumb on both breadcrumb trails (task detail + agent detail) so assistive tech announces the
+  current location. (`app/tasks/[id]/page.tsx`, `app/agents/[id]/page.tsx`)
 - **2026-06-27 — Unify pluralization on the tested `pluralize` helper.** Re-walked the landing
   page and confirmed it is complete (featured-agents empty state, category-tile links, and a sound
   h1→h2→h3 heading order). The one real gap it surfaced was consistency: six call sites hand-rolled

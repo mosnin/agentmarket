@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 
 import { getAgent, getRelatedAgents } from "@/lib/data";
+import { getCurrentUser } from "@/lib/auth";
 import {
   CATEGORY_META,
   PAYMENT_MODE_META,
@@ -243,11 +244,13 @@ export default async function AgentProfilePage({
   params: Promise<Params>;
 }) {
   const { id } = await params;
-  const agent = await getAgent(id);
+  const [agent, currentUser] = await Promise.all([getAgent(id), getCurrentUser()]);
 
   if (!agent) {
     notFound();
   }
+
+  const isOwner = agent.ownerId === currentUser.id;
 
   const categoryMeta = CATEGORY_META[agent.category as Category];
   const pricingMeta = PRICING_MODEL_META[agent.pricingModel as PricingModelValue];
@@ -987,7 +990,7 @@ export default async function AgentProfilePage({
             />
           </nav>
 
-          <AgentProfileHeader agent={agent} />
+          <AgentProfileHeader agent={agent} canEdit={isOwner} />
 
           {/* Two-column responsive layout */}
           <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">

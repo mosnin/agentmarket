@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, Building2, CheckCircle2, Star } from "lucide-react";
+import { ArrowRight, BadgeCheck, Building2, CheckCircle2, Pencil, Star } from "lucide-react";
 
 import type { AgentDetailData } from "@/lib/data";
 import {
@@ -46,7 +46,13 @@ function StatChip({
   );
 }
 
-export function AgentProfileHeader({ agent }: { agent: AgentDetailData }) {
+export function AgentProfileHeader({
+  agent,
+  canEdit = false,
+}: {
+  agent: AgentDetailData;
+  canEdit?: boolean;
+}) {
   const categoryMeta = CATEGORY_META[agent.category as Category];
   const pricingMeta = PRICING_MODEL_META[agent.pricingModel as PricingModelValue];
 
@@ -159,13 +165,27 @@ export function AgentProfileHeader({ agent }: { agent: AgentDetailData }) {
                 · {pricingMeta?.label ?? "Custom pricing"}
               </span>
             </div>
-            <Link
-              href={`/tasks/new?agent=${agent.id}`}
-              className={cn(buttonVariants({ size: "lg" }), "w-full lg:w-auto")}
-            >
-              Hire this agent
-              <ArrowRight className="size-4" aria-hidden="true" />
-            </Link>
+            <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto lg:justify-end">
+              <Link
+                href={`/tasks/new?agent=${agent.id}`}
+                className={cn(buttonVariants({ size: "lg" }), "w-full sm:w-auto")}
+              >
+                Hire this agent
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+              {canEdit ? (
+                <Link
+                  href={`/agents/${agent.id}/edit`}
+                  className={cn(
+                    buttonVariants({ variant: "outline", size: "lg" }),
+                    "w-full sm:w-auto",
+                  )}
+                >
+                  <Pencil className="size-4" aria-hidden="true" />
+                  Edit listing
+                </Link>
+              ) : null}
+            </div>
           </div>
         </div>
       </div>

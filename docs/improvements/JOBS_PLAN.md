@@ -36,12 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Surface "Edit" on the agent profile (for the owner).** The edit flow now exists but
-is only reachable from Seller Studio. Add an owner-only "Edit" action to the agent
-profile header (show it when the viewer owns the agent — `agent.ownerId === currentUser.id`)
-so you can jump straight to `/agents/[id]/edit` from where you view the listing. Lens:
-remove friction — reach edit from where you are. Verify with `npm test` (still green) +
-build + types.
+**Enforce ownership on agent edit.** Building the edit flow exposed an authorization
+gap: `updateAgent` updates any `agentId` without checking the caller owns it, and
+`/agents/[id]/edit` renders for non-owners. Add a guard — `updateAgent` verifies the
+agent's `ownerId === currentUser.id` (else returns a clear error), and the edit page
+redirects non-owners back to the profile. Lens: clarify state / safety — only the owner
+edits. Verify with `npm test` (still green) + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -50,6 +50,11 @@ build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Owner-only "Edit" on the agent profile.** The edit flow (built last
+  iteration) was only reachable from Seller Studio. Added an "Edit listing" action next
+  to "Hire this agent" in the profile header, shown only when the viewer owns the agent
+  (`agent.ownerId === currentUser.id`). Edit is now reachable from where you view the
+  listing. (`components/agents/agent-profile-header.tsx`, `app/agents/[id]/page.tsx`)
 - **2026-06-27 — Build the agent edit flow (fix a dead link).** Seller Studio linked
   every listing to `/agents/[slug]/edit`, but no such route existed — the "Edit" button
   404'd. Built it: extended `AgentForm` to accept optional pre-filled `initial` values
@@ -420,8 +425,8 @@ build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Surface "Edit" on the agent profile** (owner-only). *(NEXT STEP. Edit flow now
-   built + reachable from Seller Studio.)*
+1. **Enforce ownership on agent edit** — guard `updateAgent` + the edit page.
+   *(NEXT STEP. Edit flow built ✓ + reachable from Seller Studio and the profile ✓.)*
 2. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.

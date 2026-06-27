@@ -36,11 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Test `RelativeTime`.** It's rendered on every timestamp in the app and carries a
-semantics/a11y contract worth pinning: a `<time>` element with a machine-readable `dateTime`
-attribute, the humane relative text ("2h ago") as its content, and the exact date-time as a
-`title` (hover). Add `relative-time.test.tsx` asserting all three for a known date. Clean
-render test, no mocks. Verify with `npm test` + build + types.
+**Test `MarketplaceFilters` clear-all + active state.** The filter bar's last untested
+client logic: it computes `hasActiveFilters` across 6 params and offers a "Clear" reset. Mock
+`next/navigation` (`useRouter` push spy, `usePathname` → "/marketplace", `useSearchParams`),
+render the bar, and assert the "Clear" affordance shows when a filter is active and routes back
+to a bare `/marketplace`, and is absent when nothing is set. Covers the reset logic on a core
+surface. Verify with `npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -49,6 +50,11 @@ render test, no mocks. Verify with `npm test` + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Test RelativeTime (the `<time>` contract).** Added `relative-time.test.tsx`
+  — 3 tests: renders a `<time>` with a machine-readable `dateTime` (ISO), the humane relative
+  text as content ("…ago"), and the exact date-time as `title`; accepts a string date; forwards
+  a className. Pins the semantic-time + hover-exact-time contract used on every timestamp. 176
+  tests across 21 files. (`components/shared/relative-time.test.tsx`)
 - **2026-06-27 — Copyable transaction hashes in the admin ledger.** Re-walked `/admin`
   (moderation, disputes, suspicious tasks, payments, reputation — all solid). Closed the one
   gap: the payments ledger showed each tx hash with only a hover `title` (mouse-only, not
@@ -565,8 +571,8 @@ render test, no mocks. Verify with `npm test` + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Test `RelativeTime`** (the `<time>` semantics + title contract). *(NEXT STEP. Admin
-   console re-walked + ledger hashes now copyable ✓ — 173 tests.)*
+1. **Test `MarketplaceFilters`** clear-all + active state. *(NEXT STEP. RelativeTime
+   contract pinned ✓ — 176 tests across 21 files.)*
 2. **Reassess** — the app is feature-complete; prefer genuine gaps over make-work (a real
    missing capability, a correctness fix, or coverage for untested real logic).
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;

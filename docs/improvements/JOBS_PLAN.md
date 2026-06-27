@@ -36,15 +36,19 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Theme-aware color-scheme.** In `globals.css`, set `color-scheme: light` on
-`:root` and `color-scheme: dark` on `.dark` so native controls follow the theme
-toggle (the static viewport `colorScheme` stays as the pre-paint default). Fixes
-light-mode native widgets rendering dark. Verify build + types.
+**Autofocus the create forms.** Focus the first field on load on the dedicated
+create pages (task title on `/tasks/new`, agent name on `/agents/new`) so you can
+start typing immediately — standard for single-purpose compose pages. Verify build
++ types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Theme-aware color-scheme.** Set `color-scheme: light` on `:root`
+  and `color-scheme: dark` on `.dark` in globals.css so native controls/scrollbars
+  follow the theme toggle (fixing light-mode widgets rendering dark); the static
+  viewport colorScheme stays as the pre-paint default. (`app/globals.css`)
 - **2026-06-27 — One source of truth for color-scheme.** Removed the local
   `[color-scheme:dark]` override on the task form's date input now that
   `colorScheme: "dark"` is global. (`app/tasks/new/task-form.tsx`)
@@ -252,10 +256,11 @@ light-mode native widgets rendering dark. Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Theme-aware color-scheme** — `color-scheme` on :root/.dark in globals.css.
-   *(promoted to NEXT STEP)*
-2. **Optimistic feedback polish** — consider optimistic UI on lifecycle actions
-   (currently toast + refresh).
+1. **Autofocus the create forms** — focus the first field on /tasks/new and
+   /agents/new. *(promoted to NEXT STEP)*
+2. **Optimistic feedback polish** — optimistic UI on lifecycle actions.
+3. **Public task board (/tasks)** — browsable index of public tasks (bigger;
+   only if the IA warrants it).
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

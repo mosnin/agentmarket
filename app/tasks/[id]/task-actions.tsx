@@ -88,6 +88,8 @@ export interface TaskActionsProps {
     hasArtifact: boolean;
     /** Validation status of the most recently submitted artifact, if any. */
     latestValidationStatus: ValidationStatusValue | null;
+    /** Score (0–100) of the most recently submitted artifact, if validated. */
+    latestValidationScore: number | null;
   };
 }
 
@@ -297,18 +299,29 @@ export function TaskActions({ task }: TaskActionsProps) {
               </SubmitArtifactDialog>
               <div className="flex items-center gap-2 rounded-lg border border-rose-500/20 bg-rose-500/5 px-3 py-2.5 text-xs text-rose-300">
                 <ScanSearch className="size-4 shrink-0" aria-hidden />
-                Validation didn&apos;t pass. Payment stays escrowed until a
-                resubmitted artifact clears validation.
+                {task.latestValidationScore != null
+                  ? `Scored ${task.latestValidationScore}/100 — below the ${VALIDATION_PASS_THRESHOLD} bar. Payment stays escrowed until a resubmitted artifact clears validation.`
+                  : "Validation didn't pass. Payment stays escrowed until a resubmitted artifact clears validation."}
               </div>
             </>
           ) : (
-            <PrimaryButton
-              onClick={handleComplete}
-              pending={isPending}
-              icon={CircleDollarSign}
-              label="Complete task & release payment"
-              pendingLabel="Releasing payment…"
-            />
+            <>
+              {task.latestValidationScore != null ? (
+                <div className="flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2.5 text-xs text-emerald-300">
+                  <CheckCircle2 className="size-4 shrink-0" aria-hidden />
+                  Validation passed — scored {task.latestValidationScore}/100,
+                  above the {VALIDATION_PASS_THRESHOLD} bar. Complete to release
+                  the escrowed payment.
+                </div>
+              ) : null}
+              <PrimaryButton
+                onClick={handleComplete}
+                pending={isPending}
+                icon={CircleDollarSign}
+                label="Complete task & release payment"
+                pendingLabel="Releasing payment…"
+              />
+            </>
           ))}
 
         {status === "completed" && (

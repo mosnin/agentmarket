@@ -120,6 +120,7 @@ export default async function TaskDetailPage({
   const latestValidationStatus =
     (task.artifacts[0]?.validationStatus as ValidationStatusValue | undefined) ??
     null;
+  const latestValidationScore = task.artifacts[0]?.validationScore ?? null;
   const openDisputes = task.disputes.filter((d) => d.status === "open");
 
   const paymentMode = (payment?.mode ?? task.contract?.paymentMode) as
@@ -475,6 +476,7 @@ export default async function TaskDetailPage({
                 hasReview,
                 hasArtifact,
                 latestValidationStatus,
+                latestValidationScore,
               }}
             />
 

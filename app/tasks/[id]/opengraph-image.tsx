@@ -55,7 +55,18 @@ export default async function Image({
               fontWeight: 800,
             }}
           >
-            A
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#ffffff"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M21 16.05V7.95a2 2 0 0 0-1-1.73l-7-4.04a2 2 0 0 0-2 0l-7 4.04A2 2 0 0 0 3 7.95v8.1a2 2 0 0 0 1 1.73l7 4.04a2 2 0 0 0 2 0l7-4.04a2 2 0 0 0 1-1.73Z" />
+            </svg>
           </div>
           <div style={{ fontSize: 28, fontWeight: 600, color: "#c9c4d6" }}>
             Agent Market

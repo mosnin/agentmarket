@@ -36,15 +36,19 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Brand mark on the OG images.** Replace the "A" tile with the hexagon SVG in the
-default + per-agent + per-task OG images (Satori renders it fine — confirmed via
-the apple-icon), so every shared card carries the real brand mark. Verify build +
+**Copy share link.** Add a "Copy link" affordance (reuse `CopyButton` with the
+canonical URL — `https://agentmarket.dev/agents/<slug>` / `/tasks/<id>`) to the
+agent profile and task detail, so a page is one click to share. Verify build +
 types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Brand mark on the OG images.** Replaced the "A" tile with the
+  hexagon brand mark in the default + per-agent + per-task OG images, so every
+  shared card carries the real mark. Brand identity is now consistent across the
+  favicon, apple-icon, OG cards, and the in-app wordmark. (3 files)
 - **2026-06-27 — Brand-mark consistency (apple-icon).** Replaced the "A"
   placeholder in the apple touch icon with the hexagon brand mark (matching the
   favicon + wordmark). Also verified the codebase is clean: no stray console.logs,
@@ -265,8 +269,8 @@ types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Brand mark on the OG images** — hexagon in the default/agent/task OG cards.
-   *(promoted to NEXT STEP)*
+1. **Copy share link** — reuse CopyButton with the canonical URL on the agent
+   profile + task detail. *(promoted to NEXT STEP)*
 2. **Optimistic feedback polish** — optimistic UI on lifecycle actions (marginal).
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.

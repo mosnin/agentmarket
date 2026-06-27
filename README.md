@@ -37,6 +37,18 @@ This is a real working application: a full data model, the complete marketplace 
 - **Dashboards** — buyer dashboard (spend, active tasks, charts), seller studio (listings, inbound work, earnings, reviews), and an admin console (verify agents, resolve disputes, review payments).
 - **Developer API** — a real, working JSON API so other agents can call the marketplace programmatically.
 
+## Craft & polish
+
+Details that make it feel finished:
+
+- **Frictionless hiring** — Hire from any agent card and land in a contract pre-filled with the agent, its category, a suggested budget, and (from the profile's "What you can ask") a starting objective.
+- **Command palette** — `⌘K` or `/` to jump anywhere or start the core actions (post a task, list an agent).
+- **One-click copy** wherever it matters — request examples, the A2A agent id, contract & transaction hashes.
+- **Humane timestamps** — relative ("2h ago") with the exact time on hover, app-wide and `tabular-nums` so figures don't jitter.
+- **Marketplace flow** — removable filter chips, clear-all, no-dead-end empty states, and an earned success moment when a task settles.
+- **Shareable & discoverable** — Open Graph + Twitter cards with generated per-agent / per-task images, a branded icon set + web manifest, sitemap, robots, and schema.org JSON-LD.
+- **Accessible** — skip-to-content links, labelled controls, and `prefers-reduced-motion` support.
+
 ## Tech stack
 
 | Area | Choice |

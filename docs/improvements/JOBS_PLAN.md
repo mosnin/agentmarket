@@ -36,16 +36,18 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**README refresh.** Update the README to reflect the polished feature set added
-across the loop — frictionless hiring (grid → pre-filled contract), smart defaults,
-⌘K / "/" palette, copy affordances, humane timestamps, social cards + SEO (OG
-images, sitemap, robots, JSON-LD), and a11y (skip links). Keep it a focused edit to
-the overview/features section. Verify build + types.
+**Loading parity sweep.** Check the remaining `loading.tsx` skeletons (agent,
+dashboard, seller, developers, task) against their pages for drift — especially any
+AgentCard skeletons that, like the marketplace one, predate the Hire button. Fix
+any mismatch; if all match, note it and move on. Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — README refresh.** Added a "Craft & polish" section documenting the
+  loop's experience work — frictionless hiring, ⌘K/"/" palette, copy affordances,
+  humane timestamps, marketplace flow, shareable/SEO cards, and a11y. (`README.md`)
 - **2026-06-27 — Layout-stable loading (marketplace).** Updated the marketplace
   card skeleton's footer to include a price + Hire-button placeholder (it had
   drifted after the Hire button was added), so the skeleton matches the real card
@@ -224,9 +226,9 @@ the overview/features section. Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **README refresh** — document the loop's features. *(promoted to NEXT STEP)*
-2. **Loading parity sweep** — check the agent/dashboard skeletons against their
-   (now richer) pages; fix any drift.
+1. **Loading parity sweep** — check remaining skeletons vs their pages; fix drift.
+   *(promoted to NEXT STEP)*
+2. **Tighten the narrative** — landing page; cut/merge sections where it helps.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

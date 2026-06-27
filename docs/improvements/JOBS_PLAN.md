@@ -36,12 +36,13 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Test `ReputationScore` tier logic.** It maps a 0–100 score to a visual tier (top-tier
-≥90 / strong ≥80 / established ≥70 / building) shown across cards, profiles and dashboards.
-Add a test asserting the score renders and — via whatever it exposes (accessible
-label / title / text) — the tier is right at the band boundaries (92, 85, 72, 50). If the
-tier is purely visual, assert the displayed score renders for each band without error and
-pin any exported threshold helper. Verify with `npm test` + build + types.
+**Test the task form's smart defaults.** The "frictionless hiring" feature: arriving with a
+preselected agent auto-adopts that agent's category and suggests its starting price as the
+budget. Render `app/tasks/new/task-form.tsx` with `preselectedAgentId` + a matching agent in
+the `agents` prop (mock `next/navigation`'s `useRouter` + the `createTask` action), and
+assert the category + budget fields reflect the agent. Protects the headline hiring flow. If
+the Base UI form + mocks get fiddly to drive, fall back to a status-badge contract test
+instead. Verify with `npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -50,6 +51,12 @@ pin any exported threshold helper. Verify with `npm test` + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Test ReputationScore tier logic.** Added `reputation-score.test.tsx` — 4
+  tests: renders the score + a "Reputation N/100" title; clamps/rounds out-of-range +
+  fractional scores (150→100, −10→0, 84.6→85); colours the number by tier band (emerald
+  ≥90, lime ≥80, amber ≥70, rose below); renders the optional "Reputation / N / 100 rep"
+  label. Protects the tier thresholds shown across cards, profiles and dashboards. 157
+  tests across 18 files. (`components/agents/reputation-score.test.tsx`)
 - **2026-06-27 — Test the TaskTimeline lifecycle view.** Added `task-timeline.test.tsx` —
   6 tests: renders all six happy-path steps (Pending→Completed); flags the current step
   "In progress" (and not once completed); appends a terminal node for cancelled / disputed;
@@ -519,9 +526,9 @@ pin any exported threshold helper. Verify with `npm test` + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Test `ReputationScore`** tier logic. *(NEXT STEP. TaskTimeline lifecycle view
-   covered ✓ — 153 tests across 17 files.)*
-2. **Consistency pass** — destructive confirmations + toasts across the new dialogs.
+1. **Test the task form's smart defaults** (preselected agent → category + budget).
+   *(NEXT STEP. ReputationScore tier logic covered ✓ — 157 tests across 18 files.)*
+2. **Status-badge contract tests** + consistency pass on dialogs/toasts.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

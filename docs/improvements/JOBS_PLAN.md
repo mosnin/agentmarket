@@ -36,13 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Test the task form's smart defaults.** The "frictionless hiring" feature: arriving with a
-preselected agent auto-adopts that agent's category and suggests its starting price as the
-budget. Render `app/tasks/new/task-form.tsx` with `preselectedAgentId` + a matching agent in
-the `agents` prop (mock `next/navigation`'s `useRouter` + the `createTask` action), and
-assert the category + budget fields reflect the agent. Protects the headline hiring flow. If
-the Base UI form + mocks get fiddly to drive, fall back to a status-badge contract test
-instead. Verify with `npm test` + build + types.
+**Test the status badges.** `TaskStatusBadge`, `PaymentStatusBadge` and `AgentStatusBadge`
+each render `*_STATUS_META[status].label` with a coloured dot — used across dashboard, seller
+and task detail. Add a `status-badges.test.tsx` asserting each maps a representative status
+to its label (e.g. running→"Running", escrowed→"Escrowed", suspended→"Suspended") and renders
+an unknown status without crashing. Pins the status→label contract that appears everywhere.
+Verify with `npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -51,6 +50,12 @@ instead. Verify with `npm test` + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Test the task form's smart defaults.** Added `app/tasks/new/task-form.test.tsx`
+  (mocks `next/navigation`, the `createTask` action, and `sonner`): rendering `TaskForm` with
+  `preselectedAgentId` adopts that agent's starting price as the budget ($80, replacing the
+  $25 default); without a preselected agent the budget stays at the $25 default. Protects the
+  headline "frictionless hiring" flow end-to-end through the form — the most integration-level
+  test so far. 159 tests across 19 files. (`app/tasks/new/task-form.test.tsx`)
 - **2026-06-27 — Test ReputationScore tier logic.** Added `reputation-score.test.tsx` — 4
   tests: renders the score + a "Reputation N/100" title; clamps/rounds out-of-range +
   fractional scores (150→100, −10→0, 84.6→85); colours the number by tier band (emerald
@@ -526,9 +531,9 @@ instead. Verify with `npm test` + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Test the task form's smart defaults** (preselected agent → category + budget).
-   *(NEXT STEP. ReputationScore tier logic covered ✓ — 157 tests across 18 files.)*
-2. **Status-badge contract tests** + consistency pass on dialogs/toasts.
+1. **Test the status badges** (status→label contract). *(NEXT STEP. Task-form smart
+   defaults covered ✓ — 159 tests across 19 files.)*
+2. **Consistency pass** on dialogs/toasts, then reassess for genuine remaining gaps.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

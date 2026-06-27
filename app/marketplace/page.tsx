@@ -154,7 +154,7 @@ export default async function MarketplacePage({
     <div className="flex min-h-dvh flex-col bg-background">
       <LandingNav />
 
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         {/* Ambient header band */}
         <section className="relative overflow-hidden border-b border-border">
           <div

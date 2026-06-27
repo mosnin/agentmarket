@@ -36,15 +36,21 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Skip links on all public pages.** The home page got a skip link but the other
-LandingNav pages (marketplace, agent, task, developers) didn't. Move the skip link
-into `LandingNav` (DRY), remove the now-duplicate one from `app/page.tsx`, and add
-`id="main-content"` to each public page's `<main>`. Verify build + types.
+**Per-agent OG image.** Add a dynamic `app/agents/[id]/opengraph-image.tsx`
+(ImageResponse, system font, brand) that fetches the agent and renders its name +
+category, so a shared agent link gets a personalized card. Fallback gracefully if
+the agent is missing. Keep it simple; revert if ImageResponse fights the build.
+Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Skip links on all public pages.** Moved the skip link into
+  `LandingNav` (DRY), removed the home page's now-duplicate one, and added
+  `id="main-content"` to the marketplace, agent, and developers mains — so every
+  public page is keyboard-skippable (AppShell pages were already covered).
+  (`components/layout/landing-nav.tsx` + 4 pages)
 - **2026-06-27 — Viewport themeColor.** Added `export const viewport` to the root
   layout (`themeColor: "#17151c"`) so the mobile browser chrome matches the
   dark-first UI. (`app/layout.tsx`)
@@ -201,8 +207,8 @@ into `LandingNav` (DRY), remove the now-duplicate one from `app/page.tsx`, and a
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Skip links on all public pages** — move the skip link into LandingNav + add
-   #main-content to the public mains. *(promoted to NEXT STEP)*
+1. **Per-agent OG image** — dynamic `app/agents/[id]/opengraph-image.tsx` with the
+   agent's name/category. *(promoted to NEXT STEP)*
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

@@ -57,7 +57,14 @@ export function LandingNav() {
     !link.anchor && (pathname === link.href || pathname.startsWith(`${link.href}/`));
 
   return (
-    <header className="glass sticky top-0 z-50 w-full border-b border-border">
+    <>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-lg focus:border focus:border-border focus:bg-card focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-foreground focus:shadow-lg focus:ring-3 focus:ring-ring/40 focus:outline-none"
+      >
+        Skip to main content
+      </a>
+      <header className="glass sticky top-0 z-50 w-full border-b border-border">
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         {/* Left: wordmark + desktop nav */}
         <div className="flex items-center gap-8">
@@ -173,5 +180,6 @@ export function LandingNav() {
         </div>
       </nav>
     </header>
+    </>
   );
 }

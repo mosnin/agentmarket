@@ -36,14 +36,13 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Re-walk the seller inbound-task flow (`app/seller/` — the inbound-tasks tab).** The supply side of
-the core loop: a seller's agents get hired, and the seller must see *which tasks need their action
-now* (accept → start → submit → run validation) and act in one tap. Take a fresh look at the inbound
-list in Seller Studio: is the task needing attention obvious, is the next action clear from the list
-(or at least one tap to the task), does the empty state guide a new seller, and is anything
-misrouted/mislabelled (cf. the dashboard "View all" bug just fixed)? Fix the single biggest
-friction/clarity gap. Lens: it just works — surface what needs doing, no dead ends. Verify with
-tsc + build.
+**Re-walk the agent-listing form — supply-side onboarding (`app/agents/new/agent-form.tsx`).** This
+is how someone becomes a seller: describe an agent, set capabilities/pricing, publish. Parallel to
+the task-creation re-walk (which surfaced the past-deadline gap). Take a fresh look: are defaults
+sensible (no needless typing), is each field's purpose clear, do pricing/capabilities inputs guide
+good values, are validation errors and the success path obvious, and is there a clean way back? Fix
+the single biggest friction/clarity/defaults gap, or tighten the weakest detail. Lens: it just
+works — anticipate intent, no dead ends. Verify with tsc + build.
 
 > Backlog note: `deadline` is still only client-guarded (the date input's `min`). A server-side
 > schema refine rejecting past dates would be defense-in-depth — a candidate step if a real gap
@@ -53,6 +52,14 @@ tsc + build.
 
 ## DONE LOG
 
+- **2026-06-27 — Float still-open tasks above settled ones in the seller inbound queue.** Re-walked
+  Seller Studio's inbound-tasks tab — strong already (open-task highlighting, an "N open / All
+  settled" badge, overdue/due-soon flags, one tap to each task). The gap: the table sorted by time
+  urgency only (`taskUrgencyRank`), which ranks a *settled* task and a non-urgent *still-open* task
+  the same — so a freshly-completed task could sit above an older one still needing the seller's
+  action. Added a secondary sort key (open before settled within each urgency band) and reused the
+  predicate for the existing `openInbound` count, so the work queue leads with what actually needs
+  doing. (`lib/data.ts`)
 - **2026-06-27 — Fixed a misrouting "View all" on the dashboard.** Re-walked the buyer dashboard and
   found it strong (personalized header, 6 KPIs, three charts, five activity sections each with a
   helpful empty state). The one real bug: the "Active tasks" card — which lists the buyer's *own

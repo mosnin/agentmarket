@@ -362,15 +362,22 @@ export async function getSellerData() {
   ]);
 
   const totalEarnings = releasedPayments.reduce((s, p) => s + p.amount, 0);
-  const openInbound = inboundTasks.filter((t) =>
-    ["pending", "accepted", "running", "submitted", "validating"].includes(t.status),
-  );
+  // A task still needs the seller's attention until it settles (completed,
+  // cancelled and disputed leave the action queue).
+  const isOpen = (t: { status: string }) =>
+    ["pending", "accepted", "running", "submitted", "validating"].includes(
+      t.status,
+    );
+  const openInbound = inboundTasks.filter(isOpen);
 
-  // Lead the inbound table with the most at-risk deliverables: overdue, then
-  // due-soon, then by recency (stable sort preserves newest-first within a band).
-  const sortedInbound = [...inboundTasks].sort(
-    (a, b) => taskUrgencyRank(a) - taskUrgencyRank(b),
-  );
+  // Lead the inbound table with the work that needs attention: first by time
+  // urgency (overdue, then due-soon), then float still-open tasks above settled
+  // ones, keeping newest-first within each band (the fetch is createdAt desc).
+  const sortedInbound = [...inboundTasks].sort((a, b) => {
+    const byUrgency = taskUrgencyRank(a) - taskUrgencyRank(b);
+    if (byUrgency !== 0) return byUrgency;
+    return Number(isOpen(b)) - Number(isOpen(a));
+  });
 
   return {
     user,

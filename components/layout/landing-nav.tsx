@@ -70,20 +70,24 @@ export function LandingNav() {
         <div className="flex items-center gap-8">
           <Wordmark />
           <div className="hidden items-center gap-1 md:flex">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-                  isActive(link)
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {NAV_LINKS.map((link) => {
+              const active = isActive(link);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                    active
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </div>
         </div>
 
@@ -126,24 +130,28 @@ export function LandingNav() {
                 </SheetHeader>
 
                 <div className="flex flex-col gap-1 p-4">
-                  {NAV_LINKS.map((link) => (
-                    <SheetClose
-                      key={link.href}
-                      render={
-                        <Link
-                          href={link.href}
-                          className={cn(
-                            "rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                            isActive(link)
-                              ? "bg-muted text-foreground"
-                              : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                          )}
-                        />
-                      }
-                    >
-                      {link.label}
-                    </SheetClose>
-                  ))}
+                  {NAV_LINKS.map((link) => {
+                    const active = isActive(link);
+                    return (
+                      <SheetClose
+                        key={link.href}
+                        render={
+                          <Link
+                            href={link.href}
+                            aria-current={active ? "page" : undefined}
+                            className={cn(
+                              "rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                              active
+                                ? "bg-muted text-foreground"
+                                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                            )}
+                          />
+                        }
+                      >
+                        {link.label}
+                      </SheetClose>
+                    );
+                  })}
                 </div>
 
                 <div className="mt-auto flex flex-col gap-2 border-t border-border p-4">

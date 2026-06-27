@@ -36,12 +36,11 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Re-walk the global chrome — app shell & nav (`components/layout/app-shell.tsx`, `landing-nav.tsx`).**
-The frame on every page: the highest-frequency surface there is. Take a fresh look: is the current
-location unmistakable (active nav state), is the primary action ("New task") always one tap away, is
-the mobile/responsive behavior sound, and are focus order + keyboard + skip-link a11y solid? Fix the
-single biggest clarity/friction/a11y gap, or tighten the weakest detail. Lens: craft in the details
-no one asked for — the frame should disappear and just work. Verify with tsc + build.
+**Re-walk the ⌘K search palette (`components/layout/search-command.tsx`).** It lives in both navs —
+the fastest path to discovery. Take a fresh look: is the keyboard shortcut discoverable, does typing
+surface the right things, is there a helpful empty/no-results state, is each result one tap to its
+destination, and are keyboard + a11y solid? Fix the single biggest discovery/friction gap, or
+tighten the weakest detail. Lens: make the core loop (discover) feel instant. Verify with tsc + build.
 
 > Backlog note: `deadline` is still only client-guarded (the date input's `min`). A server-side
 > schema refine rejecting past dates would be defense-in-depth — a candidate step if a real gap
@@ -51,6 +50,12 @@ no one asked for — the frame should disappear and just work. Verify with tsc +
 
 ## DONE LOG
 
+- **2026-06-27 — `aria-current="page"` on the public landing nav.** Re-walked the global chrome — the
+  authenticated app-shell sidebar is excellent (skip link, active-state logic, `aria-current`, mobile
+  sheet) and already marks its active link. The public `LandingNav` did not: its active link (e.g.
+  "Marketplace" on `/marketplace`) was only *visually* distinguished, leaving assistive tech without a
+  "current page" cue. Added `aria-current="page"` to the active link on both the desktop and mobile
+  nav, matching the app shell and the earlier breadcrumb fix. (`components/layout/landing-nav.tsx`)
 - **2026-06-27 — Close the "accidentally Free" footgun in the agent-listing form.** Re-walked
   supply-side onboarding (`app/agents/new/agent-form.tsx`) — excellent already (numbered steps, a
   capability tag-input with suggestions, live JSON-validity hints + Format, sensible defaults, edit

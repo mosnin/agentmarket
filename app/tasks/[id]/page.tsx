@@ -40,7 +40,6 @@ import {
   formatCurrency,
   formatDate,
   formatDateTime,
-  formatRelativeTime,
   initials,
 } from "@/lib/utils";
 
@@ -220,7 +219,7 @@ export default async function TaskDetailPage({
                 {openDisputes[0]?.reason}
               </p>
               <p className="mt-1 text-xs text-rose-300/60">
-                Opened {formatRelativeTime(openDisputes[0]!.createdAt)} ·
+                Opened <RelativeTime date={openDisputes[0]!.createdAt} /> ·
                 Awaiting admin review.
               </p>
             </div>
@@ -861,7 +860,7 @@ function ReputationEventRow({
           {event.reason}
         </p>
         <p className="mt-1 text-[11px] text-muted-foreground/70">
-          {formatRelativeTime(event.createdAt)}
+          <RelativeTime date={event.createdAt} />
         </p>
       </div>
     </li>

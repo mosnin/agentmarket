@@ -36,15 +36,19 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Spread humane timestamps.** Apply `RelativeTime` to the remaining date displays
-for consistency + hover-absolute: the dispute "Opened" line and the activity /
-reputation event timestamps on the task page, plus any task-list dates on the
-dashboard/seller. Verify build + types.
+**Humane timestamps on the dashboard.** Apply `RelativeTime` to the dashboard's
+activity dates (recent payments, tasks, reputation events in
+`app/dashboard/page.tsx`) so they're relative with absolute-on-hover, matching
+the task page. Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Task page timestamps, complete.** Converted the remaining task
+  detail dates (dispute "Opened", activity/reputation events) to `RelativeTime`,
+  so every timestamp on the page is relative with absolute-on-hover; dropped the
+  now-unused import. (`app/tasks/[id]/page.tsx`)
 - **2026-06-27 — Humane timestamps.** New reusable `RelativeTime` renders "2h
   ago / in 3d" with the absolute date-time on hover (and a machine-readable
   `dateTime`); applied to the task detail "Created" and "Due" headers, with the
@@ -105,8 +109,11 @@ dashboard/seller. Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Spread humane timestamps** — apply RelativeTime to remaining date sites
-   (activity timeline, dispute, dashboard/seller lists). *(promoted to NEXT STEP)*
+1. **Humane timestamps on the dashboard** — apply RelativeTime to the dashboard
+   activity feeds. *(promoted to NEXT STEP)*
+2. **Finish timestamp spread** — admin, seller, agent profile, and the
+   review/artifact cards still use bare `formatRelativeTime`; convert for
+   hover-absolute.
 3. **Layout-stable loading** — verify each route's skeleton matches its final
    layout so nothing shifts when data lands; fix any jumps.
 4. **Agent profile "what you can ask"** — a concrete example brief that makes

@@ -36,17 +36,29 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Re-walk the hire step — task creation (`app/tasks/new/`).** This is where Discover → **hire**
-commits a buyer to a contract. Take a fresh look at the form: are the defaults sensible (no
-needless typing), is it unmistakable *which agent* is being hired and *what* the budget/escrow
-commits to, are validation errors and the success path clear, and is there an obvious way back if
-the buyer changes their mind? Fix the single biggest friction/clarity gap, or tighten the weakest
-detail. Lens: it just works — anticipate intent, no dead ends. Verify with tsc + build.
+**Re-walk the discover step — the marketplace (`app/marketplace/`).** This is the front of the
+core loop: Discover → hire → verify → pay. Take a fresh look at search + filters: do results update
+predictably, is it obvious how to clear active filters, does the zero-results state guide the buyer
+forward (not a dead end), and is the path from a result into "hire" one tap? Fix the single biggest
+friction/clarity gap, or tighten the weakest detail. Lens: the obvious next action is always one tap
+away. Verify with tsc + build.
+
+> Backlog note: `deadline` is still only client-guarded (the date input's `min`). A server-side
+> schema refine rejecting past dates would be defense-in-depth — a candidate step if a real gap
+> resurfaces, but not worth manufacturing churn over.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Block past-dated deadlines in the hire form.** Re-walked task creation
+  (`app/tasks/new`) — the hire step — and found it genuinely frictionless: selecting an agent seeds
+  the category and budget, a live contract preview builds as you type, budget multiplier chips
+  (1×/2×/5×) and an escrow summary make the commitment legible, and Cancel routes safely back to the
+  dashboard. The one real gap: `deadline` was an unguarded `z.string().optional()` with no `min` on
+  the date input, so a buyer could pick a *past* date and post a task that reads "Overdue" the instant
+  it's created. Set the date input's `min` to today (resolved after mount to avoid an SSR/timezone
+  hydration mismatch) so the native picker won't offer a past date. (`app/tasks/new/task-form.tsx`)
 - **2026-06-27 — `aria-current="page"` on the breadcrumb trails.** Re-walked the task detail page
   (`app/tasks/[id]`) — the verify→pay end of the core loop — and confirmed it is genuinely complete:
   every lifecycle state has a one-tap primary action with clear "what happens next" copy, the

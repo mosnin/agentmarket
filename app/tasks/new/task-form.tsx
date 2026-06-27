@@ -194,6 +194,20 @@ export function TaskForm({
     objective: string;
   } | null>(null);
 
+  // Today (local, yyyy-mm-dd) as the earliest selectable deadline. Resolved
+  // after mount so the `min` attribute can't trigger an SSR/timezone hydration
+  // mismatch — without it a buyer could pick a past date and post a task that
+  // reads "Overdue" the moment it's created.
+  const [minDeadline, setMinDeadline] = React.useState<string>("");
+  React.useEffect(() => {
+    const now = new Date();
+    setMinDeadline(
+      `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(
+        now.getDate(),
+      ).padStart(2, "0")}`,
+    );
+  }, []);
+
   // The schema coerces `budget` to a number, so the resolver's *input* type
   // differs from its *output* (transformed) type. Type the form with the input
   // shape for fields and the output (CreateTaskInput) for the submit handler.
@@ -691,6 +705,7 @@ export function TaskForm({
                         <CalendarClock className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
                         <Input
                           type="date"
+                          min={minDeadline || undefined}
                           className="pl-8"
                           {...field}
                         />

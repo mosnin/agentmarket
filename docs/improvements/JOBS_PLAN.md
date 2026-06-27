@@ -36,12 +36,10 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Extract + test the chart's all-zero guard.** The "treat an all-zero dataset as empty" logic
-(so a brand-new account sees "No data to display yet" instead of a flat line — loop #63) lives
-inline in `DashboardChart`. Pull it into a pure `hasChartData(data, series)` (new
-`components/dashboard/chart-data.ts`, no Recharts import), point the chart at it, and test it:
-real values → true; all-zero rows → false; empty data/series → false. Decouple + cover the
-logic without rendering Recharts. Verify with `npm test` + build + types.
+**Re-walk the 404 + error pages.** Check `app/not-found.tsx` and the route-level `error.tsx` /
+`not-found.tsx` files read clearly and offer a way forward — a clear message plus primary links
+back to the marketplace/dashboard, and a retry on error boundaries. Fix the weakest one. Lens:
+never a dead end. Verify with `npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -50,6 +48,13 @@ logic without rendering Recharts. Verify with `npm test` + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Extract + test the chart's all-zero guard.** Pulled the "all-zero dataset =
+  empty" logic out of `DashboardChart` into a pure `hasChartData(data, series)`
+  (`components/dashboard/chart-data.ts`, no Recharts) and pointed the chart at it. Added
+  `chart-data.test.ts` — 4 tests: real value → true; all-zero rows → false; empty data/series
+  → false; non-numeric/NaN ignored. Covers the new-account "No data" behavior without rendering
+  Recharts. 187 tests across 23 files. (`components/dashboard/chart-data.ts`, `…/chart-data.test.ts`,
+  `…/dashboard-chart.tsx`)
 - **2026-06-27 — Test the remaining `lib/utils` pure helpers.** Extended `lib/utils.test.ts`
   — 4 tests: `formatDate`/`formatDateTime` format a noon-UTC instant stably (year + month
   substrings, minute pattern) and are agnostic to Date | string | epoch input; `hashString`
@@ -599,8 +604,8 @@ logic without rendering Recharts. Verify with `npm test` + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Extract + test the chart's all-zero guard** (`hasChartData`). *(NEXT STEP. All pure
-   `lib/utils` helpers now covered ✓ — 183 tests.)*
+1. **Re-walk the 404 + error pages** (never a dead end). *(NEXT STEP. Chart all-zero guard
+   extracted + tested ✓ — 187 tests across 23 files; all real logic now covered.)*
 2. **Reassess** — the app is feature-complete + comprehensively tested + CI-gated + documented;
    prefer genuine micro-improvements over make-work, with restraint.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;

@@ -26,6 +26,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn, formatCompact, formatCurrency } from "@/lib/utils";
+import { hasChartData } from "./chart-data";
 
 export interface DashboardChartSeries {
   /** Key into each datum (e.g. "revenue"). */
@@ -140,15 +141,7 @@ export function DashboardChart({
   // Treat an all-zero dataset as empty: a brand-new account has 14 days of
   // {tasks: 0} (etc.), and a flat line hugging the axis reads as "broken" rather
   // than "nothing yet". Only render the chart once at least one real value exists.
-  const hasData =
-    data.length > 0 &&
-    series.length > 0 &&
-    data.some((row) =>
-      series.some((s) => {
-        const value = row[s.key];
-        return typeof value === "number" && Number.isFinite(value) && value !== 0;
-      }),
-    );
+  const hasData = hasChartData(data, series);
 
   const axisStyle = {
     fontSize: 11,

@@ -36,13 +36,14 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Test the remaining `lib/utils` helpers.** Extend `lib/utils.test.ts` to cover
-the string helpers the UI leans on but that are still uncovered: `slugify`
-(lowercases, hyphenates, strips punctuation), `initials` (first letters, capped),
-`truncate` (ellipsis past the limit, short strings untouched), `pluralize`
-(singular vs plural), and `mockHash` (stable per seed, carries its prefix). Closes
-out the pure-logic coverage arc before the loop pivots back to user-facing craft.
-Verify with `npm test` + build + types.
+**Empty states — start with marketplace "no results."** With the safety net in
+place, return to the experience. Re-walk the core flow and fix the single biggest
+unclear/empty state: when a marketplace search + filter combination returns zero
+agents, show a clear, friendly empty state ("No agents match your filters") with a
+one-click "Clear filters" reset — not a blank grid. If that's already handled well,
+fix the next-weakest zero state instead (dashboard with no tasks, seller with no
+agents). Lens: clarify state + remove friction. Verify with `npm test` (still
+green) + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -51,6 +52,16 @@ Verify with `npm test` + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Test the remaining `lib/utils` helpers (coverage arc complete).**
+  Extended `lib/utils.test.ts` with 12 tests for the string helpers the UI leans on:
+  `slugify` (lowercase + hyphenate, strips punctuation, collapses whitespace runs,
+  trims stray separators — and pinned the real quirk that underscores are *removed*,
+  not hyphenated), `initials` (first letters of up to two words, empty → empty),
+  `truncate` (short untouched; clips + ellipsis, trimming the trailing space),
+  `pluralize` (singular only at 1, explicit plural honored), and `mockHash` (stable
+  per seed, carries its prefix, varies by seed). Pure-logic coverage arc complete:
+  **92 tests across 8 files** (utils, schemas, contract, mockValidation, reputation,
+  A2A, MCP, x402). (`lib/utils.test.ts`)
 - **2026-06-27 — Test the x402 payment adapter (interop arc complete).** Added
   `lib/payments/x402Adapter.test.ts` — 9 tests: `createPaymentRequirement` (well-formed
   `x402-mock` challenge + sensible defaults, custom currency/payTo/description, a
@@ -338,13 +349,12 @@ Verify with `npm test` + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Test the remaining `lib/utils` helpers** — `slugify`, `initials`, `truncate`,
-   `pluralize`, `mockHash` (stable + prefixed). *(promoted to NEXT STEP — closes the
-   pure-logic coverage arc: utils ✓ schemas ✓ contract ✓ mockValidation ✓ reputation ✓
-   A2A ✓ MCP ✓ x402 ✓)*
-2. **Pivot back to user-facing craft.** With the safety net in place, return to the
-   lens on the actual experience — re-walk the core flow (land → browse → hire →
-   contract → track) and fix the single biggest remaining friction or unclear state.
+1. **Empty / zero states audit** — start with marketplace "no results" + "Clear
+   filters" (NEXT STEP), then any other blank list (dashboard, seller). Clarify
+   state + remove friction. *(Pure-logic coverage arc complete: utils ✓ schemas ✓
+   contract ✓ mockValidation ✓ reputation ✓ A2A ✓ MCP ✓ x402 ✓ — 92 tests.)*
+2. **Re-walk the core flow** (land → browse → hire → contract → track) for the next
+   biggest friction once empty states are solid.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

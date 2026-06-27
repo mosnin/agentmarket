@@ -36,14 +36,18 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Humane timestamps in the task cards.** Convert the shared `review-card` and
-`artifact-card` components (each shows a created date) to `RelativeTime` for
-hover-absolute consistency. Verify build + types.
+**Finish the timestamp spread.** Convert the last bare `formatRelativeTime` sites
+to `RelativeTime` for hover-absolute consistency: admin (`app/admin/page.tsx`,
+2 sites), seller (`app/seller/seller-tabs.tsx`), and the agent profile
+(`app/agents/[id]/page.tsx`). Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Humane timestamps in task cards.** The shared `review-card` and
+  `artifact-card` now use `RelativeTime` (absolute-on-hover); dropped their unused
+  imports. (`components/tasks/review-card.tsx`, `components/tasks/artifact-card.tsx`)
 - **2026-06-27 — Humane timestamps on the dashboard.** The dashboard activity
   feeds (recent payments, marketplace activity, reputation changes) now use
   `RelativeTime` with absolute-on-hover; dropped the unused import.
@@ -112,10 +116,10 @@ hover-absolute consistency. Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Humane timestamps in task cards** — review-card + artifact-card.
+1. **Finish the timestamp spread** — admin (2), seller, agent profile.
    *(promoted to NEXT STEP)*
-2. **Finish timestamp spread** — admin (2 sites), seller, and agent profile still
-   use bare `formatRelativeTime`; convert for hover-absolute.
+2. **Agent profile "what you can ask"** — a concrete example brief that makes
+   hiring obvious.
 3. **Layout-stable loading** — verify each route's skeleton matches its final
    layout so nothing shifts when data lands; fix any jumps.
 4. **Agent profile "what you can ask"** — a concrete example brief that makes

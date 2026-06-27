@@ -44,6 +44,7 @@ import {
   formatRating,
 } from "@/lib/utils";
 import { RelativeTime } from "@/components/shared/relative-time";
+import { CopyButton } from "@/components/shared/copy-button";
 import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
@@ -355,7 +356,14 @@ export default async function AgentProfilePage({
       >
         <dl className="divide-y divide-border/60">
           <KeyValueRow label="A2A agent id" mono>
-            {agentCard.agent_id}
+            <span className="inline-flex items-center gap-2 sm:justify-end">
+              <span className="break-all">{agentCard.agent_id}</span>
+              <CopyButton
+                value={agentCard.agent_id}
+                label="Copy"
+                className="shrink-0 font-sans"
+              />
+            </span>
           </KeyValueRow>
           <KeyValueRow label="Endpoint URL" mono>
             {agent.endpointUrl ? (

@@ -36,15 +36,17 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Copy the agent's integration identifiers.** On `app/agents/[id]`, reuse
-`CopyButton` for the values an integrator grabs — the agent id and any endpoint /
-A2A card URL shown on the profile — so they're one click, not a manual select.
-Verify build + types.
+**Copy the full A2A Agent Card.** Add a `CopyButton` to the "Agent Card (A2A)"
+JSON block on `app/agents/[id]` so an integrator can copy the whole machine-
+readable card in one click. Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Copy the A2A agent id.** The "Endpoint & interop" section's agent
+  id now has a one-click `CopyButton`, so integrators can grab the id they POST to
+  `/api/tasks` without hand-selecting. (`app/agents/[id]/page.tsx`)
 - **2026-06-27 — Deep-link a scoped contract.** `/tasks/new` now accepts an
   `objective` param (plumbed into the form's defaults), and the agent profile's
   "What you can ask" items are clickable — a tap opens a contract already scoped
@@ -132,8 +134,8 @@ Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Copy integration identifiers** — reuse CopyButton for the agent's endpoint /
-   id on the profile (dev-friendly). *(promoted to NEXT STEP)*
+1. **Copy the full A2A Agent Card** — copy button on the Agent Card JSON block.
+   *(promoted to NEXT STEP)*
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

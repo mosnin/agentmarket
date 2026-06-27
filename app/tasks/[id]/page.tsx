@@ -59,6 +59,7 @@ import { TaskStatusBadge } from "@/components/tasks/task-status-badge";
 import { PaymentStatusBadge } from "@/components/tasks/payment-status-badge";
 import { TaskTimeline } from "@/components/tasks/task-timeline";
 import { TaskContractPreview } from "@/components/tasks/task-contract-preview";
+import { CopyButton } from "@/components/shared/copy-button";
 import { ArtifactCard } from "@/components/tasks/artifact-card";
 import { ReviewCard } from "@/components/tasks/review-card";
 
@@ -539,6 +540,9 @@ export default async function TaskDetailPage({
                     <code className="block w-full overflow-x-auto rounded-lg border border-border bg-background px-2.5 py-1.5 font-mono text-xs text-muted-foreground no-scrollbar">
                       {payment.transactionHash}
                     </code>
+                    <div className="mt-1.5 flex justify-end">
+                      <CopyButton value={payment.transactionHash} label="Copy hash" />
+                    </div>
                   </div>
                 ) : null}
 

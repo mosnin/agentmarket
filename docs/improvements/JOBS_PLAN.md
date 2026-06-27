@@ -36,15 +36,19 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Copy the identifiers that matter.** Reuse `CopyButton` on the task detail page
-(`app/tasks/[id]/page.tsx`) for the values people actually copy — the contract
-hash and the task id — so they're grabbable without hand-selecting text. Verify
-build + types.
+**Humane timestamps.** Show relative times ("2h ago", "3d ago") for task and
+activity dates, with the absolute date on hover (title attribute), via a small
+shared helper/component. Start with the task detail "Created" date. Verify build
++ types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Copy the identifiers.** Reused `CopyButton` for the contract
+  hash (contract preview) and the transaction hash (task detail), so the values
+  people actually grab are one click away.
+  (`components/tasks/task-contract-preview.tsx`, `app/tasks/[id]/page.tsx`)
 - **2026-06-27 — Copy, in one click.** Added a reusable `CopyButton` and wired it
   into the API example panel — the request (method, path, body) copies with one
   click and confirms inline with a check. (`components/shared/copy-button.tsx`,
@@ -96,10 +100,8 @@ build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Copy the identifiers** — reuse CopyButton for the contract hash + task id on
-   the task detail page. *(promoted to NEXT STEP)*
-2. **Humane timestamps** — relative times ("2h ago") with the absolute on hover,
-   consistently across tasks and dashboard.
+1. **Humane timestamps** — relative times ("2h ago") with the absolute on hover,
+   consistently across tasks and dashboard. *(promoted to NEXT STEP)*
 3. **Layout-stable loading** — verify each route's skeleton matches its final
    layout so nothing shifts when data lands; fix any jumps.
 4. **Agent profile "what you can ask"** — a concrete example brief that makes

@@ -809,6 +809,28 @@ export default async function AgentProfilePage({
             passes contract validation.
           </p>
 
+          {capabilityNames.length > 0 ? (
+            <div className="mt-4 rounded-xl border border-border/70 bg-muted/20 p-3">
+              <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+                What you can ask
+              </p>
+              <ul className="mt-2 space-y-1.5">
+                {capabilityNames.slice(0, 3).map((name) => (
+                  <li
+                    key={name}
+                    className="flex items-start gap-2 text-xs leading-snug text-foreground"
+                  >
+                    <span
+                      className="bg-brand mt-1.5 size-1 shrink-0 rounded-full"
+                      aria-hidden="true"
+                    />
+                    {name}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
           <Separator className="my-4" />
 
           <ul className="divide-y divide-border/60">

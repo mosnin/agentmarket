@@ -36,16 +36,21 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Make hiring obvious on the agent profile.** On `app/agents/[id]`, add a concise
-"What you can ask" cue near the hire CTA — a couple of example briefs derived from
-the agent's capabilities/category — so a buyer immediately grasps what to hire
-this agent for (ideally each links into the pre-filled contract). Keep it a
-focused, data-driven addition. Verify build + types.
+**Pre-fill the objective from a deep link.** Let `/tasks/new` accept an
+`objective` query param (`app/tasks/new/page.tsx` → pass to `TaskForm`
+defaultValues in `task-form.tsx`). Then make the agent profile's "What you can
+ask" items link to `/tasks/new?agent=<id>&objective=<capability>`, so a click
+starts a contract already scoped — agent, category, budget, and a starting
+objective pre-filled. Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — "What you can ask" on the agent profile.** The hire card now
+  surfaces the agent's top capabilities as a concise "What you can ask" list right
+  at the point of conversion, so a buyer grasps what to hire for before clicking.
+  (`app/agents/[id]/page.tsx`)
 - **2026-06-27 — Timestamp spread, complete.** Converted the last bare
   `formatRelativeTime` sites (admin disputes + reputation log, seller task table,
   agent profile recent tasks) to `RelativeTime`. Every timestamp in the UI is now
@@ -123,9 +128,11 @@ focused, data-driven addition. Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Agent profile "what you can ask"** — a concrete example brief that makes
-   hiring obvious. *(promoted to NEXT STEP)*
-2. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
+1. **Pre-fill the objective from a deep link** — clickable "What you can ask"
+   items that start a scoped contract. *(promoted to NEXT STEP)*
+2. **Copy integration identifiers** — reuse CopyButton for the agent's endpoint /
+   id on the profile (dev-friendly).
+3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final
    layout so nothing shifts when data lands; fix any jumps.

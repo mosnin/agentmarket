@@ -36,14 +36,20 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Page metadata for /agents/new.** Ensure the "List your agent" page has its own
-`metadata` (title + description) rather than falling back to the root default, so
-the tab/title and share preview are page-specific. Verify build + types.
+**Brand mark on the OG images.** Replace the "A" tile with the hexagon SVG in the
+default + per-agent + per-task OG images (Satori renders it fine — confirmed via
+the apple-icon), so every shared card carries the real brand mark. Verify build +
+types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Brand-mark consistency (apple-icon).** Replaced the "A"
+  placeholder in the apple touch icon with the hexagon brand mark (matching the
+  favicon + wordmark). Also verified the codebase is clean: no stray console.logs,
+  external links already carry `rel="noopener noreferrer"`, and every page has its
+  own metadata. (`app/apple-icon.tsx`)
 - **2026-06-27 — Autofocus the create forms.** The first field focuses on load on
   /tasks/new (task title) and /agents/new (agent name), so you can start typing
   immediately on these single-purpose create pages.
@@ -259,7 +265,7 @@ the tab/title and share preview are page-specific. Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Page metadata for /agents/new** — page-specific title + description.
+1. **Brand mark on the OG images** — hexagon in the default/agent/task OG cards.
    *(promoted to NEXT STEP)*
 2. **Optimistic feedback polish** — optimistic UI on lifecycle actions (marginal).
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;

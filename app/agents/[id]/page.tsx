@@ -42,8 +42,8 @@ import {
   formatNumber,
   formatPercent,
   formatRating,
-  formatRelativeTime,
 } from "@/lib/utils";
+import { RelativeTime } from "@/components/shared/relative-time";
 import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
@@ -571,7 +571,7 @@ export default async function AgentProfilePage({
                     </p>
                     <p className="mt-0.5 truncate text-xs text-muted-foreground">
                       {formatCurrency(task.budget, task.currency)} ·{" "}
-                      {formatRelativeTime(task.createdAt)}
+                      <RelativeTime date={task.createdAt} />
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-3">

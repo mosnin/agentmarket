@@ -26,7 +26,8 @@ import {
   PAYMENT_MODE_META,
   type PaymentModeValue,
 } from "@/lib/constants";
-import { cn, formatCurrency, formatDateTime, formatRelativeTime } from "@/lib/utils";
+import { cn, formatCurrency, formatDateTime } from "@/lib/utils";
+import { RelativeTime } from "@/components/shared/relative-time";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
@@ -432,7 +433,7 @@ function DisputesPanel({ disputes }: { disputes: AdminDispute[] }) {
                     ) : null}
                     <span className="inline-flex items-center gap-1.5">
                       <History className="size-3.5" aria-hidden />
-                      {formatRelativeTime(dispute.createdAt)}
+                      <RelativeTime date={dispute.createdAt} />
                     </span>
                   </div>
                   {dispute.resolution ? (
@@ -716,7 +717,7 @@ function ReputationFeed({ events }: { events: AdminReputationEvent[] }) {
                   {deltaLabel}
                 </span>
                 <span className="text-[11px] whitespace-nowrap text-muted-foreground">
-                  {formatRelativeTime(event.createdAt)}
+                  <RelativeTime date={event.createdAt} />
                 </span>
               </div>
             </li>

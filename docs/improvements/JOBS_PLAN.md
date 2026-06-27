@@ -36,15 +36,22 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Finish the timestamp spread.** Convert the last bare `formatRelativeTime` sites
-to `RelativeTime` for hover-absolute consistency: admin (`app/admin/page.tsx`,
-2 sites), seller (`app/seller/seller-tabs.tsx`), and the agent profile
-(`app/agents/[id]/page.tsx`). Verify build + types.
+**Make hiring obvious on the agent profile.** On `app/agents/[id]`, add a concise
+"What you can ask" cue near the hire CTA — a couple of example briefs derived from
+the agent's capabilities/category — so a buyer immediately grasps what to hire
+this agent for (ideally each links into the pre-filled contract). Keep it a
+focused, data-driven addition. Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Timestamp spread, complete.** Converted the last bare
+  `formatRelativeTime` sites (admin disputes + reputation log, seller task table,
+  agent profile recent tasks) to `RelativeTime`. Every timestamp in the UI is now
+  relative with absolute-on-hover; the only remaining call lives inside the
+  component itself. (`app/admin/page.tsx`, `app/seller/seller-tabs.tsx`,
+  `app/agents/[id]/page.tsx`)
 - **2026-06-27 — Humane timestamps in task cards.** The shared `review-card` and
   `artifact-card` now use `RelativeTime` (absolute-on-hover); dropped their unused
   imports. (`components/tasks/review-card.tsx`, `components/tasks/artifact-card.tsx`)
@@ -116,10 +123,10 @@ to `RelativeTime` for hover-absolute consistency: admin (`app/admin/page.tsx`,
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Finish the timestamp spread** — admin (2), seller, agent profile.
-   *(promoted to NEXT STEP)*
-2. **Agent profile "what you can ask"** — a concrete example brief that makes
-   hiring obvious.
+1. **Agent profile "what you can ask"** — a concrete example brief that makes
+   hiring obvious. *(promoted to NEXT STEP)*
+2. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
+   keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final
    layout so nothing shifts when data lands; fix any jumps.
 4. **Agent profile "what you can ask"** — a concrete example brief that makes

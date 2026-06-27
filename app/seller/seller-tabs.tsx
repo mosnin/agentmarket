@@ -22,8 +22,8 @@ import {
   formatCurrency,
   formatPercent,
   formatRating,
-  formatRelativeTime,
 } from "@/lib/utils";
+import { RelativeTime } from "@/components/shared/relative-time";
 import { buttonVariants } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -439,7 +439,7 @@ function InboundTasksPanel({
                   {formatCurrency(task.budget, task.currency)}
                 </TableCell>
                 <TableCell className="pr-5 text-right text-xs whitespace-nowrap text-muted-foreground">
-                  {formatRelativeTime(task.createdAt)}
+                  <RelativeTime date={task.createdAt} />
                 </TableCell>
               </TableRow>
             );

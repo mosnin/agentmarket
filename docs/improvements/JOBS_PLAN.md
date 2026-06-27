@@ -36,12 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Test `CopyButton` (first interactive UI test).** Now that component testing works, cover
-an interactive component: `components/shared/copy-button.tsx` should copy its `value` to the
-clipboard on click and flip to a confirmation state, then reset. Mock `navigator.clipboard.writeText`,
-fire a click (`@testing-library/user-event` or `fireEvent`), assert the write + the confirmed
-label, and use fake timers for the ~1.5s reset. Proves the infra handles events, async, and
-timers. Verify with `npm test` + build + types.
+**Test `AgentCard` (marketplace card composition).** Render `components/agents/agent-card.tsx`
+with a cast `AgentCardData` fixture and assert it shows the name, the price via
+`formatAgentPrice` (e.g. "$25/task"), capability badges, the **Hire** deep-link to
+`/tasks/new?agent=<id>`, and the profile link to `/agents/<slug>`. This protects the card
+composition + the hire deep-link the whole browse→hire flow depends on. Verify with
+`npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -50,6 +50,12 @@ timers. Verify with `npm test` + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Test CopyButton (first interactive UI test).** Added `copy-button.test.tsx`
+  — 3 tests: the label doubles as the accessible name; a click calls
+  `navigator.clipboard.writeText(value)` and flips the control to "Copied"; a failed write
+  leaves it on the label (silent failure). Mocks the Clipboard API and asserts the async
+  confirmation via `findByRole` — proving the component-test path handles events + async.
+  138 tests across 14 files. (`components/shared/copy-button.test.tsx`)
 - **2026-06-27 — Component-test infrastructure + first UI test.** Wired a DOM testing path
   into Vitest: `@vitejs/plugin-react` (transforms `.tsx`, since Next's tsconfig uses
   `jsx: preserve` which esbuild alone can't consume) + `@testing-library/react` + `jsdom`.
@@ -493,8 +499,8 @@ timers. Verify with `npm test` + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Test `CopyButton`** — first interactive UI test (click → copy → confirm → reset).
-   *(NEXT STEP. Component-test infra live ✓ — 135 tests across 13 files.)*
+1. **Test `AgentCard`** — composition + Hire deep-link. *(NEXT STEP. Interactive UI
+   testing proven via CopyButton ✓ — 138 tests across 14 files.)*
 2. **Test a form/dialog flow** — e.g. the review StarPicker or a validation path.
 3. **Consistency pass** — destructive confirmations + toasts across the new dialogs.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;

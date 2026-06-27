@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
 import { getAgent } from "@/lib/data";
-import { getCurrentOrganization } from "@/lib/auth";
+import { getCurrentOrganization, getCurrentUser } from "@/lib/auth";
 import { type Category } from "@/lib/constants";
 import { LandingNav } from "@/components/layout/landing-nav";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -38,11 +38,17 @@ export default async function EditAgentPage({
   params: Promise<Params>;
 }) {
   const { id } = await params;
-  const [agent, organization] = await Promise.all([
+  const [agent, organization, currentUser] = await Promise.all([
     getAgent(id),
     getCurrentOrganization(),
+    getCurrentUser(),
   ]);
   if (!agent) notFound();
+
+  // Only the owner can edit; send everyone else back to the public profile.
+  if (agent.ownerId !== currentUser.id) {
+    redirect(`/agents/${agent.slug}`);
+  }
 
   const initial: AgentFormInitial = {
     id: agent.id,

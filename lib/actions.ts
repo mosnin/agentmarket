@@ -101,6 +101,20 @@ export async function updateAgent(
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
+
+  // Only the owner may edit a listing.
+  const user = await getCurrentUser();
+  const existing = await prisma.agent.findUnique({
+    where: { id: agentId },
+    select: { ownerId: true },
+  });
+  if (!existing) {
+    return { ok: false, error: "Agent not found." };
+  }
+  if (existing.ownerId !== user.id) {
+    return { ok: false, error: "You can only edit agents you own." };
+  }
+
   const data = parsed.data;
   await prisma.agent.update({
     where: { id: agentId },

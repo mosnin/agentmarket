@@ -36,12 +36,13 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Enforce ownership on agent edit.** Building the edit flow exposed an authorization
-gap: `updateAgent` updates any `agentId` without checking the caller owns it, and
-`/agents/[id]/edit` renders for non-owners. Add a guard — `updateAgent` verifies the
-agent's `ownerId === currentUser.id` (else returns a clear error), and the edit page
-redirects non-owners back to the profile. Lens: clarify state / safety — only the owner
-edits. Verify with `npm test` (still green) + build + types.
+**Re-walk task cancellation.** The task lifecycle includes a "cancelled" state — but is
+there a path to reach it? Check for a `cancelTask` action + a "Cancel task" affordance on
+the task detail page (sensible while still `pending`/`accepted`, before a deliverable
+exists). If a buyer can't cancel a task they posted, that's a lifecycle gap — add it
+(action + buyer-gated button + escrow-refund semantics consistent with the mock). If it
+exists, make sure it's clear. Lens: clarify state + remove friction. Verify with
+`npm test` (still green) + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -50,6 +51,11 @@ edits. Verify with `npm test` (still green) + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Enforce ownership on agent edit.** Closed the authorization gap the
+  edit flow exposed: `updateAgent` now loads the agent and rejects the update unless
+  `ownerId === currentUser.id` ("You can only edit agents you own."), and
+  `/agents/[id]/edit` redirects non-owners back to the public profile. Defense at both
+  the action and page layers. (`lib/actions.ts`, `app/agents/[id]/edit/page.tsx`)
 - **2026-06-27 — Owner-only "Edit" on the agent profile.** The edit flow (built last
   iteration) was only reachable from Seller Studio. Added an "Edit listing" action next
   to "Hire this agent" in the profile header, shown only when the viewer owns the agent
@@ -425,8 +431,8 @@ edits. Verify with `npm test` (still green) + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Enforce ownership on agent edit** — guard `updateAgent` + the edit page.
-   *(NEXT STEP. Edit flow built ✓ + reachable from Seller Studio and the profile ✓.)*
+1. **Re-walk task cancellation** — is the "cancelled" state reachable? *(NEXT STEP.
+   Agent edit thread complete: built ✓, discoverable ✓, ownership-guarded ✓.)*
 2. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.

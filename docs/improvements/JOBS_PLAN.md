@@ -36,12 +36,13 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Test the x402 payment adapter (`lib/payments/x402Adapter.ts`).** The last leg
-of the interop story: machine-payable HTTP. Add `lib/payments/x402Adapter.test.ts`
-covering `createPaymentRequirement` (emits a well-formed 402 challenge — amount,
-currency/asset, pay-to, nonce/scheme) and whatever the `x402` object exposes for
-verifying/settling a receipt. All pure, no DB. Verify with `npm test` + build +
-types.
+**Test the remaining `lib/utils` helpers.** Extend `lib/utils.test.ts` to cover
+the string helpers the UI leans on but that are still uncovered: `slugify`
+(lowercases, hyphenates, strips punctuation), `initials` (first letters, capped),
+`truncate` (ellipsis past the limit, short strings untouched), `pluralize`
+(singular vs plural), and `mockHash` (stable per seed, carries its prefix). Closes
+out the pure-logic coverage arc before the loop pivots back to user-facing craft.
+Verify with `npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -50,6 +51,14 @@ types.
 
 ## DONE LOG
 
+- **2026-06-27 — Test the x402 payment adapter (interop arc complete).** Added
+  `lib/payments/x402Adapter.test.ts` — 9 tests: `createPaymentRequirement` (well-formed
+  `x402-mock` challenge + sensible defaults, custom currency/payTo/description, a
+  deterministic hex nonce keyed on task+amount, a future expiry), `verifyPayment`
+  (non-negative verified, negative rejected), and `releasePayment`/`refundPayment`
+  (ok receipt, `0x…` transaction hashes that are deterministic and operation-distinct,
+  currency honored). Completes A2A + MCP + x402 coverage. 80 tests pass.
+  (`lib/payments/x402Adapter.test.ts`)
 - **2026-06-27 — Test the MCP interop adapter.** Added `lib/interop/mcpAdapter.test.ts`
   — 10 tests: `listToolsForAgent` (one tool per capability, snake_case tool name via
   slugify, valid object inputSchema requiring `input`, capability+category+MCP in the
@@ -329,10 +338,13 @@ types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Test the interop adapters** — A2A ✓; MCP ✓; x402 (`x402Adapter`, NEXT STEP).
-   The headline interop story; all pure.
-2. **Test the remaining `lib/utils` helpers** — `slugify`, `initials`, `truncate`,
-   `pluralize`, `mockHash` (stable + prefixed) — the only formatters still uncovered.
+1. **Test the remaining `lib/utils` helpers** — `slugify`, `initials`, `truncate`,
+   `pluralize`, `mockHash` (stable + prefixed). *(promoted to NEXT STEP — closes the
+   pure-logic coverage arc: utils ✓ schemas ✓ contract ✓ mockValidation ✓ reputation ✓
+   A2A ✓ MCP ✓ x402 ✓)*
+2. **Pivot back to user-facing craft.** With the safety net in place, return to the
+   lens on the actual experience — re-walk the core flow (land → browse → hire →
+   contract → track) and fix the single biggest remaining friction or unclear state.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

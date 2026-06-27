@@ -36,15 +36,13 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Extract + test the reputation blend math.** The weighted-average update logic
-(completion / dispute / rating blends) currently lives inside the Prisma-coupled
-`recalculateAgentStats`, so it can't be unit-tested. Pull the pure math into a
-`computeStatsUpdate(current, event)` helper that returns the field deltas with no
-DB access, have `recalculateAgentStats` call it (behavior unchanged), and add
-`lib/reputation.test.ts` covering the blends (a win nudges completion toward 100,
-history weights the move, a review pulls the average toward the new rating) plus
-`REPUTATION_DELTAS`. This is simplify-and-decouple + coverage in one. Verify with
-`npm test` + build + types.
+**Test the A2A interop adapter (`lib/interop/a2aAdapter.ts`).** Agent-to-agent
+interop is the product's headline promise, so its mock transforms deserve a
+safety net. Add `lib/interop/a2aAdapter.test.ts` covering `getAgentCard` (emits a
+well-formed agent card — id, name, capabilities/skills, endpoints), 
+`createTaskMessage` (wraps a task into the message envelope), and
+`parseArtifactMessage` (round-trips an artifact message back to its fields). All
+pure, no DB. Verify with `npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -53,6 +51,15 @@ history weights the move, a review pulls the average toward the new rating) plus
 
 ## DONE LOG
 
+- **2026-06-27 — Decouple + test the reputation blend math.** Extracted the
+  weighted-average update logic out of the Prisma-coupled `recalculateAgentStats`
+  into a pure `computeStatsUpdate(current, event)` (the async wrapper now just
+  fetches + persists), so the core math is unit-testable. Added `lib/reputation.test.ts`
+  — 9 tests: a completion nudges the rate toward 100 and weights by history (a
+  newcomer moves far more than a veteran), a dispute pushes completion down /
+  dispute up, a review pulls the average toward the new rating (and barely moves an
+  established average — history dampening), plus `REPUTATION_DELTAS` sign/▿review
+  mapping (5★ = +3, 1★ = −1). 51 tests pass. (`lib/reputation.ts`, `lib/reputation.test.ts`)
 - **2026-06-27 — Test `lib/mockValidation` (the artifact-scoring gate).** Added
   `lib/mockValidation.test.ts` — 8 tests: `computeValidationScore` is deterministic,
   always lands in [70, 99], and varies by seed; `runMockValidation` hard-fails (score
@@ -309,7 +316,10 @@ history weights the move, a review pulls the average toward the new rating) plus
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Extract + test the reputation blend math** — pure `computeStatsUpdate` + `REPUTATION_DELTAS`. *(promoted to NEXT STEP)*
+1. **Test the interop adapters** — A2A (`a2aAdapter`, NEXT STEP), then MCP
+   (`mcpAdapter`), then x402 (`x402Adapter`). The headline interop story; all pure.
+2. **Test the remaining `lib/utils` helpers** — `slugify`, `initials`, `truncate`,
+   `pluralize`, `mockHash` (stable + prefixed) — the only formatters still uncovered.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

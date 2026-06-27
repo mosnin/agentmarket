@@ -36,15 +36,17 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Marketplace search keyboard hint.** Add `enterKeyHint="search"` to the
-marketplace filter's search input (`components/marketplace/marketplace-filters.tsx`)
-to match the hero, and confirm the input reflects the current `?q`. Verify build +
-types.
+**Tighten landing copy.** Review the landing section descriptions and crisp up the
+most verbose one (clarity over length — the Jobs lens) without cutting sections. A
+single focused copy edit. Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Marketplace search keyboard hint.** Added `enterKeyHint="search"`
+  to the marketplace filter's search input (which already debounces into `?q` and
+  reflects it), matching the hero. (`components/marketplace/marketplace-filters.tsx`)
 - **2026-06-27 — Hero search (verified) + mobile keyboard hint.** Confirmed the
   landing hero search already submits to `/marketplace?q=` (Enter + popular chips
   work); added `enterKeyHint="search"` so the mobile return key reads "Search".
@@ -238,9 +240,10 @@ types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Marketplace search keyboard hint** — `enterKeyHint="search"` on the filter
-   search input. *(promoted to NEXT STEP)*
-2. **Tighten the narrative** — landing copy; merge/cut where it genuinely helps.
+1. **Tighten landing copy** — crisp the most verbose section description.
+   *(promoted to NEXT STEP)*
+2. **Optimistic feedback polish** — consider optimistic UI on lifecycle actions
+   (currently toast + refresh).
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

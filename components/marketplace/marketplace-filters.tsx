@@ -154,6 +154,7 @@ export function MarketplaceFilters() {
           />
           <Input
             type="search"
+            enterKeyHint="search"
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             placeholder="Search agents, capabilities, descriptions…"

@@ -36,11 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Test the debounced marketplace search.** The filter bar's last untested behavior: typing in
-the search box debounces (~300ms) into a `?q=` URL push. Extend `marketplace-filters.test.tsx`
-with fake timers — fire a change on the search input, advance 300ms, and assert `router.push`
-is called with the `q` param. Covers the core search interaction. If fake-timers + the Base UI
-form prove fiddly, discard and pick a smaller step. Verify with `npm test` + build + types.
+**Test the remaining `lib/utils` pure helpers.** `formatDate`, `formatDateTime`, and
+`hashString` underpin timestamps and every deterministic mock id / validation score but are
+still uncovered. Extend `lib/utils.test.ts`: `formatDate`/`formatDateTime` format a known date
+stably (assert tz-safe substrings like the year, and that they accept Date | string | number);
+`hashString` is deterministic, non-negative, and varies by input. Verify with `npm test` +
+build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -49,6 +50,11 @@ form prove fiddly, discard and pick a smaller step. Verify with `npm test` + bui
 
 ## DONE LOG
 
+- **2026-06-27 — Test the debounced marketplace search.** Extended `marketplace-filters.test.tsx`
+  with a fake-timers test: typing in the search box fires nothing immediately, then after 300ms
+  pushes `/marketplace?q=research`. The filter bar's interactive logic — active-state, clear-all,
+  and debounced search — is now fully covered. 179 tests across 22 files.
+  (`components/marketplace/marketplace-filters.test.tsx`)
 - **2026-06-27 — Pull request template.** Added `.github/pull_request_template.md` (Summary /
   Changes / Testing checklist / Notes) to pair with the CI gate — prompts a contributor to
   describe the change and confirm test/typecheck/build are green. (`.github/pull_request_template.md`)
@@ -588,8 +594,8 @@ form prove fiddly, discard and pick a smaller step. Verify with `npm test` + bui
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Test the debounced marketplace search** (last client-logic gap). *(NEXT STEP. PR
-   template + CI + README docs all shipped ✓.)*
+1. **Test the remaining `lib/utils` helpers** (`formatDate`/`formatDateTime`/`hashString`).
+   *(NEXT STEP. Marketplace filter bar fully covered ✓ — 179 tests.)*
 2. **Reassess** — the app is feature-complete + comprehensively tested + CI-gated + documented;
    prefer genuine micro-improvements over make-work, with restraint.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;

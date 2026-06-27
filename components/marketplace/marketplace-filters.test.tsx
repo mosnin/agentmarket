@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent, cleanup } from "@testing-library/react";
+import { render, screen, fireEvent, cleanup, act } from "@testing-library/react";
 
 // Hoisted so the mock factory can reference the spies/params, and tests can vary
 // the active filters per case.
@@ -33,5 +33,24 @@ describe("MarketplaceFilters", () => {
     fireEvent.click(screen.getByRole("button", { name: /clear/i }));
     expect(h.push).toHaveBeenCalled();
     expect(h.push.mock.calls[0][0]).toBe("/marketplace");
+  });
+
+  it("debounces typed search into a ?q= push (~300ms)", () => {
+    vi.useFakeTimers();
+    try {
+      render(<MarketplaceFilters />);
+      fireEvent.change(screen.getByRole("searchbox"), {
+        target: { value: "research" },
+      });
+      // Nothing fires until the debounce elapses.
+      expect(h.push).not.toHaveBeenCalled();
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+      expect(h.push).toHaveBeenCalled();
+      expect(h.push.mock.calls[0][0]).toBe("/marketplace?q=research");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

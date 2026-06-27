@@ -36,12 +36,11 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Add a "Due soon" signal.** Complement "Overdue" with a proactive warning. Add a pure
-`isTaskDueSoon(deadline, status, now?)` to `lib/tasks.ts` (deadline within the next 24h, not
-already overdue, still in-flight), test it alongside `isTaskOverdue`, and surface an amber
-"Due soon" hint on the task detail header where the deadline shows (the rose "Overdue" takes
-precedence). Lens: clarify state *before* it's too late. (Carrying it into the task lists can
-be a later step, mirroring how overdue rolled out.) Verify with `npm test` + build + types.
+**Carry "Due soon" into the task lists.** Add the amber "Due soon" chip next to the existing
+"Overdue" chip in the dashboard "Active tasks" list (`app/dashboard/page.tsx`) and the Seller
+Studio inbound table (`app/seller/seller-tabs.tsx`), using `isTaskDueSoon` (overdue takes
+precedence). Consistent deadline clarity wherever tasks are scanned, before drilling in.
+Verify with `npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -50,6 +49,12 @@ be a later step, mirroring how overdue rolled out.) Verify with `npm test` + bui
 
 ## DONE LOG
 
+- **2026-06-27 — "Due soon" deadline signal.** Added a pure `isTaskDueSoon(deadline, status,
+  now?)` to `lib/tasks.ts` (deadline within the next 24h, not overdue, in-flight; mutually
+  exclusive with `isTaskOverdue`) with 4 tests, and surfaced it on the task detail header —
+  an in-flight task due within a day reads amber "Due soon — in N hours" (rose "Overdue" still
+  takes precedence). A proactive nudge before the deadline is blown. 169 tests across 20
+  files. (`lib/tasks.ts`, `lib/tasks.test.ts`, `app/tasks/[id]/page.tsx`)
 - **2026-06-27 — Test the status badges.** Added `components/status-badges.test.tsx` — 6
   tests: `TaskStatusBadge` / `PaymentStatusBadge` / `AgentStatusBadge` each render the correct
   `*_STATUS_META[status].label` (asserted against the source-of-truth META) for representative
@@ -537,10 +542,9 @@ be a later step, mirroring how overdue rolled out.) Verify with `npm test` + bui
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Add a "Due soon" signal** (pure helper + test + task-detail header). *(NEXT STEP.
-   Component-test arc complete — 165 tests across 20 files cover the key UI surfaces.)*
-2. **Carry "Due soon" into the task lists** (dashboard + seller), mirroring overdue.
-3. **Consistency pass** on dialogs/toasts, then reassess for genuine remaining gaps.
+1. **Carry "Due soon" into the task lists** (dashboard + seller). *(NEXT STEP. Detail-page
+   due-soon signal + helper/tests shipped ✓ — 169 tests.)*
+2. **Consistency pass** on dialogs/toasts, then reassess for genuine remaining gaps.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

@@ -42,7 +42,7 @@ import {
   formatDateTime,
   initials,
 } from "@/lib/utils";
-import { isTaskOverdue } from "@/lib/tasks";
+import { isTaskOverdue, isTaskDueSoon } from "@/lib/tasks";
 
 import { buttonVariants } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -130,8 +130,10 @@ export default async function TaskDetailPage({
   const latestValidationScore = task.artifacts[0]?.validationScore ?? null;
   const openDisputes = task.disputes.filter((d) => d.status === "open");
 
-  // Flag a blown deadline so it reads at a glance (shared with the task lists).
+  // Flag a blown deadline so it reads at a glance (shared with the task lists),
+  // and a proactive "due soon" the day before.
   const isOverdue = isTaskOverdue(task.deadline, task.status);
+  const isDueSoon = !isOverdue && isTaskDueSoon(task.deadline, task.status);
 
   const paymentMode = (payment?.mode ?? task.contract?.paymentMode) as
     | PaymentModeValue
@@ -200,10 +202,11 @@ export default async function TaskDetailPage({
                   className={cn(
                     "inline-flex items-center gap-1.5",
                     isOverdue && "font-medium text-rose-400",
+                    isDueSoon && "font-medium text-amber-400",
                   )}
                 >
                   <Target className="size-3.5 shrink-0" aria-hidden />
-                  {isOverdue ? "Overdue —" : "Due"}{" "}
+                  {isOverdue ? "Overdue —" : isDueSoon ? "Due soon —" : "Due"}{" "}
                   <RelativeTime date={task.deadline} />
                 </span>
               ) : null}

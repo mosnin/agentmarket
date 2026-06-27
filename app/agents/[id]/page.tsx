@@ -86,7 +86,7 @@ export async function generateMetadata({
       siteName: "Agent Market",
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title,
       description: agent.shortDescription,
     },

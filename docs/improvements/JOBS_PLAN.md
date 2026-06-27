@@ -36,14 +36,20 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Large Twitter cards.** Now that a default OG image exists, upgrade the Twitter
-card type from `summary` to `summary_large_image` in the root layout (and the
-agent/task pages) so X/Twitter shows the big image card. Verify build + types.
+**"Similar agents" on the profile.** Add a small "More in {category}" grid to the
+agent profile — same category, ranked by reputation, excluding the current agent
+(a focused `lib/data` query + a section reusing `AgentCard`) — to keep buyers
+discovering. Keep it scoped; if it balloons, do a smaller slice. Verify build +
+types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Large Twitter cards.** Upgraded the Twitter card to
+  `summary_large_image` across the root layout, agent, and task pages, so X/Twitter
+  renders the OG image as a large card. (`app/layout.tsx`, `app/agents/[id]/page.tsx`,
+  `app/tasks/[id]/page.tsx`)
 - **2026-06-27 — Default OG image.** Added `app/opengraph-image.tsx` (Next.js
   ImageResponse, system font, brand gradient + wordmark + tagline) so shared links
   show a branded 1200×630 image card, not just text. (`app/opengraph-image.tsx`)
@@ -177,8 +183,8 @@ agent/task pages) so X/Twitter shows the big image card. Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Large Twitter cards** — upgrade to `summary_large_image` now an OG image
-   exists. *(promoted to NEXT STEP)*
+1. **"Similar agents" on the profile** — a "More in {category}" grid to keep
+   buyers discovering. *(promoted to NEXT STEP)*
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

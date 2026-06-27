@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "Agent Market — The marketplace for autonomous agent labor",
     description: SITE_DESCRIPTION,
   },

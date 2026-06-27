@@ -36,12 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Test the detail serializers.** Extend `serializers.test.ts` to cover
-`serializeTaskDetail` (the GET `/api/tasks/:id` contract) — assert the `contract`,
-`artifacts` (ISO dates, null url/score), `payment_requirement` and `interop.a2a_message`
-sections shape correctly, and that a contract-less task yields `contract: null`. Add
-`serializeAgentDetail` too if the fixture stays light. Completes the public API serializer
-coverage. Verify with `npm test` + build + types.
+**Accessibility sweep of interactive controls.** Several new actions and dialogs now
+exist (edit, cancel, archive, dispute resolve/reject, copy, suspend). Audit interactive
+elements for accessible names — icon-only buttons need an `aria-label`, every dialog needs
+a title, and destructive actions should read clearly to assistive tech. Sweep the new +
+nearby controls and fix the biggest gaps found (if all are already labelled, tighten the
+next-weakest a11y detail). Lens: craft for everyone. Verify with `npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -50,6 +50,13 @@ coverage. Verify with `npm test` + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Test the detail serializers (API contract coverage complete).** Extended
+  `serializers.test.ts` with 9 tests for the GET-by-id contracts: `serializeTaskDetail`
+  (base + buyer, snake_case contract section, `contract: null` when none, artifacts with
+  ISO dates + null url/score, "Operator" buyer-name fallback, x402 `payment_requirement` +
+  A2A task message) and `serializeAgentDetail` (long_description/status/organization,
+  schemas, metric counts, interop a2a_card + 2 mcp tools, ISO created_at, null org). The
+  full public API serializer surface is now pinned. 130 tests. (`app/api/_lib/serializers.test.ts`)
 - **2026-06-27 — Test the public API serializers.** Added `app/api/_lib/serializers.test.ts`
   — 7 tests pinning the public response contract: `serializeAgent` (snake_case keys,
   capability names, pricing/trust/endpoint shape, completion→1dp & rating→2dp rounding,
@@ -454,9 +461,9 @@ coverage. Verify with `npm test` + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Test the detail serializers** — `serializeTaskDetail` / `serializeAgentDetail`.
-   *(NEXT STEP. List + error serializers pinned ✓.)*
-2. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs.
+1. **Accessibility sweep** of the new interactive controls + dialogs. *(NEXT STEP.
+   Public API serializer coverage complete: list ✓, detail ✓, error ✓ — 130 tests.)*
+2. **README refresh** for the now-complete capabilities (edit/cancel/archive/dispute).
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

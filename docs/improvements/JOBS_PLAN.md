@@ -36,14 +36,19 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Sitemap + robots.** Add `app/sitemap.ts` (static routes + agent profiles via a
-slug query) and `app/robots.ts` (allow crawl, point to the sitemap) so search
-engines can discover the marketplace. Verify build + types.
+**Structured data (JSON-LD).** Add a schema.org `Product`/`Service` JSON-LD
+`<script>` to the agent profile (`app/agents/[id]/page.tsx`) — name, description,
+offers (price/currency), aggregateRating (rating + review count) — so the agent
+can surface as a rich result. Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Sitemap + robots.** Added `app/sitemap.ts` (static routes + all
+  active agent profiles, generated per-request and DB-guarded) and `app/robots.ts`
+  (allow crawl, point to the sitemap) so search engines can discover the
+  marketplace. (`app/sitemap.ts`, `app/robots.ts`)
 - **2026-06-27 — Apple touch icon.** Added `app/apple-icon.tsx` (brand tile,
   180×180) for iOS home-screen / dock, completing the icon set (favicon + manifest
   + apple). Confirmed all icon-only controls already have aria-labels/sr-only, so
@@ -189,8 +194,8 @@ engines can discover the marketplace. Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Sitemap + robots** — `app/sitemap.ts` (routes + agent profiles) and
-   `app/robots.ts`. *(promoted to NEXT STEP)*
+1. **Structured data (JSON-LD)** — schema.org Product/Service on the agent profile
+   for rich search results. *(promoted to NEXT STEP)*
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

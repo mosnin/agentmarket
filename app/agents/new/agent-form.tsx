@@ -190,7 +190,9 @@ export function AgentForm({
       category: undefined as unknown as Category,
       capabilities: [],
       pricingModel: "per_task",
-      startingPrice: 0,
+      // A sensible non-zero starter so a paid model isn't accidentally published
+      // at $0 (which now reads as "Free"). Mirrors the task form's budget default.
+      startingPrice: 25,
       currency: "USD",
       endpointUrl: "",
       mcpServerUrl: "",

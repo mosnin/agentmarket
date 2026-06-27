@@ -36,11 +36,11 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Re-walk agent creation (the sell-side onboarding).** Walk `/agents/new` — the form
-a new operator fills to list their first agent. Find and fix the single biggest
-friction or unclear state: sensible defaults, clear required-vs-optional, a live
-preview of how the listing will look, and a confident submit. If it's already strong,
-extract + test any pure helper it contains. Lens: remove friction + sensible defaults.
+**Verify the Developers / API docs match reality.** The `/developers` page documents
+the API + protocols. Cross-check the documented endpoints, request/response shapes and
+field names against the actual `app/api/*` routes and `apiCreateTaskSchema` (which
+accepts snake_case *or* camelCase and requires a positive budget). Fix any drift so a
+developer copying the docs succeeds first try. Lens: clarify state / correctness.
 Verify with `npm test` (still green) + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
@@ -50,6 +50,14 @@ Verify with `npm test` (still green) + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Sensible default price on agent creation.** Re-walked `/agents/new`:
+  the form is genuinely polished (4 consistent steps, capability tag input +
+  suggestions, JSON format + live validity hint, character counters, free auto-zeros
+  price). Closed one footgun the pricing unification exposed — the default `per_task`
+  model paired with a `$0` default price meant a seller could publish a paid agent that
+  read as "Free" everywhere. Default starting price is now $25 (a sensible, editable
+  starter matching the task form's budget default); choosing "Free" still zeros it.
+  (`app/agents/new/agent-form.tsx`)
 - **2026-06-27 — Unify the price/pricing-label logic.** Four hire surfaces each
   re-derived an agent's price string (agent card, profile header, detail page, seller
   studio), and only one treated a $0 price as "Free". Extracted a single
@@ -397,9 +405,10 @@ Verify with `npm test` (still green) + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Re-walk agent creation** (`/agents/new`) — sell-side onboarding friction.
-   *(NEXT STEP. Price logic unified + tested across all hire surfaces.)*
+1. **Verify Developers/API docs vs reality** — endpoint/field drift. *(NEXT STEP.
+   Agent creation ✓ — sensible price default.)*
 2. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs.
+3. **Re-walk the agent edit flow** (`/agents/[slug]/edit`).
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { isTaskOverdue, isTaskDueSoon } from "@/lib/tasks";
+import { isTaskOverdue, isTaskDueSoon, taskUrgencyRank } from "@/lib/tasks";
 
 const NOW = new Date("2026-06-27T12:00:00Z").getTime();
 const PAST = "2026-06-20T12:00:00Z";
@@ -56,5 +56,30 @@ describe("isTaskDueSoon", () => {
     expect(isTaskDueSoon(SOON, "completed", NOW)).toBe(false);
     expect(isTaskDueSoon(SOON, "cancelled", NOW)).toBe(false);
     expect(isTaskDueSoon(null, "running", NOW)).toBe(false);
+  });
+});
+
+describe("taskUrgencyRank", () => {
+  it("ranks overdue (0) before due-soon (1) before everything else (2)", () => {
+    expect(taskUrgencyRank({ deadline: PAST, status: "running" }, NOW)).toBe(0);
+    expect(taskUrgencyRank({ deadline: SOON, status: "running" }, NOW)).toBe(1);
+    expect(taskUrgencyRank({ deadline: FUTURE, status: "running" }, NOW)).toBe(2);
+  });
+
+  it("ranks tasks with no deadline, and terminal tasks, as least urgent", () => {
+    expect(taskUrgencyRank({ deadline: null, status: "running" }, NOW)).toBe(2);
+    expect(taskUrgencyRank({ deadline: PAST, status: "completed" }, NOW)).toBe(2);
+  });
+
+  it("orders a mixed list overdue → due-soon → rest via a stable sort", () => {
+    const tasks = [
+      { id: "future", deadline: FUTURE, status: "running" },
+      { id: "overdue", deadline: PAST, status: "running" },
+      { id: "soon", deadline: SOON, status: "running" },
+    ];
+    const ordered = [...tasks]
+      .sort((a, b) => taskUrgencyRank(a, NOW) - taskUrgencyRank(b, NOW))
+      .map((t) => t.id);
+    expect(ordered).toEqual(["overdue", "soon", "future"]);
   });
 });

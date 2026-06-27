@@ -36,11 +36,11 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Surface urgent tasks first.** Add a pure `taskUrgencyRank(task, now?)` to `lib/tasks.ts`
-(overdue = 0, due-soon = 1, otherwise = 2) with tests, and sort the dashboard's in-flight
-tasks by urgency (then recency) *before* the 6-item slice in `lib/data.ts`, so overdue /
-due-soon tasks float to the top of the operator's glance list instead of being buried by
-recency. Lens: surface what needs attention. Verify with `npm test` + build + types.
+**Urgency-sort the Seller Studio inbound tasks.** Mirror the dashboard: in `getSellerData`
+(`lib/data.ts`), order the seller's inbound tasks by `taskUrgencyRank` (then recency, stable)
+so overdue / due-soon deliverables surface at the top of the inbound table — the table's whole
+purpose is "open items that need attention," so the most at-risk work should lead. Verify with
+`npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -49,6 +49,12 @@ recency. Lens: surface what needs attention. Verify with `npm test` + build + ty
 
 ## DONE LOG
 
+- **2026-06-27 — Surface urgent tasks first (dashboard).** Added a pure
+  `taskUrgencyRank(task, now?)` to `lib/tasks.ts` (overdue 0 / due-soon 1 / else 2) with 3
+  tests, and sorted the dashboard's in-flight `activeTasks` by urgency before the 6-item slice
+  (stable sort preserves newest-first within each band). Overdue / due-soon tasks now float to
+  the top of the operator's glance list instead of being buried by recency. 172 tests across
+  20 files. (`lib/tasks.ts`, `lib/tasks.test.ts`, `lib/data.ts`)
 - **2026-06-27 — "Due soon" in the task lists.** Added the amber "Due soon" chip next to the
   "Overdue" chip in the dashboard "Active tasks" list and the Seller Studio inbound table
   (overdue takes precedence). The deadline signal (overdue + due-soon) is now consistent
@@ -547,8 +553,8 @@ recency. Lens: surface what needs attention. Verify with `npm test` + build + ty
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Surface urgent tasks first** — `taskUrgencyRank` + sort the dashboard glance list.
-   *(NEXT STEP. Deadline signal now consistent across detail + dashboard + seller ✓.)*
+1. **Urgency-sort the Seller Studio inbound** (mirror the dashboard). *(NEXT STEP. Dashboard
+   glance list now urgency-first ✓ — `taskUrgencyRank` shared + tested.)*
 2. **Consistency pass** on dialogs/toasts, then reassess for genuine remaining gaps.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.

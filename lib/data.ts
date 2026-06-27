@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { taskUrgencyRank } from "@/lib/tasks";
 import type { Category } from "@/lib/constants";
 
 /**
@@ -256,7 +257,11 @@ export async function getDashboardData() {
   const totalSpend = spendPayments.reduce((sum, p) => sum + p.amount, 0);
   const totalEarnings = earningPayments.reduce((sum, p) => sum + p.amount, 0);
   const activeStatuses = ["pending", "accepted", "running", "submitted", "validating"];
-  const activeTasks = buyerTasks.filter((t) => activeStatuses.includes(t.status));
+  const activeTasks = buyerTasks
+    .filter((t) => activeStatuses.includes(t.status))
+    // Float overdue, then due-soon, to the top of the operator's glance list; a
+    // stable sort keeps the newest-first order within each urgency band.
+    .sort((a, b) => taskUrgencyRank(a) - taskUrgencyRank(b));
   const tasksCompleted = buyerTasks.filter((t) => t.status === "completed").length;
   const averageReputation =
     ownedAgents.length > 0

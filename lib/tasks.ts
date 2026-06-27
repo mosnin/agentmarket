@@ -42,3 +42,20 @@ export function isTaskDueSoon(
   if (!Number.isFinite(time)) return false;
   return time >= now && time <= now + DUE_SOON_WINDOW_MS;
 }
+
+/**
+ * Sort key for an operator's glance list: overdue (0) before due-soon (1) before
+ * everything else (2). Pair with a stable sort so recency order is preserved
+ * within each band.
+ */
+export function taskUrgencyRank(
+  task: {
+    deadline: Date | string | null | undefined;
+    status: TaskStatusValue | string;
+  },
+  now: number = Date.now(),
+): number {
+  if (isTaskOverdue(task.deadline, task.status, now)) return 0;
+  if (isTaskDueSoon(task.deadline, task.status, now)) return 1;
+  return 2;
+}

@@ -36,11 +36,11 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Urgency-sort the Seller Studio inbound tasks.** Mirror the dashboard: in `getSellerData`
-(`lib/data.ts`), order the seller's inbound tasks by `taskUrgencyRank` (then recency, stable)
-so overdue / due-soon deliverables surface at the top of the inbound table — the table's whole
-purpose is "open items that need attention," so the most at-risk work should lead. Verify with
-`npm test` + build + types.
+**Re-walk the admin console.** Walk `/admin` end to end — agent moderation, dispute
+resolution, payments review, suspicious-tasks. Confirm every action works and every panel
+reads clearly; fix the single biggest remaining gap (a dead control, an unclear empty/zero
+state, a missing affordance), as with the earlier seller-edit and dispute-reject fixes. If
+it's all solid, tighten the weakest panel. Verify with `npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -49,6 +49,11 @@ purpose is "open items that need attention," so the most at-risk work should lea
 
 ## DONE LOG
 
+- **2026-06-27 — Urgency-sort the Seller Studio inbound.** Mirrored the dashboard:
+  `getSellerData` now returns the inbound tasks sorted by `taskUrgencyRank` (overdue →
+  due-soon → rest, stable so recency holds within each band), so the deliverer's at-risk work
+  leads the inbound table. Counts stay derived from the unsorted list. The urgency thread is
+  now complete across both glance surfaces. (`lib/data.ts`)
 - **2026-06-27 — Surface urgent tasks first (dashboard).** Added a pure
   `taskUrgencyRank(task, now?)` to `lib/tasks.ts` (overdue 0 / due-soon 1 / else 2) with 3
   tests, and sorted the dashboard's in-flight `activeTasks` by urgency before the 6-item slice
@@ -553,9 +558,10 @@ purpose is "open items that need attention," so the most at-risk work should lea
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Urgency-sort the Seller Studio inbound** (mirror the dashboard). *(NEXT STEP. Dashboard
-   glance list now urgency-first ✓ — `taskUrgencyRank` shared + tested.)*
-2. **Consistency pass** on dialogs/toasts, then reassess for genuine remaining gaps.
+1. **Re-walk the admin console** for any remaining dead-end / unclear state. *(NEXT STEP.
+   Urgency thread complete across dashboard + seller ✓.)*
+2. **Reassess** — the app is near-complete; prefer genuine gaps over make-work (a real
+   missing capability, a correctness fix, or coverage for untested real logic).
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

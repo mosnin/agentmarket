@@ -366,10 +366,16 @@ export async function getSellerData() {
     ["pending", "accepted", "running", "submitted", "validating"].includes(t.status),
   );
 
+  // Lead the inbound table with the most at-risk deliverables: overdue, then
+  // due-soon, then by recency (stable sort preserves newest-first within a band).
+  const sortedInbound = [...inboundTasks].sort(
+    (a, b) => taskUrgencyRank(a) - taskUrgencyRank(b),
+  );
+
   return {
     user,
     agents,
-    inboundTasks,
+    inboundTasks: sortedInbound,
     openInbound,
     reviews,
     totalEarnings,

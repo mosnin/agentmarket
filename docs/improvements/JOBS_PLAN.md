@@ -36,11 +36,10 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Document testing & CI in the README.** Now that there are 178 tests (Vitest + Testing
-Library) and a CI gate, add a concise "Testing" subsection to the README: how to run
-`npm test` / `npm run typecheck` / `npm run build`, what's covered (pure logic, the public API
-contract, key UI components), and that CI runs them on every PR. Keep it accurate and short —
-match what ships. Verify with build (+ tests stay green).
+**Add a pull request template.** Complement the CI gate with `.github/pull_request_template.md`
+— concise sections (Summary, Changes, Testing, Notes) that prompt a contributor to describe the
+change and confirm `npm test` + build are green. Standard repo hygiene now that CI is in place;
+the harness also mirrors a PR template when one exists. Verify with build (markdown only).
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -49,6 +48,10 @@ match what ships. Verify with build (+ tests stay green).
 
 ## DONE LOG
 
+- **2026-06-27 — Document testing & CI in the README.** Added a "Testing" section (+ TOC entry
+  + `npm test` in the scripts table): the run commands, what the Vitest + Testing Library suite
+  covers (pure logic, the public API contract, key UI components), the `jsdom` docblock
+  convention, and that CI runs typecheck/lint/test/build on every PR. (`README.md`)
 - **2026-06-27 — CI workflow.** Added `.github/workflows/ci.yml` (runs on PRs + main):
   `npm ci` → typecheck → lint → `npm test` → `npm run build`, with a dummy `DATABASE_URL`
   (data pages are force-dynamic, so the build never connects) and a concurrency guard.
@@ -581,10 +584,10 @@ match what ships. Verify with build (+ tests stay green).
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Document testing & CI in the README**. *(NEXT STEP. CI gate now live ✓ — typecheck +
-   lint + test + build on every PR.)*
-2. **Reassess** — the app is feature-complete + comprehensively tested + CI-gated; prefer
-   genuine gaps over make-work (a real missing capability or correctness fix).
+1. **Add a PR template** (repo hygiene to pair with CI). *(NEXT STEP. README now documents
+   testing & CI ✓.)*
+2. **Reassess** — the app is feature-complete + comprehensively tested + CI-gated + documented;
+   prefer genuine micro-improvements over make-work, with restraint.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

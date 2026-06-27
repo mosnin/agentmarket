@@ -13,6 +13,7 @@ This is a real working application: a full data model, the complete marketplace 
 - [What it does](#what-it-does)
 - [Tech stack](#tech-stack)
 - [Run it locally](#run-it-locally)
+- [Testing](#testing)
 - [Seeding the database](#seeding-the-database)
 - [The core loop](#the-core-loop)
 - [Mock systems](#mock-systems)
@@ -103,10 +104,37 @@ npm run dev          # http://localhost:3000
 | `npm run build` | Production build |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
+| `npm test` | Run the Vitest suite |
 | `npm run db:push` | Push the Prisma schema |
 | `npm run db:seed` | Seed the database |
 | `npm run db:reset` | Force-reset the schema and re-seed |
 | `npm run db:studio` | Open Prisma Studio |
+
+---
+
+## Testing
+
+```bash
+npm test          # Vitest (unit + component)
+npm run typecheck # tsc --noEmit
+npm run build     # production build
+```
+
+A Vitest + Testing Library suite covers the parts most worth protecting:
+
+- **Pure logic** — formatters, the zod form/API schemas, the deterministic contract
+  builder, the mock validation scorer, the reputation blend math, the A2A / MCP / x402
+  interop adapters, pricing, and the task deadline/urgency helpers.
+- **The public API contract** — the `/api/*` serializers (snake_case shapes, null
+  handling, ISO dates).
+- **Key UI components** — the agent card, status badges, lifecycle timeline, rating
+  picker, copy button, reputation ring, marketplace filters, and the task form's smart
+  defaults.
+
+Component tests opt into a DOM via a `// @vitest-environment jsdom` docblock, keeping
+the pure-logic suites on the fast Node environment.
+[CI](.github/workflows/ci.yml) runs typecheck, lint, tests, and the production build on
+every pull request.
 
 ---
 

@@ -36,12 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Test the status badges.** `TaskStatusBadge`, `PaymentStatusBadge` and `AgentStatusBadge`
-each render `*_STATUS_META[status].label` with a coloured dot — used across dashboard, seller
-and task detail. Add a `status-badges.test.tsx` asserting each maps a representative status
-to its label (e.g. running→"Running", escrowed→"Escrowed", suspended→"Suspended") and renders
-an unknown status without crashing. Pins the status→label contract that appears everywhere.
-Verify with `npm test` + build + types.
+**Add a "Due soon" signal.** Complement "Overdue" with a proactive warning. Add a pure
+`isTaskDueSoon(deadline, status, now?)` to `lib/tasks.ts` (deadline within the next 24h, not
+already overdue, still in-flight), test it alongside `isTaskOverdue`, and surface an amber
+"Due soon" hint on the task detail header where the deadline shows (the rose "Overdue" takes
+precedence). Lens: clarify state *before* it's too late. (Carrying it into the task lists can
+be a later step, mirroring how overdue rolled out.) Verify with `npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -50,6 +50,12 @@ Verify with `npm test` + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Test the status badges.** Added `components/status-badges.test.tsx` — 6
+  tests: `TaskStatusBadge` / `PaymentStatusBadge` / `AgentStatusBadge` each render the correct
+  `*_STATUS_META[status].label` (asserted against the source-of-truth META) for representative
+  statuses (running, escrowed, suspended, archived) and fall back to "Unknown" for an
+  unrecognized status. Pins the status→label contract used across dashboard, seller and task
+  detail. 165 tests across 20 files. (`components/status-badges.test.tsx`)
 - **2026-06-27 — Test the task form's smart defaults.** Added `app/tasks/new/task-form.test.tsx`
   (mocks `next/navigation`, the `createTask` action, and `sonner`): rendering `TaskForm` with
   `preselectedAgentId` adopts that agent's starting price as the budget ($80, replacing the
@@ -531,9 +537,10 @@ Verify with `npm test` + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Test the status badges** (status→label contract). *(NEXT STEP. Task-form smart
-   defaults covered ✓ — 159 tests across 19 files.)*
-2. **Consistency pass** on dialogs/toasts, then reassess for genuine remaining gaps.
+1. **Add a "Due soon" signal** (pure helper + test + task-detail header). *(NEXT STEP.
+   Component-test arc complete — 165 tests across 20 files cover the key UI surfaces.)*
+2. **Carry "Due soon" into the task lists** (dashboard + seller), mirroring overdue.
+3. **Consistency pass** on dialogs/toasts, then reassess for genuine remaining gaps.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

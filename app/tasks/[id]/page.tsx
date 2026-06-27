@@ -84,6 +84,7 @@ export async function generateMetadata({
   return {
     title,
     description,
+    alternates: { canonical: `/tasks/${task.id}` },
     openGraph: { title, description, type: "article", siteName: "Agent Market" },
     twitter: { card: "summary_large_image", title, description },
   };

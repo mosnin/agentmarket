@@ -80,6 +80,7 @@ export async function generateMetadata({
   return {
     title,
     description: agent.shortDescription,
+    alternates: { canonical: `/agents/${agent.slug}` },
     openGraph: {
       title,
       description: agent.shortDescription,

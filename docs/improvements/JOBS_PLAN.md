@@ -36,15 +36,19 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Canonical URLs.** Agents are reachable by id *and* slug — set
-`alternates.canonical` to the slug URL in the agent page's `generateMetadata` (and
-a canonical on the task page) so search engines consolidate the variants. Verify
-build + types.
+**Hero search wiring.** Verify the landing hero search (`components/landing/hero-search.tsx`)
+actually submits to `/marketplace?q=<query>` (and Enter works); fix it if it's a
+dead input. A working search from the hero is the front door to the marketplace.
+Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Canonical URLs.** Agent pages now declare `alternates.canonical`
+  to the slug URL (agents are reachable by id and slug) and tasks to their id URL,
+  so crawlers consolidate the variants. (`app/agents/[id]/page.tsx`,
+  `app/tasks/[id]/page.tsx`)
 - **2026-06-27 — Layout-stable loading (agent profile).** The hire-card skeleton
   predated the "What you can ask" block — added a matching placeholder so the
   sidebar height matches on load. (Swept the other skeletons; only marketplace +
@@ -230,7 +234,7 @@ build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Canonical URLs** — `alternates.canonical` on agent (slug) + task pages.
+1. **Hero search wiring** — ensure the hero search submits to `/marketplace?q=`.
    *(promoted to NEXT STEP)*
 2. **Tighten the narrative** — landing copy; merge/cut where it genuinely helps.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;

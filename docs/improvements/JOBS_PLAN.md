@@ -36,15 +36,19 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Web app manifest.** Add `app/manifest.ts` (Next.js `MetadataRoute.Manifest`)
-with name, short_name "Agent Market", description, theme/background colors, and
-the icon, so the app is installable and presents a proper identity. Verify build +
-types.
+**Removable active-filter chips on the marketplace.** Render each active filter
+(category, pricing, verified, search) as a small chip with an × that links to the
+current query minus that one filter, near the result summary in
+`app/marketplace/page.tsx`. Keep "Clear all" for resetting everything. Verify
+build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Web app manifest.** Added `app/manifest.ts` (name, short_name,
+  description, brand theme/background colors, SVG icon) so Agent Market is
+  installable and presents a proper identity. (`app/manifest.ts`)
 - **2026-06-27 — Branded favicon.** Added `app/icon.svg` (the hexagon brand mark
   in brand purple) so the browser tab shows the Agent Market identity instead of
   the default Next.js icon. (Confirmed both detail pages already have breadcrumbs
@@ -168,9 +172,8 @@ types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Web app manifest** — installable PWA basics (name, colors, icon).
+1. **Removable active-filter chips** — per-filter × chips on the marketplace.
    *(promoted to NEXT STEP)*
-2. **Active filter chips** — removable chips for active marketplace filters.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

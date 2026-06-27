@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SearchX, Sparkles } from "lucide-react";
+import { SearchX, Sparkles, X } from "lucide-react";
 
 import { listAgents, type AgentFilters } from "@/lib/data";
 import {
@@ -86,17 +86,55 @@ function parseFilters(sp: SearchParams): {
   return { filters, active };
 }
 
-/** Human-readable list of the active constraints, shown under the result count. */
-function describeFilters(filters: AgentFilters): string[] {
-  const parts: string[] = [];
-  if (filters.search) parts.push(`matching “${filters.search}”`);
-  if (filters.category) parts.push(`in ${filters.category}`);
-  if (filters.pricingModel) {
-    parts.push(PRICING_MODEL_META[filters.pricingModel as PricingModelValue]?.label ?? filters.pricingModel);
+/** Active filters as removable chips — each links to the query minus that one. */
+function activeFilterChips(
+  sp: SearchParams,
+): { key: string; label: string; href: string }[] {
+  const omitHref = (omit: string) => {
+    const params = new URLSearchParams();
+    for (const [k, v] of Object.entries(sp)) {
+      if (k === omit || !v) continue;
+      params.set(k, v);
+    }
+    const qs = params.toString();
+    return qs ? `/marketplace?${qs}` : "/marketplace";
+  };
+
+  const chips: { key: string; label: string; href: string }[] = [];
+  const search = sp.q?.trim();
+  if (search) chips.push({ key: "q", label: `“${search}”`, href: omitHref("q") });
+
+  const category = sp.category?.trim();
+  if (category && (CATEGORIES as readonly string[]).includes(category)) {
+    chips.push({ key: "category", label: category, href: omitHref("category") });
   }
-  if (filters.minRating) parts.push(`${filters.minRating.toFixed(1)}+ rating`);
-  if (filters.verified) parts.push("verified only");
-  return parts;
+
+  const pricing = sp.pricing?.trim();
+  if (pricing && (PRICING_MODELS as readonly string[]).includes(pricing)) {
+    chips.push({
+      key: "pricing",
+      label: PRICING_MODEL_META[pricing as PricingModelValue]?.label ?? pricing,
+      href: omitHref("pricing"),
+    });
+  }
+
+  const ratingRaw = sp.rating?.trim();
+  if (ratingRaw) {
+    const parsed = Number.parseFloat(ratingRaw);
+    if (Number.isFinite(parsed) && parsed > 0) {
+      chips.push({
+        key: "rating",
+        label: `${parsed.toFixed(1)}+ rating`,
+        href: omitHref("rating"),
+      });
+    }
+  }
+
+  if (sp.verified === "true") {
+    chips.push({ key: "verified", label: "Verified only", href: omitHref("verified") });
+  }
+
+  return chips;
 }
 
 export default async function MarketplacePage({
@@ -110,7 +148,7 @@ export default async function MarketplacePage({
 
   const count = agents.length;
   const sortLabel = SORT_LABELS[filters.sort ?? "reputation"];
-  const descriptors = describeFilters(filters);
+  const chips = activeFilterChips(sp);
 
   return (
     <div className="flex min-h-dvh flex-col bg-background">
@@ -156,12 +194,6 @@ export default async function MarketplacePage({
               {count === 0
                 ? "No agents found"
                 : `${count.toLocaleString()} ${count === 1 ? "agent" : "agents"}`}
-              {descriptors.length > 0 ? (
-                <span className="font-normal text-muted-foreground">
-                  {" "}
-                  · {descriptors.join(" · ")}
-                </span>
-              ) : null}
             </h2>
             {count > 0 ? (
               <div className="flex items-center gap-3">
@@ -179,6 +211,25 @@ export default async function MarketplacePage({
               </div>
             ) : null}
           </div>
+
+          {chips.length > 0 ? (
+            <div className="-mt-2 mb-6 flex flex-wrap items-center gap-2">
+              {chips.map((chip) => (
+                <Link
+                  key={chip.key}
+                  href={chip.href}
+                  aria-label={`Remove filter: ${chip.label}`}
+                  className="group inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:border-border/80 hover:bg-muted"
+                >
+                  {chip.label}
+                  <X
+                    className="size-3 text-muted-foreground transition-colors group-hover:text-foreground"
+                    aria-hidden="true"
+                  />
+                </Link>
+              ))}
+            </div>
+          ) : null}
 
           {/* Results grid / empty state */}
           {count > 0 ? (

@@ -9,7 +9,7 @@ import {
   type PricingModelValue,
 } from "@/lib/constants";
 import { buttonVariants } from "@/components/ui/button";
-import { cn, formatNumber, formatPercent, formatRating } from "@/lib/utils";
+import { cn, formatCompletionRate, formatNumber, formatRating } from "@/lib/utils";
 import { formatAgentPrice } from "@/lib/pricing";
 
 import { CategoryIcon } from "@/components/shared/category-icon";
@@ -129,7 +129,7 @@ export function AgentProfileHeader({
               />
               <StatChip
                 icon={<CheckCircle2 className="size-4" aria-hidden="true" />}
-                value={formatPercent(agent.completionRate)}
+                value={formatCompletionRate(agent.completionRate, agent._count.tasks)}
                 label="Completion rate"
               />
               <StatChip

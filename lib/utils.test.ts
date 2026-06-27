@@ -6,6 +6,7 @@ import {
   formatRating,
   formatNumber,
   formatLatency,
+  formatCompletionRate,
   formatCompact,
   formatRelativeTime,
   slugify,
@@ -55,6 +56,17 @@ describe("formatLatency", () => {
     expect(formatLatency(30)).toBe("30m");
     expect(formatLatency(90)).toBe("1.5h");
     expect(formatLatency(2880)).toBe("2.0d");
+  });
+});
+
+describe("formatCompletionRate", () => {
+  it("shows the percent when the agent has task history", () => {
+    expect(formatCompletionRate(98, 100)).toBe("98%");
+    expect(formatCompletionRate(0, 3)).toBe("0%"); // genuine 0% is NOT hidden
+  });
+  it("shows an em dash when there is no task history", () => {
+    expect(formatCompletionRate(0, 0)).toBe("—");
+    expect(formatCompletionRate(100, 0)).toBe("—"); // no history, regardless of stored rate
   });
 });
 

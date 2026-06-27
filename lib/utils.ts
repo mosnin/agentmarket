@@ -50,6 +50,20 @@ export function formatLatency(minutes: number): string {
   return `${(hours / 24).toFixed(1)}d`;
 }
 
+/**
+ * Completion rate for display. A brand-new agent has `completionRate` 0 by
+ * default; rendering "0%" would misread "no track record" as total failure, so
+ * an agent with no task history (`taskCount === 0`) shows an em dash instead.
+ * Genuine rates (the agent has tasks) are shown as-is, so real underperformance
+ * is never hidden.
+ */
+export function formatCompletionRate(
+  completionRate: number,
+  taskCount: number,
+): string {
+  return taskCount > 0 ? formatPercent(completionRate) : "—";
+}
+
 export function formatDate(date: Date | string | number): string {
   const d = new Date(date);
   return d.toLocaleDateString("en-US", {

@@ -38,6 +38,7 @@ import { getAgentCard } from "@/lib/interop/a2aAdapter";
 import { listToolsForAgent, validateMcpServer } from "@/lib/interop/mcpAdapter";
 import {
   cn,
+  formatCompletionRate,
   formatCurrency,
   formatLatency,
   formatNumber,
@@ -524,7 +525,7 @@ export default async function AgentProfilePage({
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
           <MetricTile
             label="Completion rate"
-            value={formatPercent(agent.completionRate)}
+            value={formatCompletionRate(agent.completionRate, agent._count.tasks)}
             icon={<Target className="size-4" />}
             tone={agent.completionRate >= 90 ? "good" : "default"}
             hint="Tasks delivered vs. accepted"
@@ -882,7 +883,7 @@ export default async function AgentProfilePage({
             <TrustRow
               icon={<Target className="size-4" aria-hidden="true" />}
               label="Completion"
-              value={formatPercent(agent.completionRate)}
+              value={formatCompletionRate(agent.completionRate, agent._count.tasks)}
             />
             <TrustRow
               icon={<Clock className="size-4" aria-hidden="true" />}

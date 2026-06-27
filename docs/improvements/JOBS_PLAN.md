@@ -36,14 +36,17 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Make the new-agent zero-state consistent across surfaces.** The AgentCard now shows "—" for
-completion when an agent has no task history (instead of a scary "0%"). Check the *other* places the
-same metrics surface — the agent profile header/stats (`app/agents/[id]/page.tsx`,
-`components/agents/agent-profile-header.tsx`), Seller Studio (`app/seller/`), and the dashboard — and
-apply the same graceful treatment so a brand-new agent never reads as "0% completion / total
-failure" anywhere. Don't hide genuine low performance (only the no-history case). Fix the biggest
-inconsistency; if they're already consistent, tighten the next weakest metric detail. Lens: craft +
-consistency — the product should feel of one piece. Verify with tsc + build.
+**Give the Seller Studio scorecard a no-data state (`app/seller/seller-tabs.tsx`).** Buyer-facing
+completion now degrades to "—" for agents with no history; the seller's own performance table still
+renders a *threshold-colored* "0%" via `MetricValue` — so a brand-new agent reads as an alarming red
+"0%" completion / schema-compliance (and a falsely-green "0%" dispute rate). Add a no-data path to
+`MetricValue` (neutral "—" when the agent has no task history, `_count.tasks === 0`) so a seller's
+fresh listing isn't graded on zero evidence. Keep genuine low rates colored as-is. Lens: clarify
+state — don't punish the absence of data. Verify with tsc + build.
+
+> Backlog note: `schemaComplianceScore` on the public profile (`app/agents/[id]/page.tsx`) also
+> defaults to 0 → "0%" for new agents — same class of issue, a candidate follow-up once the seller
+> scorecard is consistent.
 
 > Backlog note: `deadline` is still only client-guarded (the date input's `min`). A server-side
 > schema refine rejecting past dates would be defense-in-depth — a candidate step if a real gap
@@ -53,6 +56,15 @@ consistency — the product should feel of one piece. Verify with tsc + build.
 
 ## DONE LOG
 
+- **2026-06-27 — Make the new-agent "completion" zero-state consistent everywhere (buyer-facing).**
+  Last iteration the AgentCard learned to show "—" (not "0%") for an agent with no task history, but
+  the agent *profile* still showed "0% completion" for the same agent — an inconsistency the card fix
+  introduced. Extracted a tested `formatCompletionRate(rate, taskCount)` helper (em dash when
+  `taskCount === 0`, the real rate otherwise so genuine underperformance is never hidden) and routed
+  all four buyer-facing completion displays through it: the card, the profile header stat chip, and
+  both profile-page metrics (performance tile + trust row). +2 tests (190 total). (`lib/utils.ts`,
+  `components/agents/agent-card.tsx`, `components/agents/agent-profile-header.tsx`,
+  `app/agents/[id]/page.tsx`, `lib/utils.test.ts`)
 - **2026-06-27 — Don't show new agents a scary "0% completion".** Re-walked the AgentCard — the unit
   of discovery (marketplace grid, landing showcase, dashboard) — and found it well-crafted: a
   stretched-link card with a raised one-tap "Hire" CTA, reputation ring, and graceful

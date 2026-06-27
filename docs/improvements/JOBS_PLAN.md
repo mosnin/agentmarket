@@ -36,12 +36,11 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Add a CI workflow.** Institutionalize the loop's quality gate: add `.github/workflows/ci.yml`
-running on PRs + `main` — `npm ci`, typecheck, lint, `npm test`, `npm run build` (with a dummy
-`DATABASE_URL`, since the data pages are `force-dynamic` and the build doesn't connect). Makes
-the 178 tests + green build enforced automatically on every PR (including this loop's PR #2).
-Confirm a `package-lock.json` exists for `npm ci`. Verify locally with tsc + build (the YAML
-doesn't affect them); CI runs on GitHub.
+**Document testing & CI in the README.** Now that there are 178 tests (Vitest + Testing
+Library) and a CI gate, add a concise "Testing" subsection to the README: how to run
+`npm test` / `npm run typecheck` / `npm run build`, what's covered (pure logic, the public API
+contract, key UI components), and that CI runs them on every PR. Keep it accurate and short —
+match what ships. Verify with build (+ tests stay green).
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -50,6 +49,11 @@ doesn't affect them); CI runs on GitHub.
 
 ## DONE LOG
 
+- **2026-06-27 — CI workflow.** Added `.github/workflows/ci.yml` (runs on PRs + main):
+  `npm ci` → typecheck → lint → `npm test` → `npm run build`, with a dummy `DATABASE_URL`
+  (data pages are force-dynamic, so the build never connects) and a concurrency guard.
+  Institutionalizes the loop's quality gate — the 178 tests + green build are now enforced
+  automatically on every PR (including this loop's PR #2). (`.github/workflows/ci.yml`)
 - **2026-06-27 — Test MarketplaceFilters clear-all + active state.** Added
   `marketplace-filters.test.tsx` (mocks `next/navigation` via `vi.hoisted` so the active params
   vary per test): with no params it reads "No filters" and shows no Clear button; with a
@@ -577,10 +581,10 @@ doesn't affect them); CI runs on GitHub.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Add a CI workflow** (typecheck + lint + test + build on PRs). *(NEXT STEP. Client-logic
-   coverage complete — 178 tests across 22 files; the marketplace filter bar is now tested.)*
-2. **Reassess** — the app is feature-complete + comprehensively tested; prefer genuine gaps
-   over make-work (a real missing capability, a correctness fix, or institutional quality).
+1. **Document testing & CI in the README**. *(NEXT STEP. CI gate now live ✓ — typecheck +
+   lint + test + build on every PR.)*
+2. **Reassess** — the app is feature-complete + comprehensively tested + CI-gated; prefer
+   genuine gaps over make-work (a real missing capability or correctness fix).
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

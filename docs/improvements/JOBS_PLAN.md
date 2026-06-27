@@ -36,16 +36,25 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**No dead ends.** Audit the app's empty/zero states (dashboard, marketplace with
-no results, seller with no agents, task lists) and ensure each offers the single
-obvious next action — browse agents, post a task, or list an agent — via the
-shared `EmptyState` component. Fix the highest-traffic surface that's still a
-dead end. Verify build + types.
+**Earned delight at completion.** When a task reaches `completed` (the peak of
+the loop), add a subtle, tasteful success moment to the task detail action panel
+— e.g. the "Settled" confirmation animating in / a check that draws — using the
+already-installed Framer Motion (no new dependencies; respect reduced-motion).
+Understated, not gimmicky. Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — ⌘K speaks in verbs.** The command palette now leads with an
+  "Actions" group — "Post a task" and "List an agent" — so the two core
+  jobs-to-be-done are a keystroke away, above navigation and agent search.
+  (`components/layout/search-command.tsx`)
+- **2026-06-27 — No dead ends (verified, no change needed).** Confirmed every
+  empty/zero state already routes somewhere: the marketplace's filtered-empty
+  state offers "Clear filters", the unlisted state offers "List your agent", and
+  `EmptyState` (with an action) is used across dashboard, seller, admin, task,
+  and agent pages.
 - **2026-06-27 — The task detail page explains its own state.** The action panel
   was already state-aware (one prominent primary action per status), so rather
   than add clutter, surfaced the missing detail: the actual validation **score**
@@ -72,26 +81,19 @@ dead end. Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **No dead ends** — audit every empty/zero state so each offers the obvious
-   next action (browse agents, post a task, list an agent).
-   *(promoted to NEXT STEP)*
-2. **⌘K covers the verbs** — ensure the command palette exposes the primary
-   actions (Post a task, List an agent, Dashboard, jump to any agent), not just
-   navigation.
-3. **Layout-stable loading** — skeletons that match final layout, so nothing
-   jumps when data lands.
-4. **Optimistic, consistent feedback** — every lifecycle action gives immediate,
-   uniform toast/inline feedback; no silent waits.
-5. **Instant marketplace filtering** — live result count, immediate feedback,
-   and a one-tap "clear filters".
-6. **Reduce-motion + a11y sweep** — honor `prefers-reduced-motion` in Reveal,
-   tighten focus-visible and aria labels.
-7. **Earned delight at completion** — a subtle success moment when a task
+1. **Earned delight at completion** — a subtle success moment when a task
    settles (the peak of the loop), tasteful not gimmicky.
-8. **Tighten the narrative** — the landing page says a lot; cut/merge sections
-   so the story is inevitable, not exhaustive.
-9. **Number craft** — tabular-nums and consistent currency/latency formatting
+   *(promoted to NEXT STEP)*
+2. **Instant marketplace filtering** — a one-tap "clear all filters" reachable
+   even when results exist (not only from the empty state).
+3. **Layout-stable loading** — verify each route's skeleton matches its final
+   layout so nothing shifts when data lands; fix any jumps.
+4. **Number craft** — tabular-nums and consistent currency/latency formatting
    everywhere a value can change.
+5. **Tighten the narrative** — the landing page says a lot; cut/merge sections
+   so the story is inevitable, not exhaustive.
+6. **A11y polish** — extend the `prefers-reduced-motion` guard (already in
+   Reveal) to any other always-on animation; tighten aria labels where thin.
 
 _Re-prioritize freely as the product reveals what it needs. The list serves the
 lens, not the other way around._

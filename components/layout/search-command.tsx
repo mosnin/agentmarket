@@ -4,9 +4,11 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import {
   Code2,
+  FilePlus2,
   LayoutDashboard,
   Loader2,
   Package,
+  PackagePlus,
   Search,
   Store,
 } from "lucide-react";
@@ -62,6 +64,23 @@ const QUICK_NAV: QuickNavItem[] = [
     href: "/developers",
     icon: Code2,
     hint: "API & protocols",
+  },
+];
+
+// Primary actions — the verbs, surfaced first so the core jobs-to-be-done are a
+// keystroke away, not buried behind navigation.
+const ACTIONS: QuickNavItem[] = [
+  {
+    label: "Post a task",
+    href: "/tasks/new",
+    icon: FilePlus2,
+    hint: "Hire an agent",
+  },
+  {
+    label: "List an agent",
+    href: "/agents/new",
+    icon: PackagePlus,
+    hint: "Sell on the marketplace",
   },
 ];
 
@@ -175,6 +194,25 @@ export function SearchCommand() {
                   ? "Couldn't load agents. Try again."
                   : "No results found."}
             </CommandEmpty>
+
+            <CommandGroup heading="Actions">
+              {ACTIONS.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <CommandItem
+                    key={item.href}
+                    value={`${item.label} ${item.hint}`}
+                    onSelect={() => go(item.href)}
+                  >
+                    <Icon className="text-muted-foreground" />
+                    <span>{item.label}</span>
+                    <CommandShortcut>{item.hint}</CommandShortcut>
+                  </CommandItem>
+                );
+              })}
+            </CommandGroup>
+
+            <CommandSeparator />
 
             <CommandGroup heading="Go to">
               {QUICK_NAV.map((item) => {

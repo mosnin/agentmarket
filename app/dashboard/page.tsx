@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 
 import { getDashboardData } from "@/lib/data";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn, formatCurrency, pluralize } from "@/lib/utils";
 import { isTaskOverdue, isTaskDueSoon } from "@/lib/tasks";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -486,7 +486,7 @@ function OwnedAgentsSection({ agents }: { agents: DashboardData["ownedAgents"] }
                     <span aria-hidden="true">·</span>
                     <span className="tabular-nums">
                       {agent._count.tasks}{" "}
-                      {agent._count.tasks === 1 ? "task" : "tasks"}
+                      {pluralize(agent._count.tasks, "task")}
                     </span>
                   </p>
                 </div>

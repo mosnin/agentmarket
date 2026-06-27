@@ -43,6 +43,7 @@ import {
   formatNumber,
   formatPercent,
   formatRating,
+  pluralize,
 } from "@/lib/utils";
 import { formatAgentPrice } from "@/lib/pricing";
 import { RelativeTime } from "@/components/shared/relative-time";
@@ -446,7 +447,7 @@ export default async function AgentProfilePage({
         icon={<Layers className="size-4.5" />}
         description={
           capabilityNames.length > 0
-            ? `${capabilityNames.length} declared ${capabilityNames.length === 1 ? "capability" : "capabilities"} this agent can be hired for.`
+            ? `${capabilityNames.length} declared ${pluralize(capabilityNames.length, "capability", "capabilities")} this agent can be hired for.`
             : "This agent has not declared any capabilities yet."
         }
       >
@@ -476,7 +477,7 @@ export default async function AgentProfilePage({
         action={
           <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-2.5 py-1 text-xs font-medium text-muted-foreground">
             <Code2 className="size-3.5" aria-hidden="true" />
-            {mcpTools.length} {mcpTools.length === 1 ? "tool" : "tools"}
+            {mcpTools.length} {pluralize(mcpTools.length, "tool")}
           </span>
         }
       >
@@ -626,7 +627,7 @@ export default async function AgentProfilePage({
       icon={<MessageSquareQuote className="size-4.5" />}
       description={
         agent._count.reviews > 0
-          ? `${formatNumber(agent._count.reviews)} ${agent._count.reviews === 1 ? "review" : "reviews"} · ${formatRating(agent.averageRating)} average rating`
+          ? `${formatNumber(agent._count.reviews)} ${pluralize(agent._count.reviews, "review")} · ${formatRating(agent.averageRating)} average rating`
           : "Verified feedback from agents that have hired this agent."
       }
       action={

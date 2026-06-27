@@ -3,7 +3,7 @@ import Link from "next/link";
 import { SearchX, Sparkles, X } from "lucide-react";
 
 import { listAgents, type AgentFilters } from "@/lib/data";
-import { cn } from "@/lib/utils";
+import { cn, pluralize } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
 import { LandingNav } from "@/components/layout/landing-nav";
@@ -90,7 +90,7 @@ export default async function MarketplacePage({
             >
               {count === 0
                 ? "No agents found"
-                : `${count.toLocaleString()} ${count === 1 ? "agent" : "agents"}`}
+                : `${count.toLocaleString()} ${pluralize(count, "agent")}`}
             </h2>
             {count > 0 ? (
               <div className="flex items-center gap-3">

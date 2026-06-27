@@ -36,19 +36,27 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Re-walk the landing page.** Take a fresh look at the marketing front door (`app/page.tsx` +
-the `components/landing/*` sections) — the hero/search, value props, the agent showcase, and the
-final CTA. Confirm the story is tight and every CTA lands somewhere sensible; fix the single
-biggest clarity/friction gap, or tighten the weakest detail (copy, a CTA target, an a11y nuance).
-Lens: the story should feel inevitable, not exhaustive. Verify with `npm test` + build + types.
-
-> The loop has pivoted to **test coverage** (the app had none). Each iteration:
-> add one focused test file for a pure module, run `npm test`, keep build green.
+**Re-walk the task detail page — the verify/pay end of the core loop.** `app/tasks/[id]/page.tsx`
+is where Discover → hire → **verify → pay** completes — the soul of the product. Take a fresh
+look: is the current status unmistakable, is the primary next action always one tap away for
+*every* state (pending / in-progress / completed / disputed / cancelled), does the timeline read
+cleanly, and are amounts and dates unambiguous? Fix the single biggest clarity/friction gap, or
+tighten the weakest detail. Lens: make the core loop feel magical, not the chrome. Verify with
+`npm test` + build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Unify pluralization on the tested `pluralize` helper.** Re-walked the landing
+  page and confirmed it is complete (featured-agents empty state, category-tile links, and a sound
+  h1→h2→h3 heading order). The one real gap it surfaced was consistency: six call sites hand-rolled
+  `n === 1 ? "x" : "xs"` inline while a *tested* `pluralize()` helper sat unused. Routed all six
+  through it (`app/page.tsx`, `app/marketplace/page.tsx`, `app/dashboard/page.tsx`, and three in
+  `app/agents/[id]/page.tsx` — using the explicit plural arg for the irregular
+  "capability"→"capabilities"). Zero behavior change, but the noun logic now lives in one tested
+  place, closing the door on future "1 capabilitys" copy-paste bugs. 187 tests green.
+  (`app/page.tsx`, `app/marketplace/page.tsx`, `app/dashboard/page.tsx`, `app/agents/[id]/page.tsx`)
 - **2026-06-27 — Loading skeleton for the agent edit route.** The `/agents/[id]/edit` route
   inherited the agent-*profile* skeleton from the parent `[id]` segment — a brief mismatch
   before the edit *form*. Added `app/agents/[id]/edit/loading.tsx` mirroring the edit page chrome

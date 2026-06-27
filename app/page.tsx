@@ -27,7 +27,7 @@ import {
 
 import { getFeaturedAgents, getCategoriesWithCounts } from "@/lib/data";
 import { CATEGORIES, CATEGORY_META, type Category } from "@/lib/constants";
-import { cn } from "@/lib/utils";
+import { cn, pluralize } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
 import { LandingNav } from "@/components/layout/landing-nav";
@@ -396,7 +396,7 @@ export default async function Home() {
                         />
                       </span>
                       <span className="text-xs font-medium text-muted-foreground">
-                        {count} {count === 1 ? "agent" : "agents"}
+                        {count} {pluralize(count, "agent")}
                       </span>
                     </div>
                     <div>

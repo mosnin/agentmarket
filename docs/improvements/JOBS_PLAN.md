@@ -36,12 +36,13 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Re-walk browse → hire.** Walk the acquisition path — marketplace → filter/search →
-agent profile → hire. Find and fix the single biggest friction or unclear state.
-Starting point: check the marketplace makes the active filters + result count obvious
-and one-click clearable *even when results exist* (today the "Clear filters" reset
-only appears in the empty state). Lens: remove friction + clarify state. Verify with
-`npm test` (still green) + build + types.
+**Unify the price/pricing-label logic.** The hire-decision surfaces each format an
+agent's price independently — `seller-tabs.tsx` has `priceLabel`/`pricingSuffix`, and
+`components/agents/agent-card.tsx` (plus possibly the agent profile) likely repeat it.
+Extract one shared, client-safe `formatAgentPrice(agent)` helper (free → "Free", else
+currency + per-model suffix) into `lib/pricing.ts`, point the call sites at it, and add
+`lib/pricing.test.ts`. Simplify-and-decouple + coverage, so price reads identically
+everywhere it appears. Verify with `npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -50,6 +51,15 @@ only appears in the empty state). Lens: remove friction + clarify state. Verify 
 
 ## DONE LOG
 
+- **2026-06-27 — Decouple + test the marketplace filter logic.** Re-walked browse →
+  hire: the marketplace already nails filter clarity (debounced search, removable
+  per-filter chips, "Clear all", result count with `aria-live`, sort label). Extracted
+  the page's two pure functions — `parseFilters` (validates + drops unknown
+  category/pricing/sort, positive rating only, verified only on "true") and
+  `activeFilterChips` (the subtle "remove one filter, keep the rest" omit logic) — into
+  a co-located `app/marketplace/filters.ts` and added `filters.test.ts` (11 tests). A
+  regression in the omit logic would silently break the chips; now it's pinned. 109
+  tests. (`app/marketplace/filters.ts`, `app/marketplace/filters.test.ts`, `app/marketplace/page.tsx`)
 - **2026-06-27 — Platform-aware ⌘K hint.** Confirmed the command palette is already
   discoverable: a visible "Search agents… ⌘K" trigger that opens on click, ⌘K/Ctrl+K,
   and "/". Fixed the one imprecision — the hint always showed ⌘K even on Windows/Linux
@@ -380,8 +390,8 @@ only appears in the empty state). Lens: remove friction + clarify state. Verify 
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Re-walk browse → hire** — marketplace filters/result-count clarity first.
-   *(NEXT STEP. Command palette ✓ discoverable + platform-aware.)*
+1. **Unify price/pricing-label logic** into one tested `formatAgentPrice` helper.
+   *(NEXT STEP. Browse side ✓ — filters clear + decoupled + tested.)*
 2. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.

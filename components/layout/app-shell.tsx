@@ -150,6 +150,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Skip link — first focusable element, for keyboard / screen-reader users */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-lg focus:border focus:border-border focus:bg-card focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-foreground focus:shadow-lg focus:ring-3 focus:ring-ring/40 focus:outline-none"
+      >
+        Skip to main content
+      </a>
+
       {/* Fixed desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-border bg-sidebar lg:flex">
         <div className="flex h-16 shrink-0 items-center border-b border-border px-5">
@@ -211,7 +219,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Scrollable main content */}
-        <main className="flex-1">
+        <main id="main-content" className="flex-1">
           <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
             {children}
           </div>

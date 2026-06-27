@@ -36,16 +36,20 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Per-agent OG image.** Add a dynamic `app/agents/[id]/opengraph-image.tsx`
-(ImageResponse, system font, brand) that fetches the agent and renders its name +
-category, so a shared agent link gets a personalized card. Fallback gracefully if
-the agent is missing. Keep it simple; revert if ImageResponse fights the build.
-Verify build + types.
+**Per-task OG image.** Mirror the per-agent OG image for tasks — a dynamic
+`app/tasks/[id]/opengraph-image.tsx` rendering the task title + category + status,
+DB-guarded with a fallback — so shared task links get a personalized card. Verify
+build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Per-agent OG image.** Added a dynamic
+  `app/agents/[id]/opengraph-image.tsx` (ImageResponse) rendering the agent's name,
+  tagline, and category over the brand backdrop — DB-guarded with a generic
+  fallback — so a shared agent link gets a personalized card.
+  (`app/agents/[id]/opengraph-image.tsx`)
 - **2026-06-27 — Skip links on all public pages.** Moved the skip link into
   `LandingNav` (DRY), removed the home page's now-duplicate one, and added
   `id="main-content"` to the marketplace, agent, and developers mains — so every
@@ -207,8 +211,8 @@ Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Per-agent OG image** — dynamic `app/agents/[id]/opengraph-image.tsx` with the
-   agent's name/category. *(promoted to NEXT STEP)*
+1. **Per-task OG image** — mirror the agent OG image for tasks.
+   *(promoted to NEXT STEP)*
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

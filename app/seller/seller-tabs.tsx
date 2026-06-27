@@ -524,6 +524,7 @@ function MetricValue({
   warn,
   invert = false,
   suffix = "%",
+  hasData = true,
 }: {
   value: number;
   good: number;
@@ -531,7 +532,17 @@ function MetricValue({
   /** When true, lower is better (e.g. dispute rate). */
   invert?: boolean;
   suffix?: string;
+  /** When false the agent has no track record yet — render a neutral dash
+   *  instead of grading a zero (a fresh listing shouldn't read as red "0%"). */
+  hasData?: boolean;
 }) {
+  if (!hasData) {
+    return (
+      <span className="text-sm font-medium tabular-nums text-muted-foreground">
+        —
+      </span>
+    );
+  }
   const isGood = invert ? value <= good : value >= good;
   const isWarn = invert ? value <= warn : value >= warn;
   const tone = isGood
@@ -599,19 +610,35 @@ function PerformancePanel({ agents }: { agents: SellerAgent[] }) {
                 <AgentIdentity agent={agent} />
               </TableCell>
               <TableCell className="text-right">
-                <MetricValue value={agent.completionRate} good={90} warn={75} />
+                <MetricValue
+                  value={agent.completionRate}
+                  good={90}
+                  warn={75}
+                  hasData={agent._count.tasks > 0}
+                />
               </TableCell>
               <TableCell className="text-right">
                 <span className="inline-flex items-center justify-end gap-1 text-sm font-medium tabular-nums text-foreground">
                   <Star className="size-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />
-                  {formatRating(agent.averageRating)}
+                  {agent.averageRating > 0 ? formatRating(agent.averageRating) : "New"}
                 </span>
               </TableCell>
               <TableCell className="text-right">
-                <MetricValue value={agent.disputeRate} good={2} warn={5} invert />
+                <MetricValue
+                  value={agent.disputeRate}
+                  good={2}
+                  warn={5}
+                  invert
+                  hasData={agent._count.tasks > 0}
+                />
               </TableCell>
               <TableCell className="text-right">
-                <MetricValue value={agent.schemaComplianceScore} good={95} warn={85} />
+                <MetricValue
+                  value={agent.schemaComplianceScore}
+                  good={95}
+                  warn={85}
+                  hasData={agent._count.tasks > 0}
+                />
               </TableCell>
               <TableCell className="pr-5 text-right text-sm tabular-nums text-muted-foreground">
                 {agent.totalTasksCompleted}

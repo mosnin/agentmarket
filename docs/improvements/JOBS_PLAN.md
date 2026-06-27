@@ -36,17 +36,14 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Give the Seller Studio scorecard a no-data state (`app/seller/seller-tabs.tsx`).** Buyer-facing
-completion now degrades to "—" for agents with no history; the seller's own performance table still
-renders a *threshold-colored* "0%" via `MetricValue` — so a brand-new agent reads as an alarming red
-"0%" completion / schema-compliance (and a falsely-green "0%" dispute rate). Add a no-data path to
-`MetricValue` (neutral "—" when the agent has no task history, `_count.tasks === 0`) so a seller's
-fresh listing isn't graded on zero evidence. Keep genuine low rates colored as-is. Lens: clarify
-state — don't punish the absence of data. Verify with tsc + build.
-
-> Backlog note: `schemaComplianceScore` on the public profile (`app/agents/[id]/page.tsx`) also
-> defaults to 0 → "0%" for new agents — same class of issue, a candidate follow-up once the seller
-> scorecard is consistent.
+**Finish the new-agent zero-state sweep — profile schema-compliance (`app/agents/[id]/page.tsx`).**
+The last instance of the "0% = total failure" misread for a brand-new agent: the public profile's
+"Performance & trust metrics" still shows `schemaComplianceScore` as "0%" (defaults to 0) when there
+is no task history. Apply the same no-history → "—" treatment (gate on `_count.tasks > 0`); consider
+generalizing the `formatCompletionRate` helper into a shared `formatRateOrDash(value, taskCount)` if
+that reads cleaner. Dispute rate (0% = no disputes) is genuinely fine — leave it. This closes the
+theme; afterwards return to a fresh surface (e.g. the dashboard or seller inbound-task flow). Lens:
+consistency — finish what you start. Verify with tsc + build.
 
 > Backlog note: `deadline` is still only client-guarded (the date input's `min`). A server-side
 > schema refine rejecting past dates would be defense-in-depth — a candidate step if a real gap
@@ -56,6 +53,13 @@ state — don't punish the absence of data. Verify with tsc + build.
 
 ## DONE LOG
 
+- **2026-06-27 — Seller scorecard no longer grades a fresh listing on zero evidence.** The Seller
+  Studio performance table rendered threshold-colored zeros for brand-new agents — a red "0%"
+  completion / schema-compliance, a falsely-green "0%" dispute rate, and a "0.0" rating. Added a
+  `hasData` no-data path to `MetricValue` (neutral "—" when `_count.tasks === 0`) wired to all three
+  threshold columns, and switched the rating cell to "New" for unrated agents — so a new agent's row
+  reads "no track record yet," consistent with the card and profile. Genuine low rates stay colored.
+  (`app/seller/seller-tabs.tsx`)
 - **2026-06-27 — Make the new-agent "completion" zero-state consistent everywhere (buyer-facing).**
   Last iteration the AgentCard learned to show "—" (not "0%") for an agent with no task history, but
   the agent *profile* still showed "0% completion" for the same agent — an inconsistency the card fix

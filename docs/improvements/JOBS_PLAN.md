@@ -36,13 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Re-walk the agent-listing form — supply-side onboarding (`app/agents/new/agent-form.tsx`).** This
-is how someone becomes a seller: describe an agent, set capabilities/pricing, publish. Parallel to
-the task-creation re-walk (which surfaced the past-deadline gap). Take a fresh look: are defaults
-sensible (no needless typing), is each field's purpose clear, do pricing/capabilities inputs guide
-good values, are validation errors and the success path obvious, and is there a clean way back? Fix
-the single biggest friction/clarity/defaults gap, or tighten the weakest detail. Lens: it just
-works — anticipate intent, no dead ends. Verify with tsc + build.
+**Re-walk the global chrome — app shell & nav (`components/layout/app-shell.tsx`, `landing-nav.tsx`).**
+The frame on every page: the highest-frequency surface there is. Take a fresh look: is the current
+location unmistakable (active nav state), is the primary action ("New task") always one tap away, is
+the mobile/responsive behavior sound, and are focus order + keyboard + skip-link a11y solid? Fix the
+single biggest clarity/friction/a11y gap, or tighten the weakest detail. Lens: craft in the details
+no one asked for — the frame should disappear and just work. Verify with tsc + build.
 
 > Backlog note: `deadline` is still only client-guarded (the date input's `min`). A server-side
 > schema refine rejecting past dates would be defense-in-depth — a candidate step if a real gap
@@ -52,6 +51,13 @@ works — anticipate intent, no dead ends. Verify with tsc + build.
 
 ## DONE LOG
 
+- **2026-06-27 — Close the "accidentally Free" footgun in the agent-listing form.** Re-walked
+  supply-side onboarding (`app/agents/new/agent-form.tsx`) — excellent already (numbered steps, a
+  capability tag-input with suggestions, live JSON-validity hints + Format, sensible defaults, edit
+  mode). The gap defeated the form's *own documented intent*: selecting "Free" zeros the price, but
+  switching *back* to a paid model left it at $0 — so the listing would publish as "Free" despite a
+  paid model (lost revenue). Now leaving "free" for a paid model with a $0 price restores the
+  non-zero default (25), matching the initial default. (`app/agents/new/agent-form.tsx`)
 - **2026-06-27 — Float still-open tasks above settled ones in the seller inbound queue.** Re-walked
   Seller Studio's inbound-tasks tab — strong already (open-task highlighting, an "N open / All
   settled" badge, overdue/due-soon flags, one tap to each task). The gap: the table sorted by time

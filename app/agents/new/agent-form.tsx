@@ -609,6 +609,15 @@ export function AgentForm({
                           form.setValue("startingPrice", 0, {
                             shouldValidate: true,
                           });
+                        } else if (
+                          Number(form.getValues("startingPrice")) === 0
+                        ) {
+                          // Leaving "free" (price 0) for a paid model — restore a
+                          // sensible non-zero default so the listing isn't
+                          // accidentally published at $0, which reads as "Free".
+                          form.setValue("startingPrice", 25, {
+                            shouldValidate: true,
+                          });
                         }
                       }}
                     >

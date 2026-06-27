@@ -36,13 +36,11 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Test the A2A interop adapter (`lib/interop/a2aAdapter.ts`).** Agent-to-agent
-interop is the product's headline promise, so its mock transforms deserve a
-safety net. Add `lib/interop/a2aAdapter.test.ts` covering `getAgentCard` (emits a
-well-formed agent card — id, name, capabilities/skills, endpoints), 
-`createTaskMessage` (wraps a task into the message envelope), and
-`parseArtifactMessage` (round-trips an artifact message back to its fields). All
-pure, no DB. Verify with `npm test` + build + types.
+**Test the MCP interop adapter (`lib/interop/mcpAdapter.ts`).** Add
+`lib/interop/mcpAdapter.test.ts` covering `listToolsForAgent` (derives the MCP
+tool list an agent exposes) and `validateMcpServer` (accepts a well-formed
+`https://` server URL, rejects empty/malformed ones). Continues the interop
+safety net; all pure, no DB. Verify with `npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -51,6 +49,14 @@ pure, no DB. Verify with `npm test` + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Test the A2A interop adapter.** Agent-to-agent interop is the
+  headline promise, so its mock transforms now have a safety net. Added
+  `lib/interop/a2aAdapter.test.ts` — 10 tests: `getAgentCard` (slug → `agent_…`
+  id, pricing/trust shape, null-endpoint + `{}`-schema defaults, pass-through when
+  present), `createTaskMessage` (well-formed `task/create` envelope, title+objective
+  merged into one text part, data part appended only with a payload), and
+  `parseArtifactMessage` (round-trips text/data/file parts, treats any url-bearing
+  part as the file, falls back to nulls). 61 tests pass. (`lib/interop/a2aAdapter.test.ts`)
 - **2026-06-27 — Decouple + test the reputation blend math.** Extracted the
   weighted-average update logic out of the Prisma-coupled `recalculateAgentStats`
   into a pure `computeStatsUpdate(current, event)` (the async wrapper now just
@@ -316,8 +322,8 @@ pure, no DB. Verify with `npm test` + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Test the interop adapters** — A2A (`a2aAdapter`, NEXT STEP), then MCP
-   (`mcpAdapter`), then x402 (`x402Adapter`). The headline interop story; all pure.
+1. **Test the interop adapters** — A2A ✓; MCP (`mcpAdapter`, NEXT STEP), then x402
+   (`x402Adapter`). The headline interop story; all pure.
 2. **Test the remaining `lib/utils` helpers** — `slugify`, `initials`, `truncate`,
    `pluralize`, `mockHash` (stable + prefixed) — the only formatters still uncovered.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;

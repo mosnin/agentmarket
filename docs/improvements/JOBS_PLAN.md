@@ -36,16 +36,18 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**"Similar agents" on the profile.** Add a small "More in {category}" grid to the
-agent profile — same category, ranked by reputation, excluding the current agent
-(a focused `lib/data` query + a section reusing `AgentCard`) — to keep buyers
-discovering. Keep it scoped; if it balloons, do a smaller slice. Verify build +
-types.
+**Label icon-only controls.** Audit icon-only buttons (theme toggle, any nav/menu
+icons) for `aria-label`s and add any that are missing, so screen readers announce
+them. Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — "Similar agents" on the profile.** Added a `getRelatedAgents`
+  query + a "More in {category}" grid (same category, by reputation, excluding the
+  current agent) at the bottom of the agent profile, so buyers keep discovering.
+  (`lib/data.ts`, `app/agents/[id]/page.tsx`)
 - **2026-06-27 — Large Twitter cards.** Upgraded the Twitter card to
   `summary_large_image` across the root layout, agent, and task pages, so X/Twitter
   renders the OG image as a large card. (`app/layout.tsx`, `app/agents/[id]/page.tsx`,
@@ -183,8 +185,8 @@ types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **"Similar agents" on the profile** — a "More in {category}" grid to keep
-   buyers discovering. *(promoted to NEXT STEP)*
+1. **Label icon-only controls** — aria-labels on theme toggle / icon buttons.
+   *(promoted to NEXT STEP)*
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

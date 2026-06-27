@@ -135,6 +135,20 @@ export async function getFeaturedAgents(limit = 6): Promise<AgentCardData[]> {
   });
 }
 
+/** Other active agents in the same category, by reputation, excluding one. */
+export async function getRelatedAgents(
+  category: string,
+  excludeId: string,
+  limit = 3,
+): Promise<AgentCardData[]> {
+  return prisma.agent.findMany({
+    where: { status: "active", category, id: { not: excludeId } },
+    include: agentCardInclude,
+    orderBy: { reputationScore: "desc" },
+    take: limit,
+  });
+}
+
 export async function getAgent(idOrSlug: string): Promise<AgentDetailData | null> {
   return prisma.agent.findFirst({
     where: { OR: [{ id: idOrSlug }, { slug: idOrSlug }] },

@@ -24,7 +24,7 @@ import {
   Target,
 } from "lucide-react";
 
-import { getAgent } from "@/lib/data";
+import { getAgent, getRelatedAgents } from "@/lib/data";
 import {
   CATEGORY_META,
   PAYMENT_MODE_META,
@@ -53,6 +53,7 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { EmptyState } from "@/components/shared/empty-state";
 import { JsonViewer } from "@/components/shared/json-viewer";
 import { AgentProfileHeader } from "@/components/agents/agent-profile-header";
+import { AgentCard } from "@/components/agents/agent-card";
 import { CapabilityBadge } from "@/components/agents/capability-badge";
 import { ReputationScore } from "@/components/agents/reputation-score";
 import { TaskStatusBadge } from "@/components/tasks/task-status-badge";
@@ -921,6 +922,8 @@ export default async function AgentProfilePage({
     </aside>
   );
 
+  const related = await getRelatedAgents(agent.category, agent.id, 3);
+
   return (
     <div className="flex min-h-dvh flex-col bg-background">
       <LandingNav />
@@ -955,6 +958,27 @@ export default async function AgentProfilePage({
             </div>
             {aside}
           </div>
+
+          {related.length > 0 ? (
+            <section className="mt-12">
+              <div className="mb-5 flex items-end justify-between gap-4">
+                <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                  More in {agent.category}
+                </h2>
+                <Link
+                  href={`/marketplace?category=${encodeURIComponent(agent.category)}`}
+                  className="text-sm font-medium text-brand transition-colors hover:text-foreground"
+                >
+                  View all
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {related.map((a) => (
+                  <AgentCard key={a.id} agent={a} />
+                ))}
+              </div>
+            </section>
+          ) : null}
         </div>
       </main>
 

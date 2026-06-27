@@ -39,8 +39,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  // Dark-first UI — match the mobile browser chrome to the app background.
+  // Dark-first UI — match the mobile browser chrome to the app background, and
+  // tell the UA to render native controls/scrollbars in dark mode.
   themeColor: "#17151c",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({

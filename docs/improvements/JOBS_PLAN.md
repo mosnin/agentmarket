@@ -36,14 +36,17 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**`colorScheme: "dark"`.** Add `colorScheme: "dark"` to the root `viewport` so
-native UI (form controls, scrollbars, date pickers) renders in dark mode to match
-the dark-first design. Verify build + types.
+**Drop the redundant date-input color-scheme.** Now that `colorScheme: "dark"` is
+global, remove the local `[color-scheme:dark]` override on the task form's date
+input — one source of truth. Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — colorScheme: dark.** Added `colorScheme: "dark"` to the root
+  viewport so native UI (form controls, scrollbars, date pickers) renders in dark
+  mode, matching the dark-first design. (`app/layout.tsx`)
 - **2026-06-27 — Fix broken skip-link targets.** The step-36 LandingNav skip link
   points at `#main-content`, but several LandingNav pages lacked that id (404,
   agents/new, and the marketplace/agent/developers loading/error/not-found states).
@@ -245,8 +248,7 @@ the dark-first design. Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **`colorScheme: "dark"`** — native controls/scrollbars render dark.
-   *(promoted to NEXT STEP)*
+1. **Drop redundant date-input color-scheme** — now global. *(promoted to NEXT STEP)*
 2. **Optimistic feedback polish** — consider optimistic UI on lifecycle actions
    (currently toast + refresh).
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;

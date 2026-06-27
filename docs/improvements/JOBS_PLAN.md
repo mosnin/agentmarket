@@ -36,12 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Carry the overdue signal into task lists.** A blown deadline should be visible
-before you drill into the detail page. On the dashboard "Active tasks" list (and any
-other task list that omits it), surface an "Overdue" hint for in-flight tasks past
-their deadline — consistent with the detail-page treatment just shipped. Keep it a
-small, glanceable chip, not a redesign. Lens: clarify state, consistently. Verify
-with `npm test` (still green) + build + types.
+**Carry overdue into the Seller Studio.** The agent operator who has to *deliver*
+needs the blown-deadline signal most. Reuse `isTaskOverdue` in the seller task
+list(s) (`app/seller/seller-tabs.tsx`) so in-flight tasks past their deadline show
+the same rose "Overdue" chip the dashboard and detail page now show. This completes
+the deadline-clarity thread on the surface where it matters most. Keep it a small
+glanceable chip. Verify with `npm test` (still green) + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -50,6 +50,13 @@ with `npm test` (still green) + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Overdue signal in task lists + shared helper.** Extracted a pure,
+  client-safe `isTaskOverdue(deadline, status, now?)` into `lib/tasks.ts` (terminal
+  tasks never overdue; deterministic via an injectable `now`), refactored the task
+  detail page to use it, and added a rose "Overdue" chip to the dashboard "Active
+  tasks" list — so a blown deadline reads the same before and after you drill in.
+  +6 tests (98 total). (`lib/tasks.ts`, `lib/tasks.test.ts`, `app/tasks/[id]/page.tsx`,
+  `app/dashboard/page.tsx`)
 - **2026-06-27 — Overdue signal on the task detail page.** Re-walked the *track*
   stage: the state-aware `TaskActions` ("What happens next" headline + hint, the right
   primary action per status, validation-failed handling, settled-delight banner) was
@@ -362,8 +369,8 @@ with `npm test` (still green) + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Carry the overdue signal into task lists** (dashboard active tasks). *(NEXT STEP
-   — track-stage next-action already crisp; detail-page overdue ✓; empty/zero states ✓.)*
+1. **Carry overdue into Seller Studio** (`seller-tabs.tsx`). *(NEXT STEP — completes
+   the deadline thread: detail ✓, dashboard ✓, helper+tests ✓.)*
 2. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs; keep
    the ⌘K hint discoverable.
 3. **Re-walk browse → hire** for any remaining friction once the deadline-clarity

@@ -42,6 +42,7 @@ import {
   formatDateTime,
   initials,
 } from "@/lib/utils";
+import { isTaskOverdue } from "@/lib/tasks";
 
 import { buttonVariants } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -129,14 +130,8 @@ export default async function TaskDetailPage({
   const latestValidationScore = task.artifacts[0]?.validationScore ?? null;
   const openDisputes = task.disputes.filter((d) => d.status === "open");
 
-  // Flag a blown deadline so it reads at a glance — but only while the task is
-  // still in flight (a completed or cancelled contract can't be "overdue").
-  const isTerminalStatus =
-    task.status === "completed" || task.status === "cancelled";
-  const isOverdue =
-    !!task.deadline &&
-    !isTerminalStatus &&
-    new Date(task.deadline).getTime() < Date.now();
+  // Flag a blown deadline so it reads at a glance (shared with the task lists).
+  const isOverdue = isTaskOverdue(task.deadline, task.status);
 
   const paymentMode = (payment?.mode ?? task.contract?.paymentMode) as
     | PaymentModeValue

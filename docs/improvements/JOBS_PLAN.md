@@ -36,12 +36,15 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Test `lib/mockValidation`.** Add `lib/mockValidation.test.ts` covering the
-deterministic scoring engine: `computeValidationScore(seed)` returns the same
-score for the same seed (and varies by seed), and `runMockValidation(input)`
-produces a stable result whose `passed` flag agrees with the marketplace
-threshold (80). This is the gate every artifact passes through — it must be
-reproducible. Verify with `npm test` + build + types.
+**Extract + test the reputation blend math.** The weighted-average update logic
+(completion / dispute / rating blends) currently lives inside the Prisma-coupled
+`recalculateAgentStats`, so it can't be unit-tested. Pull the pure math into a
+`computeStatsUpdate(current, event)` helper that returns the field deltas with no
+DB access, have `recalculateAgentStats` call it (behavior unchanged), and add
+`lib/reputation.test.ts` covering the blends (a win nudges completion toward 100,
+history weights the move, a review pulls the average toward the new rating) plus
+`REPUTATION_DELTAS`. This is simplify-and-decouple + coverage in one. Verify with
+`npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -50,6 +53,13 @@ reproducible. Verify with `npm test` + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Test `lib/mockValidation` (the artifact-scoring gate).** Added
+  `lib/mockValidation.test.ts` — 8 tests: `computeValidationScore` is deterministic,
+  always lands in [70, 99], and varies by seed; `runMockValidation` hard-fails (score
+  0, single check) when no artifact is present, is deterministic, derives its score
+  from the `task:artifact` seed, keeps `status`/`passed`/threshold in agreement, and
+  the 80 threshold actually bites (both pass and fail outcomes occur across seeds).
+  42 tests pass total. (`lib/mockValidation.test.ts`)
 - **2026-06-27 — Test `lib/contract` (the task-structuring transform).** Added
   `lib/contract.test.ts` — 8 tests pinning `buildStructuredContract`: it's
   deterministic (same input → identical contract via deep equal), defaults the
@@ -299,8 +309,7 @@ reproducible. Verify with `npm test` + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Test `lib/mockValidation`** — deterministic scoring (same input → same score). *(promoted to NEXT STEP)*
-2. **Test the reputation deltas** — `REPUTATION_DELTAS` + the blend math.
+1. **Extract + test the reputation blend math** — pure `computeStatsUpdate` + `REPUTATION_DELTAS`. *(promoted to NEXT STEP)*
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

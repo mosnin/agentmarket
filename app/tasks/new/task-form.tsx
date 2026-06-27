@@ -19,7 +19,7 @@ import {
   Workflow,
 } from "lucide-react";
 
-import { formatCurrency } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { createTaskSchema, type CreateTaskInput } from "@/lib/schemas";
 import { createTask } from "@/lib/actions";
 import { buildStructuredContract } from "@/lib/contract";
@@ -640,6 +640,29 @@ export function TaskForm({
                           />
                         </div>
                       </FormControl>
+                      {selectedAgent && selectedAgent.startingPrice > 0 ? (
+                        <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                          {[1, 2, 5].map((mult) => {
+                            const amount = selectedAgent.startingPrice * mult;
+                            const active = Number(field.value) === amount;
+                            return (
+                              <button
+                                key={mult}
+                                type="button"
+                                onClick={() => field.onChange(amount)}
+                                className={cn(
+                                  "rounded-md border px-2 py-0.5 text-xs font-medium tabular-nums transition-colors",
+                                  active
+                                    ? "border-brand/40 bg-brand/10 text-foreground"
+                                    : "border-border text-muted-foreground hover:border-border/80 hover:text-foreground",
+                                )}
+                              >
+                                {mult}× · {formatCurrency(amount, selectedAgent.currency)}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ) : null}
                       <FormDescription>
                         Held in escrow until the deliverable passes validation.
                       </FormDescription>

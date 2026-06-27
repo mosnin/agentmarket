@@ -36,16 +36,20 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**One-tap budget.** Under the budget field in the task form
-(`app/tasks/new/task-form.tsx`), add quick chips that set the budget to sensible
-multiples of the selected agent's starting price (e.g. 1× / 2× / 5×) so a good
-budget is one click, not a guess. Only show them when an agent is selected with a
-non-zero starting price. Verify build + types.
+**Unmistakable next action on the task detail page.** On `app/tasks/[id]`,
+surface the single primary lifecycle action for the task's current state (accept
+/ submit / validate / complete) as one bold, obvious button and demote the rest,
+so the buyer/agent never wonders "what now?" — the next move is the loudest thing
+on the page. Keep it a focused change; verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — One-tap budget.** The task form's budget field now offers quick
+  chips (1× / 2× / 5× the selected agent's starting price) that set a sensible
+  budget in one click, the active multiple highlighted — shown only when an agent
+  with a real price is selected. (`app/tasks/new/task-form.tsx`)
 - **2026-06-27 — Hire from the grid.** `AgentCard` now carries a one-tap "Hire"
   action that deep-links to a contract pre-filled with that agent
   (`/tasks/new?agent=<slug>`) — browse → hire with no profile detour. Built with
@@ -63,30 +67,28 @@ non-zero starting price. Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **One-tap budget** — under the budget field, quick chips (1× / 2× / 5× the
-   agent's starting price) so a sensible budget is one click, not a guess.
-   *(promoted to NEXT STEP)*
-2. **Unmistakable next action on the task detail page** — surface the single
+1. **Unmistakable next action on the task detail page** — surface the single
    primary lifecycle action (accept / submit / validate / complete) as one bold
    button tied to the current state; demote everything else.
-3. **No dead ends** — audit every empty/zero state so each offers the obvious
+   *(promoted to NEXT STEP)*
+2. **No dead ends** — audit every empty/zero state so each offers the obvious
    next action (browse agents, post a task, list an agent).
-4. **⌘K covers the verbs** — ensure the command palette exposes the primary
+3. **⌘K covers the verbs** — ensure the command palette exposes the primary
    actions (Post a task, List an agent, Dashboard, jump to any agent), not just
    navigation.
-5. **Layout-stable loading** — skeletons that match final layout, so nothing
+4. **Layout-stable loading** — skeletons that match final layout, so nothing
    jumps when data lands.
-6. **Optimistic, consistent feedback** — every lifecycle action gives immediate,
+5. **Optimistic, consistent feedback** — every lifecycle action gives immediate,
    uniform toast/inline feedback; no silent waits.
-7. **Instant marketplace filtering** — live result count, immediate feedback,
+6. **Instant marketplace filtering** — live result count, immediate feedback,
    and a one-tap "clear filters".
-8. **Reduce-motion + a11y sweep** — honor `prefers-reduced-motion` in Reveal,
+7. **Reduce-motion + a11y sweep** — honor `prefers-reduced-motion` in Reveal,
    tighten focus-visible and aria labels.
-9. **Earned delight at completion** — a subtle success moment when a task
+8. **Earned delight at completion** — a subtle success moment when a task
    settles (the peak of the loop), tasteful not gimmicky.
-10. **Tighten the narrative** — the landing page says a lot; cut/merge sections
-    so the story is inevitable, not exhaustive.
-11. **Number craft** — tabular-nums and consistent currency/latency formatting
+9. **Tighten the narrative** — the landing page says a lot; cut/merge sections
+   so the story is inevitable, not exhaustive.
+10. **Number craft** — tabular-nums and consistent currency/latency formatting
     everywhere a value can change.
 
 _Re-prioritize freely as the product reveals what it needs. The list serves the

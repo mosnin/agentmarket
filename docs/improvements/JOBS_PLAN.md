@@ -36,13 +36,14 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Re-walk the AgentCard — the unit of discovery (`components/agents/agent-card.tsx`).** This tile is
-the bridge from discover → hire and appears everywhere (marketplace grid, landing showcase,
-dashboard). Take a fresh look: is the most important signal (reputation / price / category)
-instantly scannable, is the card's primary action ("Hire" / view) clear and one tap, and does it
-degrade gracefully across edge cases (no capabilities, free pricing, unverified, long names)? Fix
-the single biggest scannability/friction gap, or tighten the weakest detail. Lens: craft in the
-details — the 1% that signals the whole. Verify with tsc + build.
+**Make the new-agent zero-state consistent across surfaces.** The AgentCard now shows "—" for
+completion when an agent has no task history (instead of a scary "0%"). Check the *other* places the
+same metrics surface — the agent profile header/stats (`app/agents/[id]/page.tsx`,
+`components/agents/agent-profile-header.tsx`), Seller Studio (`app/seller/`), and the dashboard — and
+apply the same graceful treatment so a brand-new agent never reads as "0% completion / total
+failure" anywhere. Don't hide genuine low performance (only the no-history case). Fix the biggest
+inconsistency; if they're already consistent, tighten the next weakest metric detail. Lens: craft +
+consistency — the product should feel of one piece. Verify with tsc + build.
 
 > Backlog note: `deadline` is still only client-guarded (the date input's `min`). A server-side
 > schema refine rejecting past dates would be defense-in-depth — a candidate step if a real gap
@@ -52,6 +53,15 @@ details — the 1% that signals the whole. Verify with tsc + build.
 
 ## DONE LOG
 
+- **2026-06-27 — Don't show new agents a scary "0% completion".** Re-walked the AgentCard — the unit
+  of discovery (marketplace grid, landing showcase, dashboard) — and found it well-crafted: a
+  stretched-link card with a raised one-tap "Hire" CTA, reputation ring, and graceful
+  no-capabilities/free-pricing/unverified handling. The one real gap: a brand-new agent
+  (`completionRate` defaults to 0) rendered "0% completion", reading as catastrophic failure rather
+  than "no track record yet" — while rating already shows "New" and latency already shows "—". Gated
+  completion on real task history (`_count.tasks > 0`), else "—", so genuine low performance is still
+  surfaced but new agents aren't punished. +1 test (188 total). (`components/agents/agent-card.tsx`,
+  `components/agents/agent-card.test.tsx`)
 - **2026-06-27 — Dedicated "clear search" button on the marketplace filters.** Re-walked the
   discover step (`app/marketplace`) and found it strong: debounced search, four labeled filter
   selects, a verified toggle, removable filter chips, an `aria-live` result count, and distinct

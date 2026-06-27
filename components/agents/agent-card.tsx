@@ -106,7 +106,7 @@ export function AgentCard({ agent }: { agent: AgentCardData }) {
         </span>
         <span className="inline-flex items-center gap-1" title="Completion rate">
           <span className="font-medium tabular-nums text-foreground">
-            {formatPercent(agent.completionRate)}
+            {agent._count.tasks > 0 ? formatPercent(agent.completionRate) : "—"}
           </span>
           <span>completion</span>
         </span>

@@ -29,6 +29,7 @@ function makeAgent(overrides: Partial<Record<string, unknown>> = {}): AgentCardD
     schemaComplianceScore: 96,
     averageLatencyMinutes: 30,
     totalTasksCompleted: 100,
+    _count: { tasks: 100, reviews: 12 },
     organization: { name: "Helix Labs" },
     endpointUrl: null,
     mcpServerUrl: null,
@@ -71,5 +72,17 @@ describe("AgentCard", () => {
   it("shows 'New' instead of a rating when the agent has none yet", () => {
     render(<AgentCard agent={makeAgent({ averageRating: 0 })} />);
     expect(screen.getByText("New")).toBeTruthy();
+  });
+
+  it("shows '—' for completion when the agent has no task history", () => {
+    // A brand-new agent has completionRate 0 by default; surfacing "0%" would
+    // misread "no track record" as total failure, so it degrades to "—".
+    render(
+      <AgentCard
+        agent={makeAgent({ _count: { tasks: 0, reviews: 0 }, completionRate: 0 })}
+      />,
+    );
+    expect(screen.getByText("—")).toBeTruthy();
+    expect(screen.queryByText("0%")).toBeNull();
   });
 });

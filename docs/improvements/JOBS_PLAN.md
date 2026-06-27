@@ -36,12 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Test the public API serializers.** `app/api/_lib/serializers.ts` shapes every API
-response (`serializeAgent`, `serializeAgentDetail`, `serializeTaskListItem`,
-`serializeTaskDetail`, `apiError`) — pure transforms that ARE the public contract. Pin
-their output with `serializers.test.ts`: snake_case keys, included/omitted fields, null
-handling, and `apiError`'s `{ error, code }` shape. Build fixtures from the inferred
-input types. Protects the headline API. Verify with `npm test` + build + types.
+**Test the detail serializers.** Extend `serializers.test.ts` to cover
+`serializeTaskDetail` (the GET `/api/tasks/:id` contract) — assert the `contract`,
+`artifacts` (ISO dates, null url/score), `payment_requirement` and `interop.a2a_message`
+sections shape correctly, and that a contract-less task yields `contract: null`. Add
+`serializeAgentDetail` too if the fixture stays light. Completes the public API serializer
+coverage. Verify with `npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -50,6 +50,12 @@ input types. Protects the headline API. Verify with `npm test` + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Test the public API serializers.** Added `app/api/_lib/serializers.test.ts`
+  — 7 tests pinning the public response contract: `serializeAgent` (snake_case keys,
+  capability names, pricing/trust/endpoint shape, completion→1dp & rating→2dp rounding,
+  endpoint pass-through), `serializeTaskListItem` (ISO dates, nested `seller_agent`,
+  snake_case payment with `transaction_hash`, null handling), and `apiError` (`{error}`
+  alone vs `{error, code}`). 121 tests. (`app/api/_lib/serializers.test.ts`)
 - **2026-06-27 — Reachable "archived" agent state (admin).** Agent moderation toggled
   only active↔suspended, so the valid "archived" (retire) state `setAgentStatus`
   supports was unreachable. Added an "Archive" action beside Suspend/Activate (offered
@@ -448,9 +454,8 @@ input types. Protects the headline API. Verify with `npm test` + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Test the public API serializers** — pin the public response contract. *(NEXT STEP.
-   Lifecycle-completeness thread done: agent edit ✓, task cancel ✓, dispute reject ✓,
-   agent archive ✓.)*
+1. **Test the detail serializers** — `serializeTaskDetail` / `serializeAgentDetail`.
+   *(NEXT STEP. List + error serializers pinned ✓.)*
 2. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.

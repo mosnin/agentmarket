@@ -36,14 +36,18 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Skip link on the landing layout.** Mirror the "Skip to main content" link on the
-public landing page (`app/page.tsx`), targeting the landing `<main>`, so the
-marketing pages are keyboard-navigable too. Verify build + types.
+**Breadcrumb on the agent profile.** Add a simple breadcrumb above the agent
+header (e.g. "Marketplace / {agent name}") on `app/agents/[id]/page.tsx` linking
+back to the marketplace, so visitors always know where they are and can step
+back. Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Skip link on the landing layout.** Mirrored the "Skip to main
+  content" link on the public landing page (→ `#main-content`), so the marketing
+  pages are keyboard-navigable too. (`app/page.tsx`)
 - **2026-06-27 — Skip-to-content link.** Added a keyboard/screen-reader "Skip to
   main content" link as the app shell's first focusable element (visible on
   focus), jumping past the sidebar to `#main-content`. (Confirmed the developers
@@ -160,8 +164,9 @@ marketing pages are keyboard-navigable too. Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Skip link on the landing layout** — mirror the a11y skip link on public
-   pages. *(promoted to NEXT STEP)*
+1. **Breadcrumb on detail pages** — "Marketplace / {name}" on the agent (then
+   task) page for location + a step back. *(promoted to NEXT STEP)*
+2. **Active filter chips** — removable chips for active marketplace filters.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

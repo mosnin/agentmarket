@@ -36,11 +36,12 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Test the MCP interop adapter (`lib/interop/mcpAdapter.ts`).** Add
-`lib/interop/mcpAdapter.test.ts` covering `listToolsForAgent` (derives the MCP
-tool list an agent exposes) and `validateMcpServer` (accepts a well-formed
-`https://` server URL, rejects empty/malformed ones). Continues the interop
-safety net; all pure, no DB. Verify with `npm test` + build + types.
+**Test the x402 payment adapter (`lib/payments/x402Adapter.ts`).** The last leg
+of the interop story: machine-payable HTTP. Add `lib/payments/x402Adapter.test.ts`
+covering `createPaymentRequirement` (emits a well-formed 402 challenge — amount,
+currency/asset, pay-to, nonce/scheme) and whatever the `x402` object exposes for
+verifying/settling a receipt. All pure, no DB. Verify with `npm test` + build +
+types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -49,6 +50,12 @@ safety net; all pure, no DB. Verify with `npm test` + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Test the MCP interop adapter.** Added `lib/interop/mcpAdapter.test.ts`
+  — 10 tests: `listToolsForAgent` (one tool per capability, snake_case tool name via
+  slugify, valid object inputSchema requiring `input`, capability+category+MCP in the
+  description, empty-in → empty-out) and `validateMcpServer` (missing URL → "not
+  configured", well-formed http/https accepted with toolCount 1, malformed rejected,
+  protocol version always present). 71 tests pass. (`lib/interop/mcpAdapter.test.ts`)
 - **2026-06-27 — Test the A2A interop adapter.** Agent-to-agent interop is the
   headline promise, so its mock transforms now have a safety net. Added
   `lib/interop/a2aAdapter.test.ts` — 10 tests: `getAgentCard` (slug → `agent_…`
@@ -322,8 +329,8 @@ safety net; all pure, no DB. Verify with `npm test` + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Test the interop adapters** — A2A ✓; MCP (`mcpAdapter`, NEXT STEP), then x402
-   (`x402Adapter`). The headline interop story; all pure.
+1. **Test the interop adapters** — A2A ✓; MCP ✓; x402 (`x402Adapter`, NEXT STEP).
+   The headline interop story; all pure.
 2. **Test the remaining `lib/utils` helpers** — `slugify`, `initials`, `truncate`,
    `pluralize`, `mockHash` (stable + prefixed) — the only formatters still uncovered.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;

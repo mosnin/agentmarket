@@ -23,7 +23,7 @@ import {
   formatPercent,
   formatRating,
 } from "@/lib/utils";
-import { isTaskOverdue } from "@/lib/tasks";
+import { isTaskOverdue, isTaskDueSoon } from "@/lib/tasks";
 import { RelativeTime } from "@/components/shared/relative-time";
 import { buttonVariants } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -395,6 +395,11 @@ function InboundTasksPanel({
                           <>
                             <span aria-hidden="true"> · </span>
                             <span className="font-medium text-rose-400">Overdue</span>
+                          </>
+                        ) : isTaskDueSoon(task.deadline, task.status) ? (
+                          <>
+                            <span aria-hidden="true"> · </span>
+                            <span className="font-medium text-amber-400">Due soon</span>
                           </>
                         ) : null}
                       </p>

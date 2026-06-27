@@ -36,11 +36,11 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Carry "Due soon" into the task lists.** Add the amber "Due soon" chip next to the existing
-"Overdue" chip in the dashboard "Active tasks" list (`app/dashboard/page.tsx`) and the Seller
-Studio inbound table (`app/seller/seller-tabs.tsx`), using `isTaskDueSoon` (overdue takes
-precedence). Consistent deadline clarity wherever tasks are scanned, before drilling in.
-Verify with `npm test` + build + types.
+**Surface urgent tasks first.** Add a pure `taskUrgencyRank(task, now?)` to `lib/tasks.ts`
+(overdue = 0, due-soon = 1, otherwise = 2) with tests, and sort the dashboard's in-flight
+tasks by urgency (then recency) *before* the 6-item slice in `lib/data.ts`, so overdue /
+due-soon tasks float to the top of the operator's glance list instead of being buried by
+recency. Lens: surface what needs attention. Verify with `npm test` + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -49,6 +49,11 @@ Verify with `npm test` + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — "Due soon" in the task lists.** Added the amber "Due soon" chip next to the
+  "Overdue" chip in the dashboard "Active tasks" list and the Seller Studio inbound table
+  (overdue takes precedence). The deadline signal (overdue + due-soon) is now consistent
+  across all three task surfaces: detail, dashboard, seller. (`app/dashboard/page.tsx`,
+  `app/seller/seller-tabs.tsx`)
 - **2026-06-27 — "Due soon" deadline signal.** Added a pure `isTaskDueSoon(deadline, status,
   now?)` to `lib/tasks.ts` (deadline within the next 24h, not overdue, in-flight; mutually
   exclusive with `isTaskOverdue`) with 4 tests, and surfaced it on the task detail header —
@@ -542,8 +547,8 @@ Verify with `npm test` + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Carry "Due soon" into the task lists** (dashboard + seller). *(NEXT STEP. Detail-page
-   due-soon signal + helper/tests shipped ✓ — 169 tests.)*
+1. **Surface urgent tasks first** — `taskUrgencyRank` + sort the dashboard glance list.
+   *(NEXT STEP. Deadline signal now consistent across detail + dashboard + seller ✓.)*
 2. **Consistency pass** on dialogs/toasts, then reassess for genuine remaining gaps.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.

@@ -18,7 +18,7 @@ import {
 
 import { getDashboardData } from "@/lib/data";
 import { cn, formatCurrency } from "@/lib/utils";
-import { isTaskOverdue } from "@/lib/tasks";
+import { isTaskOverdue, isTaskDueSoon } from "@/lib/tasks";
 import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
@@ -221,6 +221,11 @@ function ActiveTasksSection({ tasks }: { tasks: DashboardData["activeTasksList"]
                       <>
                         <span aria-hidden="true">·</span>
                         <span className="font-medium text-rose-400">Overdue</span>
+                      </>
+                    ) : isTaskDueSoon(task.deadline, task.status) ? (
+                      <>
+                        <span aria-hidden="true">·</span>
+                        <span className="font-medium text-amber-400">Due soon</span>
                       </>
                     ) : null}
                   </p>

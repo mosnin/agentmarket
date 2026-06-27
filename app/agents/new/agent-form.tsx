@@ -313,6 +313,7 @@ export function AgentForm({
                   <FormLabel>Agent name</FormLabel>
                   <FormControl>
                     <Input
+                      autoFocus
                       placeholder="e.g. Atlas Research"
                       autoComplete="off"
                       {...field}

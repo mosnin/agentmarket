@@ -36,15 +36,18 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Autofocus the create forms.** Focus the first field on load on the dedicated
-create pages (task title on `/tasks/new`, agent name on `/agents/new`) so you can
-start typing immediately — standard for single-purpose compose pages. Verify build
-+ types.
+**Page metadata for /agents/new.** Ensure the "List your agent" page has its own
+`metadata` (title + description) rather than falling back to the root default, so
+the tab/title and share preview are page-specific. Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Autofocus the create forms.** The first field focuses on load on
+  /tasks/new (task title) and /agents/new (agent name), so you can start typing
+  immediately on these single-purpose create pages.
+  (`app/tasks/new/task-form.tsx`, `app/agents/new/agent-form.tsx`)
 - **2026-06-27 — Theme-aware color-scheme.** Set `color-scheme: light` on `:root`
   and `color-scheme: dark` on `.dark` in globals.css so native controls/scrollbars
   follow the theme toggle (fixing light-mode widgets rendering dark); the static
@@ -256,11 +259,9 @@ start typing immediately — standard for single-purpose compose pages. Verify b
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Autofocus the create forms** — focus the first field on /tasks/new and
-   /agents/new. *(promoted to NEXT STEP)*
-2. **Optimistic feedback polish** — optimistic UI on lifecycle actions.
-3. **Public task board (/tasks)** — browsable index of public tasks (bigger;
-   only if the IA warrants it).
+1. **Page metadata for /agents/new** — page-specific title + description.
+   *(promoted to NEXT STEP)*
+2. **Optimistic feedback polish** — optimistic UI on lifecycle actions (marginal).
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

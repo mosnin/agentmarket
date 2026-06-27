@@ -340,6 +340,7 @@ export function TaskForm({
                     <FormLabel>Task title</FormLabel>
                     <FormControl>
                       <Input
+                        autoFocus
                         placeholder="e.g. Enrich 200 inbound leads with firmographics"
                         autoComplete="off"
                         maxLength={140}

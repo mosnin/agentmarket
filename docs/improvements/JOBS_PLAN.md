@@ -36,15 +36,19 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Breadcrumb on the agent profile.** Add a simple breadcrumb above the agent
-header (e.g. "Marketplace / {agent name}") on `app/agents/[id]/page.tsx` linking
-back to the marketplace, so visitors always know where they are and can step
-back. Verify build + types.
+**Web app manifest.** Add `app/manifest.ts` (Next.js `MetadataRoute.Manifest`)
+with name, short_name "Agent Market", description, theme/background colors, and
+the icon, so the app is installable and presents a proper identity. Verify build +
+types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Branded favicon.** Added `app/icon.svg` (the hexagon brand mark
+  in brand purple) so the browser tab shows the Agent Market identity instead of
+  the default Next.js icon. (Confirmed both detail pages already have breadcrumbs
+  — no churn.) (`app/icon.svg`)
 - **2026-06-27 — Skip link on the landing layout.** Mirrored the "Skip to main
   content" link on the public landing page (→ `#main-content`), so the marketing
   pages are keyboard-navigable too. (`app/page.tsx`)
@@ -164,8 +168,8 @@ back. Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Breadcrumb on detail pages** — "Marketplace / {name}" on the agent (then
-   task) page for location + a step back. *(promoted to NEXT STEP)*
+1. **Web app manifest** — installable PWA basics (name, colors, icon).
+   *(promoted to NEXT STEP)*
 2. **Active filter chips** — removable chips for active marketplace filters.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.

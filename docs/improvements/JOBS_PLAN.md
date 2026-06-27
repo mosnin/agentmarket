@@ -36,12 +36,11 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Re-walk dispute resolution.** Disputes can now be opened (the detail page shows a
-dispute banner) and `DISPUTE_STATUS_META` has resolved/rejected states — but is there a
-way to *resolve* one? Check for a `resolveDispute` action + an admin affordance. If
-disputes are a dead-end (openable but never resolvable), wire resolution (action + admin
-UI), mirroring the cancel-task fix. Lens: clarify state, complete the lifecycle. Verify
-with `npm test` (still green) + build + types.
+**Re-walk agent status moderation (admin).** `setAgentStatus` supports
+active/suspended/archived/draft. Confirm the admin UI lets a moderator reach the sensible
+transitions — suspend an active agent, reinstate a suspended one, archive. If any valid
+transition is unreachable (like the dispute "reject" gap just fixed), wire it. Lens:
+complete the lifecycle. Verify with `npm test` (still green) + build + types.
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -50,6 +49,12 @@ with `npm test` (still green) + build + types.
 
 ## DONE LOG
 
+- **2026-06-27 — Reachable "rejected" dispute outcome.** Dispute resolution was wired
+  (admin `ResolveDisputeButton` → `resolveDispute`), but it hardcoded "resolved" — the
+  valid "rejected" outcome the action already supports was unreachable. Added a "Reject
+  claim" button alongside "Mark resolved" (both validate the resolution note); resolving
+  credits the agent's reputation, rejecting leaves it unchanged. The dispute lifecycle's
+  rejected state is now reachable. (`app/admin/admin-actions.tsx`)
 - **2026-06-27 — Wire up task cancellation.** The lifecycle had a "cancelled" state and
   a complete `cancelTask` action (sets cancelled + refunds escrow), but nothing in the UI
   triggered it — a buyer couldn't cancel a task they posted. Added a "Cancel task"
@@ -436,8 +441,8 @@ with `npm test` (still green) + build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Re-walk dispute resolution** — can an opened dispute be resolved? *(NEXT STEP.
-   Task cancellation now reachable ✓.)*
+1. **Re-walk agent status moderation** — suspend/reinstate/archive reachable? *(NEXT
+   STEP. Dispute resolve + reject both reachable ✓.)*
 2. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.

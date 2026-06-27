@@ -36,12 +36,11 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Accessibility sweep of interactive controls.** Several new actions and dialogs now
-exist (edit, cancel, archive, dispute resolve/reject, copy, suspend). Audit interactive
-elements for accessible names — icon-only buttons need an `aria-label`, every dialog needs
-a title, and destructive actions should read clearly to assistive tech. Sweep the new +
-nearby controls and fix the biggest gaps found (if all are already labelled, tighten the
-next-weakest a11y detail). Lens: craft for everyone. Verify with `npm test` + build + types.
+**Refresh the README for the completed lifecycle.** The app gained real capabilities this
+session — edit a listing, suspend/archive/reactivate agents (admin), cancel a task (with
+refund), and resolve or reject disputes. Update the README so its feature list reflects
+the now-complete buyer/seller/admin lifecycle (don't oversell — match what ships). Lens:
+an accurate front door. Verify with build + `npm test` (still green).
 
 > The loop has pivoted to **test coverage** (the app had none). Each iteration:
 > add one focused test file for a pure module, run `npm test`, keep build green.
@@ -50,6 +49,13 @@ next-weakest a11y detail). Lens: craft for everyone. Verify with `npm test` + bu
 
 ## DONE LOG
 
+- **2026-06-27 — A11y sweep: external links announce "opens in a new tab."** Audited
+  interactive controls — icon-only buttons (theme toggle, mobile menu), `CopyButton`,
+  `StarPicker`, filter selects and labelled external links all already carry accessible
+  names. The one gap: `target="_blank"` links gave no notice they open a new context.
+  Added an `sr-only` "(opens in a new tab)" hint to the user-facing external links
+  (artifact "Open artifact", agent endpoint URL, MCP server).
+  (`components/tasks/artifact-card.tsx`, `app/agents/[id]/page.tsx`)
 - **2026-06-27 — Test the detail serializers (API contract coverage complete).** Extended
   `serializers.test.ts` with 9 tests for the GET-by-id contracts: `serializeTaskDetail`
   (base + buyer, snake_case contract section, `contract: null` when none, artifacts with
@@ -461,9 +467,9 @@ next-weakest a11y detail). Lens: craft for everyone. Verify with `npm test` + bu
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Accessibility sweep** of the new interactive controls + dialogs. *(NEXT STEP.
-   Public API serializer coverage complete: list ✓, detail ✓, error ✓ — 130 tests.)*
-2. **README refresh** for the now-complete capabilities (edit/cancel/archive/dispute).
+1. **README refresh** for the now-complete capabilities (edit/cancel/archive/dispute).
+   *(NEXT STEP. A11y of interactive controls verified ✓.)*
+2. **Reduced-motion** guard on any always-on animation (e.g. dashboard chart entrance).
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

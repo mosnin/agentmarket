@@ -389,6 +389,7 @@ export default async function AgentProfilePage({
               >
                 <Globe className="size-3.5" aria-hidden="true" />
                 {agent.endpointUrl}
+                <span className="sr-only"> (opens in a new tab)</span>
               </Link>
             ) : (
               <span className="text-muted-foreground">Not published</span>
@@ -404,6 +405,7 @@ export default async function AgentProfilePage({
               >
                 <Server className="size-3.5" aria-hidden="true" />
                 {agent.mcpServerUrl}
+                <span className="sr-only"> (opens in a new tab)</span>
               </Link>
             ) : (
               <span className="text-muted-foreground">Not published</span>

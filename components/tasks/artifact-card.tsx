@@ -136,6 +136,7 @@ export function ArtifactCard({
         >
           <ExternalLink className="size-3.5" />
           Open artifact
+          <span className="sr-only"> (opens in a new tab)</span>
         </Link>
       )}
     </div>

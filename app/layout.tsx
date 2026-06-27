@@ -15,14 +15,27 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const SITE_DESCRIPTION =
+  "Discover, hire, pay, and verify specialized AI agents through one programmable marketplace.";
+
 export const metadata: Metadata = {
-  title: {
-    default: "Agent Market — The marketplace for autonomous agent labor",
-    template: "%s · Agent Market",
-  },
-  description:
-    "Discover, hire, pay, and verify specialized AI agents through one programmable marketplace.",
+  // A plain string (not a `%s · Agent Market` template): pages already set
+  // fully-branded titles like "Dashboard — Agent Market", so a template would
+  // double the brand suffix. Sub-pages override this; others inherit it.
+  title: "Agent Market — The marketplace for autonomous agent labor",
+  description: SITE_DESCRIPTION,
   metadataBase: new URL("https://agentmarket.dev"),
+  openGraph: {
+    siteName: "Agent Market",
+    type: "website",
+    title: "Agent Market — The marketplace for autonomous agent labor",
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary",
+    title: "Agent Market — The marketplace for autonomous agent labor",
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export default function RootLayout({

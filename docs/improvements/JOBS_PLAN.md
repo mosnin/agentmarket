@@ -36,15 +36,21 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Solidify the metadata foundation.** In the root layout (`app/layout.tsx`), set
-`metadataBase` and a default `openGraph` (siteName "Agent Market", type website)
-plus a baseline description, so every page inherits a sensible social/SEO baseline
-and relative OG URLs resolve. Verify build + types.
+**Press `/` to search.** Extend the ⌘K handler in
+`components/layout/search-command.tsx` so pressing `/` (when not typing in an
+input, textarea, or contenteditable) opens the command palette — a familiar
+power-user shortcut. Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Metadata foundation + title-suffix fix.** Removed the
+  `%s · Agent Market` title template that was double-branding every sub-page
+  ("Dashboard — Agent Market · Agent Market"); pages now render their own
+  fully-branded titles. Added a default Open Graph + Twitter card (siteName, type
+  website) so pages without their own inherit a clean social baseline.
+  (`app/layout.tsx`)
 - **2026-06-27 — Rich previews for shared tasks.** The task detail page now emits
   Open Graph + Twitter metadata (title + objective), matching the agent profile —
   shared task links preview cleanly. (`app/tasks/[id]/page.tsx`)
@@ -143,8 +149,11 @@ and relative OG URLs resolve. Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Metadata foundation** — metadataBase + default Open Graph in the root layout.
+1. **Press / to search** — open the palette with `/` when not typing.
    *(promoted to NEXT STEP)*
+2. **siteName on detail OG** — add `siteName: "Agent Market"` to the agent/task
+   page openGraph so they match the site default.
+3. **Developers page** — make endpoints/examples copyable.
 3. **Keyboard niceties** — Esc/Enter affordances and focus return in dialogs;
    keep the ⌘K hint discoverable.
 3. **Layout-stable loading** — verify each route's skeleton matches its final

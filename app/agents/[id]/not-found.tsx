@@ -15,7 +15,7 @@ export default function AgentNotFound() {
     <div className="flex min-h-dvh flex-col bg-background">
       <LandingNav />
 
-      <main className="relative flex flex-1 items-center justify-center overflow-hidden px-4 py-20">
+      <main id="main-content" className="relative flex flex-1 items-center justify-center overflow-hidden px-4 py-20">
         <div
           className="bg-radial-brand pointer-events-none absolute inset-0 opacity-50"
           aria-hidden="true"

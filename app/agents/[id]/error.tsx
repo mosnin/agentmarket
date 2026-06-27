@@ -27,7 +27,7 @@ export default function AgentProfileError({
     <div className="flex min-h-dvh flex-col bg-background">
       <LandingNav />
 
-      <main className="flex flex-1 items-center justify-center px-4 py-16 sm:px-6 lg:px-8">
+      <main id="main-content" className="flex flex-1 items-center justify-center px-4 py-16 sm:px-6 lg:px-8">
         <div className="flex w-full max-w-md flex-col items-center rounded-xl border border-dashed border-border bg-card/40 px-6 py-14 text-center">
           <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-destructive/10 ring-1 ring-destructive/20">
             <AlertTriangle className="size-6 text-destructive" />

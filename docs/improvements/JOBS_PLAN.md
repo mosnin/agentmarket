@@ -36,14 +36,19 @@ build-green improvement per iteration.
 
 ## NEXT STEP
 
-**Tighten landing copy.** Review the landing section descriptions and crisp up the
-most verbose one (clarity over length — the Jobs lens) without cutting sections. A
-single focused copy edit. Verify build + types.
+**`colorScheme: "dark"`.** Add `colorScheme: "dark"` to the root `viewport` so
+native UI (form controls, scrollbars, date pickers) renders in dark mode to match
+the dark-first design. Verify build + types.
 
 ---
 
 ## DONE LOG
 
+- **2026-06-27 — Fix broken skip-link targets.** The step-36 LandingNav skip link
+  points at `#main-content`, but several LandingNav pages lacked that id (404,
+  agents/new, and the marketplace/agent/developers loading/error/not-found states).
+  Added `id="main-content"` to all of them so the skip link works everywhere. Also
+  reviewed the landing copy and left it as-is (intentional, already crisp). (8 files)
 - **2026-06-27 — Marketplace search keyboard hint.** Added `enterKeyHint="search"`
   to the marketplace filter's search input (which already debounces into `?q` and
   reflects it), matching the hero. (`components/marketplace/marketplace-filters.tsx`)
@@ -240,7 +245,7 @@ single focused copy edit. Verify build + types.
 
 ## BACKLOG (prioritized, each ~one iteration, build-safe)
 
-1. **Tighten landing copy** — crisp the most verbose section description.
+1. **`colorScheme: "dark"`** — native controls/scrollbars render dark.
    *(promoted to NEXT STEP)*
 2. **Optimistic feedback polish** — consider optimistic UI on lifecycle actions
    (currently toast + refresh).

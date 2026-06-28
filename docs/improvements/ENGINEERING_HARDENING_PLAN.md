@@ -98,6 +98,32 @@ client components beyond a public Clerk publishable key name).
   `tsc + build + vitest`; add coverage for authz/state-machine/URL guards; fix all loose ends; write a
   deploy checklist (DB push, set real auth + API keys).
 
+## Deploy checklist (production)
+
+1. **Migrate the DB**: `prisma db push` (or a migration) — adds `User.role`, the
+   `Agent[status,reputationScore]` + `Agent[ownerId]` indexes. Re-seed if desired (`npm run db:seed`).
+2. **Wire real auth**: implement `getCurrentUser` in `lib/auth.ts` against the provider (Clerk vars in
+   `.env.example`); assign `role` from the provider, not hard-coded. All guards in `lib/authz.ts`
+   already enforce the rest.
+3. **Lock the programmable API**: set `API_BEARER_TOKENS` so mutating `/api/*` routes require a bearer
+   token. (Optionally map tokens → principals for per-agent identity.)
+4. **Rate limiting at scale**: the in-memory limiter is per-instance; back it with Redis/Upstash
+   behind multiple instances (same `checkRateLimit` interface).
+5. **CSP hardening (optional next step)**: move to nonce-based `script-src` via middleware and verify
+   the live render before dropping `'unsafe-inline'`.
+6. **SSRF egress control**: when enabling live interop fetches (`A2A_REGISTRY_URL` etc.), also
+   re-resolve DNS and re-check the resolved IP at fetch time (the schema guard is the first layer).
+
+## UI/UX assessment
+
+The marketplace UI was walked exhaustively in the prior product-craft loop (Linear/Vercel-grade
+visuals; skip links, `aria-current`, focus-visible rings, responsive layouts, empty + loading states,
+and an earned "settled" delight moment). A live Playwright pass wasn't possible here (no database to
+run the app against). The hardening in this plan is **backend-only** and surfaces through the existing
+toast/error paths — clearer messages on illegal transitions, authorization failures, rate limiting,
+and oversized/invalid bodies — with no visual regressions. Live visual verification is a deploy-time
+step once a database is attached.
+
 ## Done log
 
 - **Phase 5 — Performance.** Indexes: replaced the standalone `Agent.reputationScore` index with a

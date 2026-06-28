@@ -49,3 +49,23 @@ describe("isSafePublicUrl", () => {
     expect(isSafePublicUrl("https://user:pass@example.com")).toBe(false);
   });
 });
+
+describe("isSafePublicUrl — IP-encoding SSRF bypasses", () => {
+  it("blocks IPv4-mapped IPv6 (hex form) to metadata/loopback/private", () => {
+    expect(isSafePublicUrl("http://[::ffff:169.254.169.254]/latest/meta-data/")).toBe(false);
+    expect(isSafePublicUrl("http://[::ffff:7f00:1]/")).toBe(false); // 127.0.0.1
+    expect(isSafePublicUrl("http://[::ffff:a00:1]/")).toBe(false); // 10.0.0.1
+    expect(isSafePublicUrl("http://[::ffff:c0a8:1]/")).toBe(false); // 192.168.0.1
+  });
+  it("blocks IPv4-mapped IPv6 (dotted form)", () => {
+    expect(isSafePublicUrl("http://[::ffff:127.0.0.1]/")).toBe(false);
+  });
+  it("blocks decimal/octal/hex IPv4 encodings (URL-normalized)", () => {
+    expect(isSafePublicUrl("http://2130706433/")).toBe(false); // 127.0.0.1
+    expect(isSafePublicUrl("http://0x7f000001/")).toBe(false);
+    expect(isSafePublicUrl("http://127.1/")).toBe(false);
+  });
+  it("still allows a public mapped address", () => {
+    expect(isSafePublicUrl("http://[::ffff:8.8.8.8]/")).toBe(true);
+  });
+});

@@ -126,6 +126,39 @@ step once a database is attached.
 
 ## Done log
 
+- **Phase 6 — End-to-end audit.** Ran an independent adversarial security review over the
+  security-critical surface. Confirmed clean: state-machine double-release/refund, privileged-action
+  gating, `guardApi` coverage, artifact-enum/SSRF-via-A2A, CSP/headers. Fixed every real finding:
+  - **H1 (SSRF bypass)** — `isBlockedHost` missed IPv4-mapped IPv6 in hex form (the URL parser
+    canonicalizes `::ffff:169.254.169.254` → `::ffff:a9fe:a9fe`), letting cloud-metadata/loopback/
+    private through. Rewrote with `mappedIpv4` (dotted + hex) + a structured IPv6 branch; +4 tests
+    (decimal/octal/hex IPv4 already normalized by the parser are covered).
+  - **H2 (escrow on failed validation)** — `completeTask` released escrow with only the buyer +
+    transition guard; the validation-pass check lived only in the API route. Moved it into the action
+    so the server-action (browser) path can't settle a failed artifact.
+  - **H3 (private-task leak)** — `GET /api/tasks` and `/api/tasks/:id` ignored `visibility`. The
+    public API now lists `visibility: "public"` only and 404s non-public detail.
+  - **M1 (rate-limit bypass)** — authenticated writes are now keyed on the bearer token, not the
+    spoofable `x-forwarded-for` (IP remains the documented fallback for unauthenticated callers).
+  - **M2 (body-cap bypass)** — `readJsonBody` now streams and counts real bytes, aborting at the cap
+    instead of trusting Content-Length / buffering first; +3 tests.
+  - **L2 (P2025 → 500)** — `verifyAgent`/`setAgentStatus`/`resolveDispute` return a clean "not found"
+    instead of throwing on a bad id.
+  - **L1 (latent)** — documented: `getCurrentUser` stays non-null for the mock session; the authz
+    guards already carry the null branches, so the real-auth swap (nullable session) is forward-safe.
+  Also gated the `/admin` read surface (`requireAdmin` + redirect) and documented `API_BEARER_TOKENS`.
+  **229 tests** (190 → 229 across all phases), tsc + build green. Files: `lib/url.ts(.test)`,
+  `lib/actions.ts`, `lib/data.ts`, `lib/apiAuth.ts(.test)`, `app/api/_lib/guard.ts`,
+  `app/api/tasks/route.ts`, `app/api/tasks/[id]/route.ts`.
+
+### Outcome
+
+Every finding in the brutal list is resolved or has a documented, deliberate deferral (caching;
+nonce-CSP; real auth provider; scaled rate-limit store) captured in the deploy checklist. Net: the
+backend went from "no authn, no authz, no rate limits, no headers, unbounded reads, replayable
+payments, SSRF-open" to a gated, rate-limited, header-hardened, atomic, SSRF-validated system with the
+auth provider as a single documented swap point — verified by 229 passing tests at each step.
+
 - **Phase 5 — Performance.** Indexes: replaced the standalone `Agent.reputationScore` index with a
   compound `@@index([status, reputationScore])` (serves the default marketplace list: filter status,
   sort reputation) and added `@@index([ownerId])` (Seller Studio) — fixes **P1/P4**. Session

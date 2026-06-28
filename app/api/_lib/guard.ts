@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { checkRateLimit } from "@/lib/rateLimit";
-import { apiAuth, clientKey } from "@/lib/apiAuth";
+import { apiAuth, clientKey, extractBearer } from "@/lib/apiAuth";
 import { apiError } from "./serializers";
 
 // Reads are cheap and idempotent; writes are scarcer and authenticated.
@@ -19,7 +19,13 @@ export function guardApi(
 ): NextResponse | null {
   const scope = opts.write ? "w" : "r";
   const limit = opts.write ? WRITE_LIMIT : READ_LIMIT;
-  const rl = checkRateLimit(`${scope}:${clientKey(request)}`, limit);
+  // Authenticated writes are keyed on the bearer token: `x-forwarded-for` is
+  // client-controlled and can be rotated to slip an IP-based window. Reads and
+  // unauthenticated writes fall back to the best-effort client IP.
+  const token = opts.write
+    ? extractBearer(request.headers.get("authorization"))
+    : null;
+  const rl = checkRateLimit(`${scope}:${token ?? clientKey(request)}`, limit);
   if (!rl.ok) {
     return NextResponse.json(
       apiError("Rate limit exceeded. Please slow down.", "rate_limited"),

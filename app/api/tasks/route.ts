@@ -23,7 +23,11 @@ export async function GET(request: NextRequest) {
     const blocked = guardApi(request);
     if (blocked) return blocked;
     const sp = request.nextUrl.searchParams;
-    const filters: { status?: string; category?: string } = {};
+    const filters: { status?: string; category?: string; visibility?: string } = {
+      // The public agent API only ever exposes public tasks — private/unlisted
+      // tasks must not be enumerable here.
+      visibility: "public",
+    };
 
     const status = sp.get("status")?.trim();
     if (status) filters.status = status;

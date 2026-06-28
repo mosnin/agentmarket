@@ -66,14 +66,50 @@ export async function readJsonBody(
   if (Number.isFinite(declared) && declared > maxBytes) {
     return { ok: false, status: 413, error: "Request body too large." };
   }
+
+  // Stream the body and abort the moment it exceeds the cap, so a client that
+  // omits or understates Content-Length can't force unbounded buffering first.
   let text: string;
-  try {
-    text = await request.text();
-  } catch {
-    return { ok: false, status: 400, error: "Could not read request body." };
+  const stream = request.body;
+  if (stream) {
+    const reader = stream.getReader();
+    const chunks: Uint8Array[] = [];
+    let total = 0;
+    try {
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (!value) continue;
+        total += value.byteLength;
+        if (total > maxBytes) {
+          await reader.cancel();
+          return { ok: false, status: 413, error: "Request body too large." };
+        }
+        chunks.push(value);
+      }
+    } catch {
+      return { ok: false, status: 400, error: "Could not read request body." };
+    }
+    const merged = new Uint8Array(total);
+    let offset = 0;
+    for (const c of chunks) {
+      merged.set(c, offset);
+      offset += c.byteLength;
+    }
+    text = new TextDecoder().decode(merged);
+  } else {
+    try {
+      text = await request.text();
+    } catch {
+      return { ok: false, status: 400, error: "Could not read request body." };
+    }
+    if (new TextEncoder().encode(text).byteLength > maxBytes) {
+      return { ok: false, status: 413, error: "Request body too large." };
+    }
   }
-  if (text.length > maxBytes) {
-    return { ok: false, status: 413, error: "Request body too large." };
+
+  if (!text.trim()) {
+    return { ok: false, status: 400, error: "Request body must be valid JSON" };
   }
   try {
     return { ok: true, body: JSON.parse(text) };

@@ -22,7 +22,9 @@ export async function GET(
     const { id } = await params;
     const task = await getTask(id);
 
-    if (!task) {
+    // The public agent API only exposes public tasks; private/unlisted tasks are
+    // hidden as 404 so their existence and contents don't leak.
+    if (!task || task.visibility !== "public") {
       return NextResponse.json(
         apiError(`No task found for "${id}"`, "not_found"),
         { status: 404 },

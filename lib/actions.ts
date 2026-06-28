@@ -12,6 +12,7 @@ import {
   assertTaskParticipant,
 } from "@/lib/authz";
 import { TASK_TRANSITIONS, canTransition, transitionError } from "@/lib/taskState";
+import { VALIDATION_PASS_THRESHOLD } from "@/lib/constants";
 import { slugify, mockHash } from "@/lib/utils";
 import {
   createAgentSchema,
@@ -151,7 +152,12 @@ export async function verifyAgent(
 ): Promise<ActionResult<{ agentId: string }>> {
   const gate = await requireAdmin();
   if (!gate.ok) return gate;
-  const agent = await prisma.agent.update({
+  const existing = await prisma.agent.findUnique({
+    where: { id: agentId },
+    select: { id: true, slug: true },
+  });
+  if (!existing) return { ok: false, error: "Agent not found." };
+  await prisma.agent.update({
     where: { id: agentId },
     data: { verified: true },
   });
@@ -161,7 +167,7 @@ export async function verifyAgent(
     scoreDelta: REPUTATION_DELTAS.agentVerified,
     reason: "Agent verified by an administrator.",
   });
-  revalidateAll("/admin", "/marketplace", `/agents/${agent.id}`, `/agents/${agent.slug}`);
+  revalidateAll("/admin", "/marketplace", `/agents/${existing.id}`, `/agents/${existing.slug}`);
   return { ok: true, agentId };
 }
 
@@ -171,7 +177,11 @@ export async function setAgentStatus(
 ): Promise<ActionResult> {
   const gate = await requireAdmin();
   if (!gate.ok) return gate;
-  await prisma.agent.update({ where: { id: agentId }, data: { status } });
+  const { count } = await prisma.agent.updateMany({
+    where: { id: agentId },
+    data: { status },
+  });
+  if (count === 0) return { ok: false, error: "Agent not found." };
   revalidateAll("/admin", "/marketplace", "/seller");
   return { ok: true };
 }
@@ -364,9 +374,26 @@ export async function completeTask(taskId: string): Promise<ActionResult> {
   if (!gate.ok) return gate;
   const task = await prisma.task.findUnique({
     where: { id: taskId },
-    include: { sellerAgent: { select: { id: true } } },
+    include: {
+      sellerAgent: { select: { id: true } },
+      artifacts: { orderBy: { createdAt: "desc" }, take: 1 },
+    },
   });
   if (!task) return { ok: false, error: "Task not found" };
+
+  // Escrow is released only after the latest deliverable PASSED validation —
+  // enforced here (not just in the API route) so the server-action path can't
+  // settle a failed artifact.
+  const latest = task.artifacts[0];
+  const passedValidation =
+    latest?.validationStatus === "passed" &&
+    (latest.validationScore ?? 0) >= VALIDATION_PASS_THRESHOLD;
+  if (!passedValidation) {
+    return {
+      ok: false,
+      error: `Payment can only be released after the latest artifact passes validation (score ≥ ${VALIDATION_PASS_THRESHOLD}).`,
+    };
+  }
 
   // Atomic transition: payment is released only if THIS call performed the
   // validating -> completed flip, so a double-submit can't double-release.
@@ -459,6 +486,11 @@ export async function resolveDispute(
 ): Promise<ActionResult> {
   const gate = await requireAdmin();
   if (!gate.ok) return gate;
+  const found = await prisma.dispute.findUnique({
+    where: { id: disputeId },
+    select: { id: true },
+  });
+  if (!found) return { ok: false, error: "Dispute not found." };
   const dispute = await prisma.dispute.update({
     where: { id: disputeId },
     data: { status: outcome, resolution },

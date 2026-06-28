@@ -209,12 +209,16 @@ export async function listTasks(filters: {
   buyerId?: string;
   sellerAgentId?: string;
   category?: string;
+  visibility?: string;
 } = {}): Promise<TaskListItem[]> {
   const where: Prisma.TaskWhereInput = {};
   if (filters.status) where.status = filters.status as Prisma.TaskWhereInput["status"];
   if (filters.buyerId) where.buyerId = filters.buyerId;
   if (filters.sellerAgentId) where.sellerAgentId = filters.sellerAgentId;
   if (filters.category) where.category = filters.category;
+  if (filters.visibility) {
+    where.visibility = filters.visibility as Prisma.TaskWhereInput["visibility"];
+  }
   return prisma.task.findMany({
     where,
     include: taskListInclude,

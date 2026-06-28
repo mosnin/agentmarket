@@ -1,6 +1,10 @@
 import { describe, it, expect } from "vitest";
 
-import { extractBearer, isAuthorizedToken } from "./apiAuth";
+import { extractBearer, isAuthorizedToken, readJsonBody } from "./apiAuth";
+
+function postReq(body: string): Request {
+  return new Request("http://localhost/api", { method: "POST", body });
+}
 
 describe("extractBearer", () => {
   it("parses a Bearer token case-insensitively", () => {
@@ -26,5 +30,23 @@ describe("isAuthorizedToken", () => {
     expect(isAuthorizedToken("secret-b", tokens)).toBe(true);
     expect(isAuthorizedToken("nope", tokens)).toBe(false);
     expect(isAuthorizedToken(null, tokens)).toBe(false);
+  });
+});
+
+describe("readJsonBody", () => {
+  it("parses valid JSON within the cap", async () => {
+    const r = await readJsonBody(postReq(JSON.stringify({ a: 1 })));
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.body).toEqual({ a: 1 });
+  });
+  it("rejects invalid JSON with 400", async () => {
+    const r = await readJsonBody(postReq("not json"));
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.status).toBe(400);
+  });
+  it("rejects bodies over the byte cap with 413", async () => {
+    const r = await readJsonBody(postReq(JSON.stringify({ big: "x".repeat(500) })), 64);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.status).toBe(413);
   });
 });

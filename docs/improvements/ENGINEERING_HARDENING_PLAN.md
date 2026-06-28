@@ -100,6 +100,17 @@ client components beyond a public Clerk publishable key name).
 
 ## Done log
 
+- **Phase 4 — Security headers + CSP.** `next.config.ts` now emits a full security header set on every
+  route via `headers()`: a pragmatic CSP (`default-src 'self'`; `frame-ancestors 'none'`; `object-src
+  'none'`; `base-uri`/`form-action 'self'`; `img-src 'self' data: https:`; `script`/`style-src 'self'
+  'unsafe-inline'` — dev adds `'unsafe-eval'`; the app renders no user HTML so the residual surface is
+  small), plus HSTS (2yr, includeSubDomains, preload), `X-Content-Type-Options: nosniff`,
+  `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, and a locked-down
+  `Permissions-Policy`. `poweredByHeader: false` drops the framework banner. Next hardening step
+  (documented): nonce-based `script-src` via middleware — deferred because it needs live-render
+  verification, which isn't possible without a DB here. Fixes **S6**. tsc + build + 222 tests green.
+  Files: `next.config.ts`.
+
 - **Phase 3 — API authn + rate limiting + body limits.** New `lib/rateLimit.ts` (pure, injectable
   `checkRateLimit` fixed-window limiter + `pruneRateLimitStore`), `lib/apiAuth.ts` (`extractBearer`,
   `isAuthorizedToken`, `apiAuth` gated on `API_BEARER_TOKENS` with a documented mock-open fallback,

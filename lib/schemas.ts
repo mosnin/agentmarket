@@ -7,6 +7,7 @@ import {
   ARTIFACT_TYPES,
   OUTPUT_FORMATS,
 } from "@/lib/constants";
+import { isSafePublicUrl } from "@/lib/url";
 
 /**
  * Zod schemas — the single source of truth for form + API validation.
@@ -16,7 +17,10 @@ import {
 const optionalUrl = z
   .string()
   .trim()
-  .refine((v) => v === "" || /^https?:\/\/.+/i.test(v), "Enter a valid URL")
+  .refine(
+    (v) => v === "" || isSafePublicUrl(v),
+    "Enter a public http(s) URL (private or loopback hosts aren't allowed)",
+  )
   .optional();
 
 const jsonObjectString = z
@@ -109,7 +113,11 @@ export const apiCreateTaskSchema = z.object({
   output_schema: z.record(z.string(), z.any()).optional(),
   outputSchema: z.record(z.string(), z.any()).optional(),
   input_payload: z.record(z.string(), z.any()).optional(),
-  input_data_url: z.string().optional(),
+  input_data_url: z
+    .string()
+    .trim()
+    .refine((v) => !v || isSafePublicUrl(v), "input_data_url must be a public http(s) URL")
+    .optional(),
   payment_mode: z.enum(PAYMENT_MODES).optional(),
   paymentMode: z.enum(PAYMENT_MODES).optional(),
 });

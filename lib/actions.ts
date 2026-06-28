@@ -11,6 +11,7 @@ import {
   assertTaskSellerOwner,
   assertTaskParticipant,
 } from "@/lib/authz";
+import { TASK_TRANSITIONS, canTransition, transitionError } from "@/lib/taskState";
 import { slugify, mockHash } from "@/lib/utils";
 import {
   createAgentSchema,
@@ -234,7 +235,11 @@ export async function createTask(
 export async function acceptTask(taskId: string): Promise<ActionResult> {
   const gate = await assertTaskSellerOwner(taskId);
   if (!gate.ok) return gate;
-  await prisma.task.update({ where: { id: taskId }, data: { status: "accepted" } });
+  const { count } = await prisma.task.updateMany({
+    where: { id: taskId, status: { in: [...TASK_TRANSITIONS.accept.from] } },
+    data: { status: "accepted" },
+  });
+  if (count === 0) return { ok: false, error: transitionError("accept") };
   revalidateAll(`/tasks/${taskId}`, "/dashboard", "/seller");
   return { ok: true };
 }
@@ -242,7 +247,11 @@ export async function acceptTask(taskId: string): Promise<ActionResult> {
 export async function startTask(taskId: string): Promise<ActionResult> {
   const gate = await assertTaskSellerOwner(taskId);
   if (!gate.ok) return gate;
-  await prisma.task.update({ where: { id: taskId }, data: { status: "running" } });
+  const { count } = await prisma.task.updateMany({
+    where: { id: taskId, status: { in: [...TASK_TRANSITIONS.start.from] } },
+    data: { status: "running" },
+  });
+  if (count === 0) return { ok: false, error: transitionError("start") };
   revalidateAll(`/tasks/${taskId}`, "/dashboard", "/seller");
   return { ok: true };
 }
@@ -258,6 +267,13 @@ export async function submitArtifact(
   const data = parsed.data;
   const gate = await assertTaskSellerOwner(taskId);
   if (!gate.ok) return gate;
+  // Atomically guard the transition before persisting the artifact, so a
+  // deliverable can only be attached while the task is in a submittable state.
+  const { count } = await prisma.task.updateMany({
+    where: { id: taskId, status: { in: [...TASK_TRANSITIONS.submit.from] } },
+    data: { status: "submitted" },
+  });
+  if (count === 0) return { ok: false, error: transitionError("submit") };
   const artifact = await prisma.artifact.create({
     data: {
       taskId,
@@ -268,7 +284,6 @@ export async function submitArtifact(
       validationStatus: "pending",
     },
   });
-  await prisma.task.update({ where: { id: taskId }, data: { status: "submitted" } });
   revalidateAll(`/tasks/${taskId}`, "/dashboard", "/seller");
   return { ok: true, artifactId: artifact.id };
 }
@@ -287,6 +302,9 @@ export async function runValidation(
     },
   });
   if (!task) return { ok: false, error: "Task not found" };
+  if (!canTransition("validate", task.status)) {
+    return { ok: false, error: transitionError("validate") };
+  }
   const artifact = task.artifacts[0];
   if (!artifact) return { ok: false, error: "No artifact to validate" };
 
@@ -340,7 +358,13 @@ export async function completeTask(taskId: string): Promise<ActionResult> {
   });
   if (!task) return { ok: false, error: "Task not found" };
 
-  await prisma.task.update({ where: { id: taskId }, data: { status: "completed" } });
+  // Atomic transition: payment is released only if THIS call performed the
+  // validating -> completed flip, so a double-submit can't double-release.
+  const { count } = await prisma.task.updateMany({
+    where: { id: taskId, status: { in: [...TASK_TRANSITIONS.complete.from] } },
+    data: { status: "completed" },
+  });
+  if (count === 0) return { ok: false, error: transitionError("complete") };
   await releaseTaskPayment(taskId);
 
   if (task.sellerAgent) {
@@ -361,7 +385,11 @@ export async function completeTask(taskId: string): Promise<ActionResult> {
 export async function cancelTask(taskId: string): Promise<ActionResult> {
   const gate = await assertTaskBuyer(taskId);
   if (!gate.ok) return gate;
-  await prisma.task.update({ where: { id: taskId }, data: { status: "cancelled" } });
+  const { count } = await prisma.task.updateMany({
+    where: { id: taskId, status: { in: [...TASK_TRANSITIONS.cancel.from] } },
+    data: { status: "cancelled" },
+  });
+  if (count === 0) return { ok: false, error: transitionError("cancel") };
   await refundTaskPayment(taskId);
   revalidateAll(`/tasks/${taskId}`, "/dashboard", "/seller");
   return { ok: true };
@@ -384,6 +412,12 @@ export async function openDispute(
   });
   if (!task) return { ok: false, error: "Task not found" };
 
+  const { count } = await prisma.task.updateMany({
+    where: { id: taskId, status: { in: [...TASK_TRANSITIONS.dispute.from] } },
+    data: { status: "disputed" },
+  });
+  if (count === 0) return { ok: false, error: transitionError("dispute") };
+
   const dispute = await prisma.dispute.create({
     data: {
       taskId,
@@ -392,7 +426,6 @@ export async function openDispute(
       status: "open",
     },
   });
-  await prisma.task.update({ where: { id: taskId }, data: { status: "disputed" } });
 
   if (task.sellerAgent) {
     await recordReputationEvent({

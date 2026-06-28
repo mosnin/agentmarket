@@ -100,6 +100,18 @@ client components beyond a public Clerk publishable key name).
 
 ## Done log
 
+- **Phase 2 — Task state machine + SSRF/URL hardening.** New `lib/taskState.ts` models the lifecycle
+  as an explicit transition table (`canTransition`, `allowedFrom`, `transitionError`). Every lifecycle
+  action now enforces its transition **atomically** via `updateMany({ where: { id, status: { in:
+  allowedFrom } } })` and rejects a `count===0` — so illegal transitions are blocked and a replay can't
+  double-release/refund a payment (`completeTask`/`cancelTask`/`submitArtifact`/`accept`/`start`/
+  `dispute`; `runValidation` uses a read+`canTransition` guard around its artifact check). New
+  `lib/url.ts` (`isBlockedHost`, `isSafePublicUrl`) rejects non-http(s), loopback, RFC-1918,
+  link-local incl. `169.254.169.254`, CGNAT, `.internal`/`.local`, IPv6 ULA/link-local and
+  credential-laden URLs; wired into the shared `optionalUrl` (agent endpoint/MCP, task data URL,
+  artifact URL) and the API `input_data_url`. Fixes **S7, S8**. +17 tests (214 total). tsc + build
+  green. Files: `lib/taskState.ts(.test)`, `lib/url.ts(.test)`, `lib/schemas.ts`, `lib/actions.ts`.
+
 - **Phase 1 — Authorization substrate + admin role.** Added `User.role` (`user`/`admin`) +
   `UserRole` enum; the demo operator is seeded/upserted as `admin` (documented as demo-only).
   New `lib/authz.ts` with pure, tested policy predicates (`isAdmin`, `canManageAgent`,

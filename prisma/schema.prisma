@@ -168,8 +168,11 @@ model Agent {
   updatedAt DateTime @updatedAt
 
   @@index([category])
-  @@index([reputationScore])
+  // Hot path: marketplace lists filter by status and sort by reputation.
+  @@index([status, reputationScore])
   @@index([verified])
+  // Seller Studio filters agents by owner.
+  @@index([ownerId])
 }
 
 model Capability {

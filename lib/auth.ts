@@ -19,6 +19,19 @@ import { DEFAULT_ORG, DEFAULT_USER } from "@/lib/constants";
 export type CurrentUser = User & { organization: Organization | null };
 
 export const getCurrentUser = cache(async (): Promise<CurrentUser> => {
+  // Fast path: the operator already exists — a single read, no writes per request.
+  const existing = await prisma.user.findUnique({
+    where: { email: DEFAULT_USER.email },
+    include: { organization: true },
+  });
+  if (existing?.organization && existing.role === "admin") {
+    return existing;
+  }
+
+  // Cold start (or role/org drift): idempotently provision the org + operator.
+  // Demo note: the single mock operator is granted `admin` so the moderation
+  // console is exercisable out of the box. With a real auth provider, `role` is
+  // assigned by the provider / an admin grant — never hard-coded like this.
   const organization = await prisma.organization.upsert({
     where: { slug: DEFAULT_ORG.slug },
     update: {},
@@ -28,11 +41,7 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser> => {
       description: DEFAULT_ORG.description,
     },
   });
-
-  // Demo note: the single mock operator is granted `admin` so the moderation
-  // console is exercisable out of the box. With a real auth provider, `role` is
-  // assigned by the provider / an admin grant — never hard-coded like this.
-  const user = await prisma.user.upsert({
+  return prisma.user.upsert({
     where: { email: DEFAULT_USER.email },
     update: { organizationId: organization.id, role: "admin" },
     create: {
@@ -43,8 +52,6 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser> => {
     },
     include: { organization: true },
   });
-
-  return user;
 });
 
 export async function getCurrentUserId(): Promise<string> {

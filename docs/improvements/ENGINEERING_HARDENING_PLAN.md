@@ -100,6 +100,21 @@ client components beyond a public Clerk publishable key name).
 
 ## Done log
 
+- **Phase 5 — Performance.** Indexes: replaced the standalone `Agent.reputationScore` index with a
+  compound `@@index([status, reputationScore])` (serves the default marketplace list: filter status,
+  sort reputation) and added `@@index([ownerId])` (Seller Studio) — fixes **P1/P4**. Session
+  (**P3**): `getCurrentUser` is now findUnique-first — the steady state is a single read instead of
+  two upserts (writes) per request; it only provisions on cold start / role drift. Bounded reads
+  (**P2**): `listAgents`/`listTasks` take a hard `MAX_LIST_RESULTS=100` cap (no UX change at seed
+  scale; a guard against unbounded scans — cursor pagination + UI is the documented follow-on).
+  Writes (**P6**): `createAgent` de-dupes capabilities by slug and fans the upserts out with
+  `Promise.all` instead of 2×N serial round-trips. **Caching (P5) deliberately deferred**: the app is
+  `force-dynamic` with a per-request session; introducing `unstable_cache`/ISR without live-render
+  verification (no DB here) risks serving stale/personalized data. Documented approach for later:
+  tag-cache the public reads (`listAgents`/`getFeaturedAgents`/`getAgent`) and `revalidateTag` from
+  the existing action revalidation hooks. Deploy step: `prisma db push` (new indexes). tsc + build +
+  222 tests green. Files: `prisma/schema.prisma`, `lib/auth.ts`, `lib/data.ts`, `lib/actions.ts`.
+
 - **Phase 4 — Security headers + CSP.** `next.config.ts` now emits a full security header set on every
   route via `headers()`: a pragmatic CSP (`default-src 'self'`; `frame-ancestors 'none'`; `object-src
   'none'`; `base-uri`/`form-action 'self'`; `img-src 'self' data: https:`; `script`/`style-src 'self'

@@ -85,6 +85,9 @@ export interface AgentFilters {
   sort?: "reputation" | "price" | "completion" | "newest" | "rating";
 }
 
+/** Hard upper bound on rows returned by a single list query (cost / DoS guard). */
+const MAX_LIST_RESULTS = 100;
+
 export async function listAgents(filters: AgentFilters = {}): Promise<AgentCardData[]> {
   const where: Prisma.AgentWhereInput = {
     status: { in: ["active", "draft"] },
@@ -124,7 +127,12 @@ export async function listAgents(filters: AgentFilters = {}): Promise<AgentCardD
             ? { createdAt: "desc" }
             : { reputationScore: "desc" };
 
-  return prisma.agent.findMany({ where, include: agentCardInclude, orderBy });
+  return prisma.agent.findMany({
+    where,
+    include: agentCardInclude,
+    orderBy,
+    take: MAX_LIST_RESULTS,
+  });
 }
 
 export async function getFeaturedAgents(limit = 6): Promise<AgentCardData[]> {
@@ -211,6 +219,7 @@ export async function listTasks(filters: {
     where,
     include: taskListInclude,
     orderBy: { createdAt: "desc" },
+    take: MAX_LIST_RESULTS,
   });
 }
 

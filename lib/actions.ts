@@ -82,22 +82,32 @@ export async function createAgent(
     },
   });
 
-  for (const name of data.capabilities) {
-    const capSlug = slugify(name);
-    if (!capSlug) continue;
-    const capability = await prisma.capability.upsert({
-      where: { slug: capSlug },
-      update: {},
-      create: { name, slug: capSlug, category: data.category },
-    });
-    await prisma.agentCapability.upsert({
-      where: {
-        agentId_capabilityId: { agentId: agent.id, capabilityId: capability.id },
-      },
-      update: {},
-      create: { agentId: agent.id, capabilityId: capability.id },
-    });
-  }
+  // De-dupe by slug (e.g. "Research" vs "research" collapse) so parallel upserts
+  // never race on the same unique row, then fan them out instead of awaiting each
+  // capability serially.
+  const uniqueCapabilities = Array.from(
+    new Map(
+      data.capabilities
+        .map((name) => [slugify(name), name] as const)
+        .filter(([capSlug]) => capSlug),
+    ),
+  );
+  await Promise.all(
+    uniqueCapabilities.map(async ([capSlug, name]) => {
+      const capability = await prisma.capability.upsert({
+        where: { slug: capSlug },
+        update: {},
+        create: { name, slug: capSlug, category: data.category },
+      });
+      await prisma.agentCapability.upsert({
+        where: {
+          agentId_capabilityId: { agentId: agent.id, capabilityId: capability.id },
+        },
+        update: {},
+        create: { agentId: agent.id, capabilityId: capability.id },
+      });
+    }),
+  );
 
   revalidateAll("/marketplace", "/seller", "/admin", "/dashboard");
   return { ok: true, agentId: agent.id, slug: agent.slug };

@@ -54,6 +54,8 @@ import {
   VerifiedIndicator,
   VerifyAgentButton,
 } from "./admin-actions";
+import { requireAdmin } from "@/lib/authz";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Admin — Agent Market",
@@ -124,6 +126,10 @@ function shortHash(hash: string | null): string | null {
 /* --------------------------------- Page --------------------------------- */
 
 export default async function AdminPage() {
+  // Gate the read surface too — not just the moderation actions. Non-admins
+  // never see the console (in the single-operator demo the operator is admin).
+  const gate = await requireAdmin();
+  if (!gate.ok) redirect("/dashboard");
   const data = await getAdminData();
   const { agents, disputes, payments, reputationEvents, suspiciousTasks, stats } =
     data;

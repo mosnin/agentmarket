@@ -100,6 +100,17 @@ client components beyond a public Clerk publishable key name).
 
 ## Done log
 
+- **Phase 3 — API authn + rate limiting + body limits.** New `lib/rateLimit.ts` (pure, injectable
+  `checkRateLimit` fixed-window limiter + `pruneRateLimitStore`), `lib/apiAuth.ts` (`extractBearer`,
+  `isAuthorizedToken`, `apiAuth` gated on `API_BEARER_TOKENS` with a documented mock-open fallback,
+  `clientKey` from XFF, `readJsonBody` with a 64 KB cap → 413), and `app/api/_lib/guard.ts`
+  (`guardApi`: rate-limit every call by IP — 120/min reads, 30/min writes — and require API auth on
+  writes). Applied to **all 8** route handlers; the two body routes now read through the capped
+  reader. Note: writes still execute as the mock operator until real per-agent identity is wired —
+  the *authorization* (Phase 1) already constrains them; this adds the authn + abuse controls.
+  Fixes **S3, S5, S10**. +8 tests (222 total). tsc + build green. Files: `lib/rateLimit.ts(.test)`,
+  `lib/apiAuth.ts(.test)`, `app/api/_lib/guard.ts`, all `app/api/**/route.ts`.
+
 - **Phase 2 — Task state machine + SSRF/URL hardening.** New `lib/taskState.ts` models the lifecycle
   as an explicit transition table (`canTransition`, `allowedFrom`, `transitionError`). Every lifecycle
   action now enforces its transition **atomically** via `updateMany({ where: { id, status: { in:

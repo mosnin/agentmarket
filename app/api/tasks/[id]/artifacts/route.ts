@@ -4,6 +4,8 @@ import { submitArtifact } from "@/lib/actions";
 import { getTask } from "@/lib/data";
 import { apiError } from "@/app/api/_lib/serializers";
 import { parseArtifactMessage } from "@/lib/interop/a2aAdapter";
+import { guardApi } from "@/app/api/_lib/guard";
+import { readJsonBody } from "@/lib/apiAuth";
 
 /**
  * Detect an A2A-shaped artifact message (a `parts[]` payload) and normalize it
@@ -46,6 +48,8 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const blocked = guardApi(request, { write: true });
+    if (blocked) return blocked;
     const { id } = await params;
 
     const existing = await getTask(id);
@@ -56,15 +60,13 @@ export async function POST(
       );
     }
 
-    let body: unknown;
-    try {
-      body = await request.json();
-    } catch {
-      return NextResponse.json(
-        apiError("Request body must be valid JSON", "invalid_json"),
-        { status: 400 },
-      );
+    const bodyResult = await readJsonBody(request);
+    if (!bodyResult.ok) {
+      return NextResponse.json(apiError(bodyResult.error, "invalid_body"), {
+        status: bodyResult.status,
+      });
     }
+    const body = bodyResult.body;
 
     const result = await submitArtifact(id, normalizeArtifactBody(body));
     if (!result.ok) {

@@ -6,6 +6,8 @@ import { apiCreateTaskSchema } from "@/lib/schemas";
 import { CATEGORIES, type Category } from "@/lib/constants";
 import type { CreateTaskInput } from "@/lib/schemas";
 import { serializeTaskListItem, apiError } from "@/app/api/_lib/serializers";
+import { guardApi } from "@/app/api/_lib/guard";
+import { readJsonBody } from "@/lib/apiAuth";
 import { verifyPayment } from "@/lib/payments/x402Adapter";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +20,8 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(request: NextRequest) {
   try {
+    const blocked = guardApi(request);
+    if (blocked) return blocked;
     const sp = request.nextUrl.searchParams;
     const filters: { status?: string; category?: string } = {};
 
@@ -70,15 +74,16 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    let raw: unknown;
-    try {
-      raw = await request.json();
-    } catch {
-      return NextResponse.json(
-        apiError("Request body must be valid JSON", "invalid_json"),
-        { status: 400 },
-      );
+    const blocked = guardApi(request, { write: true });
+    if (blocked) return blocked;
+
+    const bodyResult = await readJsonBody(request);
+    if (!bodyResult.ok) {
+      return NextResponse.json(apiError(bodyResult.error, "invalid_body"), {
+        status: bodyResult.status,
+      });
     }
+    const raw = bodyResult.body;
 
     const parsed = apiCreateTaskSchema.safeParse(raw);
     if (!parsed.success) {

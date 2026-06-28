@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { runValidation } from "@/lib/actions";
 import { getTask } from "@/lib/data";
 import { apiError } from "@/app/api/_lib/serializers";
+import { guardApi } from "@/app/api/_lib/guard";
 
 export const dynamic = "force-dynamic";
 
@@ -14,10 +15,12 @@ export const dynamic = "force-dynamic";
  * (0–100), a `passed` flag and the resulting task status.
  */
 export async function POST(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const blocked = guardApi(request, { write: true });
+    if (blocked) return blocked;
     const { id } = await params;
 
     const existing = await getTask(id);

@@ -3,7 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth";
+import {
+  requireUser,
+  requireAdmin,
+  assertAgentOwner,
+  assertTaskBuyer,
+  assertTaskSellerOwner,
+  assertTaskParticipant,
+} from "@/lib/authz";
 import { slugify, mockHash } from "@/lib/utils";
 import {
   createAgentSchema,
@@ -43,7 +50,9 @@ export async function createAgent(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
   const data = parsed.data;
-  const user = await getCurrentUser();
+  const gate = await requireUser();
+  if (!gate.ok) return gate;
+  const user = gate.user;
 
   let slug = slugify(data.name) || `agent-${mockHash("", data.name).slice(0, 6)}`;
   if (await prisma.agent.findUnique({ where: { slug } })) {
@@ -102,18 +111,9 @@ export async function updateAgent(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
-  // Only the owner may edit a listing.
-  const user = await getCurrentUser();
-  const existing = await prisma.agent.findUnique({
-    where: { id: agentId },
-    select: { ownerId: true },
-  });
-  if (!existing) {
-    return { ok: false, error: "Agent not found." };
-  }
-  if (existing.ownerId !== user.id) {
-    return { ok: false, error: "You can only edit agents you own." };
-  }
+  // Only the owner (or an admin) may edit a listing.
+  const gate = await assertAgentOwner(agentId);
+  if (!gate.ok) return gate;
 
   const data = parsed.data;
   await prisma.agent.update({
@@ -138,6 +138,8 @@ export async function updateAgent(
 export async function verifyAgent(
   agentId: string,
 ): Promise<ActionResult<{ agentId: string }>> {
+  const gate = await requireAdmin();
+  if (!gate.ok) return gate;
   const agent = await prisma.agent.update({
     where: { id: agentId },
     data: { verified: true },
@@ -156,6 +158,8 @@ export async function setAgentStatus(
   agentId: string,
   status: "active" | "suspended" | "archived" | "draft",
 ): Promise<ActionResult> {
+  const gate = await requireAdmin();
+  if (!gate.ok) return gate;
   await prisma.agent.update({ where: { id: agentId }, data: { status } });
   revalidateAll("/admin", "/marketplace", "/seller");
   return { ok: true };
@@ -171,7 +175,9 @@ export async function createTask(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
   const data = parsed.data;
-  const user = await getCurrentUser();
+  const gate = await requireUser();
+  if (!gate.ok) return gate;
+  const user = gate.user;
 
   const agent = await prisma.agent.findUnique({
     where: { id: data.sellerAgentId },
@@ -226,12 +232,16 @@ export async function createTask(
 }
 
 export async function acceptTask(taskId: string): Promise<ActionResult> {
+  const gate = await assertTaskSellerOwner(taskId);
+  if (!gate.ok) return gate;
   await prisma.task.update({ where: { id: taskId }, data: { status: "accepted" } });
   revalidateAll(`/tasks/${taskId}`, "/dashboard", "/seller");
   return { ok: true };
 }
 
 export async function startTask(taskId: string): Promise<ActionResult> {
+  const gate = await assertTaskSellerOwner(taskId);
+  if (!gate.ok) return gate;
   await prisma.task.update({ where: { id: taskId }, data: { status: "running" } });
   revalidateAll(`/tasks/${taskId}`, "/dashboard", "/seller");
   return { ok: true };
@@ -246,6 +256,8 @@ export async function submitArtifact(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
   const data = parsed.data;
+  const gate = await assertTaskSellerOwner(taskId);
+  if (!gate.ok) return gate;
   const artifact = await prisma.artifact.create({
     data: {
       taskId,
@@ -264,6 +276,8 @@ export async function submitArtifact(
 export async function runValidation(
   taskId: string,
 ): Promise<ActionResult<{ score: number; passed: boolean }>> {
+  const gate = await assertTaskSellerOwner(taskId);
+  if (!gate.ok) return gate;
   const task = await prisma.task.findUnique({
     where: { id: taskId },
     include: {
@@ -318,6 +332,8 @@ export async function runValidation(
 }
 
 export async function completeTask(taskId: string): Promise<ActionResult> {
+  const gate = await assertTaskBuyer(taskId);
+  if (!gate.ok) return gate;
   const task = await prisma.task.findUnique({
     where: { id: taskId },
     include: { sellerAgent: { select: { id: true } } },
@@ -343,6 +359,8 @@ export async function completeTask(taskId: string): Promise<ActionResult> {
 }
 
 export async function cancelTask(taskId: string): Promise<ActionResult> {
+  const gate = await assertTaskBuyer(taskId);
+  if (!gate.ok) return gate;
   await prisma.task.update({ where: { id: taskId }, data: { status: "cancelled" } });
   await refundTaskPayment(taskId);
   revalidateAll(`/tasks/${taskId}`, "/dashboard", "/seller");
@@ -357,7 +375,9 @@ export async function openDispute(
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
-  const user = await getCurrentUser();
+  const gate = await assertTaskParticipant(taskId);
+  if (!gate.ok) return gate;
+  const user = gate.user;
   const task = await prisma.task.findUnique({
     where: { id: taskId },
     include: { sellerAgent: { select: { id: true } } },
@@ -394,6 +414,8 @@ export async function resolveDispute(
   resolution: string,
   outcome: "resolved" | "rejected" = "resolved",
 ): Promise<ActionResult> {
+  const gate = await requireAdmin();
+  if (!gate.ok) return gate;
   const dispute = await prisma.dispute.update({
     where: { id: disputeId },
     data: { status: outcome, resolution },
@@ -422,7 +444,9 @@ export async function createReview(
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
-  const user = await getCurrentUser();
+  const gate = await assertTaskBuyer(taskId);
+  if (!gate.ok) return gate;
+  const user = gate.user;
   const task = await prisma.task.findUnique({
     where: { id: taskId },
     select: { sellerAgentId: true },

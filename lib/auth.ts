@@ -29,13 +29,17 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser> => {
     },
   });
 
+  // Demo note: the single mock operator is granted `admin` so the moderation
+  // console is exercisable out of the box. With a real auth provider, `role` is
+  // assigned by the provider / an admin grant — never hard-coded like this.
   const user = await prisma.user.upsert({
     where: { email: DEFAULT_USER.email },
-    update: { organizationId: organization.id },
+    update: { organizationId: organization.id, role: "admin" },
     create: {
       email: DEFAULT_USER.email,
       name: DEFAULT_USER.name,
       organizationId: organization.id,
+      role: "admin",
     },
     include: { organization: true },
   });

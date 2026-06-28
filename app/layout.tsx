@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
+import { isRealAuthConfigured } from "@/lib/authConfig";
 
 const geistSans = Geist({
   variable: "--font-sans",
@@ -50,7 +52,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
+  const tree = (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
@@ -67,4 +69,8 @@ export default function RootLayout({
       </body>
     </html>
   );
+
+  // Only mount the Clerk provider when real auth is configured; otherwise the
+  // app runs on the mock operator and the tree is returned untouched.
+  return isRealAuthConfigured ? <ClerkProvider>{tree}</ClerkProvider> : tree;
 }

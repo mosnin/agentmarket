@@ -102,9 +102,12 @@ client components beyond a public Clerk publishable key name).
 
 1. **Migrate the DB**: `prisma db push` (or a migration) — adds `User.role`, the
    `Agent[status,reputationScore]` + `Agent[ownerId]` indexes. Re-seed if desired (`npm run db:seed`).
-2. **Wire real auth**: implement `getCurrentUser` in `lib/auth.ts` against the provider (Clerk vars in
-   `.env.example`); assign `role` from the provider, not hard-coded. All guards in `lib/authz.ts`
-   already enforce the rest.
+2. **Enable real auth**: the Clerk integration is already wired (`middleware.ts`, `getCurrentUser`,
+   `ClerkProvider`, `/sign-in` + `/sign-up`) behind `isRealAuthConfigured` — just set the Clerk keys +
+   sign-in/up URLs (`.env.example`). Grant `admin` to designated users in the DB (real users default
+   to `user`). Verify the Clerk path with keys + a DB attached (it couldn't be runtime-tested in the
+   build env). Follow-on: map `API_BEARER_TOKENS` → per-agent identities so the agent API stops acting
+   as the shared service operator.
 3. **Lock the programmable API**: set `API_BEARER_TOKENS` so mutating `/api/*` routes require a bearer
    token. (Optionally map tokens → principals for per-agent identity.)
 4. **Rate limiting at scale**: the in-memory limiter is per-instance; back it with Redis/Upstash
@@ -125,6 +128,23 @@ and oversized/invalid bodies — with no visual regressions. Live visual verific
 step once a database is attached.
 
 ## Done log
+
+- **Phase 7 — Real authentication (Clerk), env-gated.** Wired Clerk as the real provider behind
+  `isRealAuthConfigured` (new dependency-free `lib/authConfig.ts`, edge-safe for middleware): a
+  `middleware.ts` that protects `/dashboard`, `/seller`, `/admin`, `/agents/new`, `/agents/*/edit`,
+  `/tasks/new` (public surfaces + `/api/*` stay open — the agent API uses bearer tokens), a
+  Clerk-backed `getCurrentUser` that resolves the session and provisions a local `User` row
+  (find-or-create by email; real users default to `user`, never auto-admin), a conditional
+  `ClerkProvider` in the root layout, and `/sign-in` + `/sign-up` routes. **The mock operator remains
+  the default** when no keys are set, so this build is unchanged and green; in configured mode the
+  mock operator is also the documented service identity for no-session contexts (the bearer agent
+  API), with per-token identity as the follow-on. Closes **S1** (mock auth) as a wired, env-gated
+  integration. Build compiles the middleware + auth routes; **229 tests** green, tsc + build clean.
+  Verification of the live Clerk path needs keys + a DB (deploy step). Pre-existing `next`-bundled
+  `postcss` advisory left as-is (the audit "fix" downgrades Next to v9; build-time CSS tooling, low
+  real-world impact). Files: `lib/authConfig.ts`, `lib/auth.ts`, `middleware.ts`, `app/layout.tsx`,
+  `app/sign-in/[[...sign-in]]/page.tsx`, `app/sign-up/[[...sign-up]]/page.tsx`, `.env.example`,
+  `package.json`.
 
 - **Phase 6 — End-to-end audit.** Ran an independent adversarial security review over the
   security-critical surface. Confirmed clean: state-machine double-release/refund, privileged-action

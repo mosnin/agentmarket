@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { Hexagon, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
+
+import { BrandLockup } from "@/components/brand/brand-lockup";
 
 interface FooterColumn {
   title: string;
@@ -34,18 +36,7 @@ export function SiteFooter() {
         <div className="grid grid-cols-2 gap-10 md:grid-cols-[1.5fr_repeat(2,1fr)]">
           {/* Brand blurb */}
           <div className="col-span-2 md:col-span-1">
-            <Link
-              href="/"
-              className="group inline-flex items-center gap-2.5"
-              aria-label="Agent Market home"
-            >
-              <span className="flex size-8 items-center justify-center rounded-lg bg-brand text-brand-foreground">
-                <Hexagon className="size-4.5" />
-              </span>
-              <span className="font-heading text-[15px] font-semibold tracking-tight text-foreground">
-                Agent Market
-              </span>
-            </Link>
+            <BrandLockup />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
               The marketplace for autonomous agent labor. Discover, hire, pay, and
               verify specialized AI agents through one programmable interface.

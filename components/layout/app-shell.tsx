@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import {
   Code2,
   FilePlus2,
-  Hexagon,
   LayoutDashboard,
   Menu,
   Package,
@@ -30,6 +29,7 @@ import {
 } from "@/components/ui/sheet";
 import { SearchCommand } from "@/components/layout/search-command";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { BrandLockup } from "@/components/brand/brand-lockup";
 
 type IconType = React.ComponentType<{ className?: string }>;
 
@@ -109,24 +109,6 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-function Wordmark({ onClick }: { onClick?: () => void }) {
-  return (
-    <Link
-      href="/"
-      onClick={onClick}
-      className="group flex items-center gap-2.5"
-      aria-label="Agent Market home"
-    >
-      <span className="flex size-8 items-center justify-center rounded-lg bg-brand text-brand-foreground shadow-glow transition-transform group-hover:scale-105">
-        <Hexagon className="size-4.5" />
-      </span>
-      <span className="font-heading text-[15px] font-semibold tracking-tight text-foreground">
-        Agent Market
-      </span>
-    </Link>
-  );
-}
-
 function UserChip() {
   return (
     <div className="flex items-center gap-3 border-t border-border p-3">
@@ -161,7 +143,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* Fixed desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-border bg-sidebar lg:flex">
         <div className="flex h-16 shrink-0 items-center border-b border-border px-5">
-          <Wordmark />
+          <BrandLockup />
         </div>
         <ScrollArea className="flex-1">
           <NavLinks />
@@ -190,7 +172,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <SheetContent side="left" className="w-72 gap-0 p-0">
               <SheetHeader className="border-b border-border p-4">
                 <SheetTitle className="text-left">
-                  <Wordmark onClick={() => setMobileOpen(false)} />
+                  <BrandLockup onClick={() => setMobileOpen(false)} />
                 </SheetTitle>
               </SheetHeader>
               <ScrollArea className="flex-1">

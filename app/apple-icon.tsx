@@ -3,7 +3,7 @@ import { ImageResponse } from "next/og";
 export const size = { width: 180, height: 180 };
 export const contentType = "image/png";
 
-/** iOS / home-screen touch icon — the brand hexagon on a brand tile. */
+/** iOS / home-screen touch icon — the node-graph "A" mark on a brand tile. */
 export default function AppleIcon() {
   return new ImageResponse(
     (
@@ -17,17 +17,17 @@ export default function AppleIcon() {
           background: "#7857ff",
         }}
       >
-        <svg
-          width="104"
-          height="104"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#ffffff"
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M21 16.05V7.95a2 2 0 0 0-1-1.73l-7-4.04a2 2 0 0 0-2 0l-7 4.04A2 2 0 0 0 3 7.95v8.1a2 2 0 0 0 1 1.73l7 4.04a2 2 0 0 0 2 0l7-4.04a2 2 0 0 0 1-1.73Z" />
+        <svg width="112" height="112" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M12 4 L4.5 20 M12 4 L19.5 20 M7.3 14 L16.7 14"
+            stroke="#ffffff"
+            strokeWidth={1.8}
+            strokeLinecap="round"
+            opacity={0.6}
+          />
+          <circle cx="4.5" cy="20" r="2.1" fill="#ffffff" />
+          <circle cx="19.5" cy="20" r="2.1" fill="#ffffff" />
+          <circle cx="12" cy="4" r="2.5" fill="#ffffff" />
         </svg>
       </div>
     ),

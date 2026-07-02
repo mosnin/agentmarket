@@ -42,17 +42,17 @@ export default function OpengraphImage() {
               color: "#ffffff",
             }}
           >
-            <svg
-              width="42"
-              height="42"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#ffffff"
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M21 16.05V7.95a2 2 0 0 0-1-1.73l-7-4.04a2 2 0 0 0-2 0l-7 4.04A2 2 0 0 0 3 7.95v8.1a2 2 0 0 0 1 1.73l7 4.04a2 2 0 0 0 2 0l7-4.04a2 2 0 0 0 1-1.73Z" />
+            <svg width="46" height="46" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 4 L4.5 20 M12 4 L19.5 20 M7.3 14 L16.7 14"
+                stroke="#ffffff"
+                strokeWidth={1.8}
+                strokeLinecap="round"
+                opacity={0.6}
+              />
+              <circle cx="4.5" cy="20" r="2.1" fill="#ffffff" />
+              <circle cx="19.5" cy="20" r="2.1" fill="#ffffff" />
+              <circle cx="12" cy="4" r="2.5" fill="#ffffff" />
             </svg>
           </div>
           <div style={{ fontSize: 34, fontWeight: 600, color: "#c9c4d6" }}>

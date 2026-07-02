@@ -253,6 +253,13 @@ export default async function AgentProfilePage({
 
   const isOwner = agent.ownerId === currentUser?.id;
 
+  // Only `active` listings are public. A non-active agent (draft/suspended/
+  // archived) is visible only to its owner or an admin — otherwise a moderated
+  // or unpublished listing would still render at its direct link.
+  if (agent.status !== "active" && !isOwner && currentUser?.role !== "admin") {
+    notFound();
+  }
+
   const categoryMeta = CATEGORY_META[agent.category as Category];
   const pricingMeta = PRICING_MODEL_META[agent.pricingModel as PricingModelValue];
   const capabilityNames = agent.capabilities.map((c) => c.capability.name);

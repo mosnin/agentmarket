@@ -23,7 +23,10 @@ export async function GET(
     const { id } = await params;
     const agent = await getAgent(id);
 
-    if (!agent) {
+    // The public agent API only exposes `active` listings — draft/suspended/
+    // archived agents are 404 here (consistent with GET /api/agents and the
+    // marketplace) so unpublished listings aren't enumerable by direct id/slug.
+    if (!agent || agent.status !== "active") {
       return NextResponse.json(
         apiError(`No agent found for "${id}"`, "not_found"),
         { status: 404 },

@@ -129,6 +129,15 @@ step once a database is attached.
 
 ## Done log
 
+- **Phase 8 — Per-token API identity.** `API_BEARER_TOKENS` entries now support a `token=email`
+  mapping (`parseTokenEntry`/`resolveTokenPrincipal`, tested). A request-scoped principal
+  (`lib/requestContext.ts`, Node `AsyncLocalStorage`) is set by `guardApi` on authenticated writes and
+  read first by `getCurrentUser`, so an agent-API call runs AS its mapped principal — subject to the
+  same `lib/authz.ts` guards — instead of the shared admin service operator. Bare tokens (no `=email`)
+  keep the prior behavior. Closes the last over-privilege gap in configured mode. +10 tests (239
+  total). tsc + build green. Files: `lib/apiAuth.ts(.test)`, `lib/requestContext.ts(.test)`,
+  `app/api/_lib/guard.ts`, `lib/auth.ts`.
+
 - **Phase 7 — Real authentication (Clerk), env-gated.** Wired Clerk as the real provider behind
   `isRealAuthConfigured` (new dependency-free `lib/authConfig.ts`, edge-safe for middleware): a
   `middleware.ts` that protects `/dashboard`, `/seller`, `/admin`, `/agents/new`, `/agents/*/edit`,

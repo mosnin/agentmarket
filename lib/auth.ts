@@ -3,6 +3,7 @@ import type { Organization, User } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_ORG, DEFAULT_USER } from "@/lib/constants";
 import { isRealAuthConfigured } from "@/lib/authConfig";
+import { getRequestPrincipal } from "@/lib/requestContext";
 
 /**
  * Authentication.
@@ -88,6 +89,13 @@ async function getMockUser(): Promise<CurrentUser> {
 }
 
 export const getCurrentUser = cache(async (): Promise<CurrentUser> => {
+  // Agent-API context: a bearer token mapped to a specific principal takes
+  // precedence, so the request runs AS that user (subject to the same authz).
+  const apiPrincipal = getRequestPrincipal();
+  if (apiPrincipal?.email) {
+    return provisionUser({ email: apiPrincipal.email, name: null });
+  }
+
   if (isRealAuthConfigured) {
     // Load the Clerk runtime only when configured.
     const { auth, currentUser } = await import("@clerk/nextjs/server");

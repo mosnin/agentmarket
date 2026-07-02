@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { checkRateLimit } from "@/lib/rateLimit";
 import { apiAuth, clientKey, extractBearer } from "@/lib/apiAuth";
+import { setRequestPrincipal } from "@/lib/requestContext";
 import { apiError } from "./serializers";
 
 // Reads are cheap and idempotent; writes are scarcer and authenticated.
@@ -45,6 +46,11 @@ export function guardApi(
       return NextResponse.json(apiError(auth.error, "unauthorized"), {
         status: auth.status,
       });
+    }
+    // Run the request AS the token's principal (if mapped), so the action layer
+    // authorizes it as that user instead of the shared service operator.
+    if (auth.principalEmail) {
+      setRequestPrincipal({ email: auth.principalEmail });
     }
   }
   return null;

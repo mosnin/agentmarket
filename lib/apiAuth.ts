@@ -8,12 +8,31 @@
  * writes publicly.
  */
 
-const configuredTokens = (process.env.API_BEARER_TOKENS ?? "")
-  .split(",")
-  .map((t) => t.trim())
-  .filter(Boolean);
+export interface ApiTokenEntry {
+  token: string;
+  /** Optional principal this token authenticates as (from `token=email` syntax). */
+  principalEmail?: string;
+}
 
-export const isApiAuthConfigured = configuredTokens.length > 0;
+/** Parse one `API_BEARER_TOKENS` entry: `token` or `token=principal@email`. */
+export function parseTokenEntry(raw: string): ApiTokenEntry {
+  const eq = raw.indexOf("=");
+  if (eq === -1) return { token: raw.trim() };
+  return {
+    token: raw.slice(0, eq).trim(),
+    principalEmail: raw.slice(eq + 1).trim() || undefined,
+  };
+}
+
+const configuredEntries: ApiTokenEntry[] = (process.env.API_BEARER_TOKENS ?? "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean)
+  .map(parseTokenEntry);
+
+const configuredTokens = configuredEntries.map((e) => e.token);
+
+export const isApiAuthConfigured = configuredEntries.length > 0;
 
 /** Pull the token out of an `Authorization: Bearer <token>` header. */
 export function extractBearer(header: string | null | undefined): string | null {
@@ -32,15 +51,35 @@ export function isAuthorizedToken(
   return tokens.includes(token);
 }
 
-export type ApiAuthResult = { ok: true } | { ok: false; status: number; error: string };
+export interface TokenResolution {
+  authorized: boolean;
+  principalEmail?: string;
+}
+
+/** Authorize a bearer token and resolve the principal it maps to (if any). */
+export function resolveTokenPrincipal(
+  token: string | null,
+  entries: ApiTokenEntry[] = configuredEntries,
+): TokenResolution {
+  if (entries.length === 0) return { authorized: true }; // mock mode: open
+  if (!token) return { authorized: false };
+  const match = entries.find((e) => e.token === token);
+  if (!match) return { authorized: false };
+  return { authorized: true, principalEmail: match.principalEmail };
+}
+
+export type ApiAuthResult =
+  | { ok: true; principalEmail?: string }
+  | { ok: false; status: number; error: string };
 
 export function apiAuth(request: Request): ApiAuthResult {
   if (!isApiAuthConfigured) return { ok: true };
   const token = extractBearer(request.headers.get("authorization"));
-  if (!isAuthorizedToken(token)) {
+  const resolution = resolveTokenPrincipal(token);
+  if (!resolution.authorized) {
     return { ok: false, status: 401, error: "Missing or invalid API token." };
   }
-  return { ok: true };
+  return { ok: true, principalEmail: resolution.principalEmail };
 }
 
 /** Best-effort client key for rate limiting (first XFF hop, else x-real-ip). */

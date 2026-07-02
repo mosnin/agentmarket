@@ -1,6 +1,12 @@
 import { describe, it, expect } from "vitest";
 
-import { extractBearer, isAuthorizedToken, readJsonBody } from "./apiAuth";
+import {
+  extractBearer,
+  isAuthorizedToken,
+  readJsonBody,
+  parseTokenEntry,
+  resolveTokenPrincipal,
+} from "./apiAuth";
 
 function postReq(body: string): Request {
   return new Request("http://localhost/api", { method: "POST", body });
@@ -30,6 +36,44 @@ describe("isAuthorizedToken", () => {
     expect(isAuthorizedToken("secret-b", tokens)).toBe(true);
     expect(isAuthorizedToken("nope", tokens)).toBe(false);
     expect(isAuthorizedToken(null, tokens)).toBe(false);
+  });
+});
+
+describe("parseTokenEntry", () => {
+  it("parses a bare token", () => {
+    expect(parseTokenEntry("tok_abc")).toEqual({ token: "tok_abc" });
+  });
+  it("parses a token=email mapping", () => {
+    expect(parseTokenEntry("tok_abc=agent@x.dev")).toEqual({
+      token: "tok_abc",
+      principalEmail: "agent@x.dev",
+    });
+  });
+  it("treats an empty email as no principal", () => {
+    expect(parseTokenEntry("tok_abc=")).toEqual({ token: "tok_abc" });
+  });
+});
+
+describe("resolveTokenPrincipal", () => {
+  const entries = [
+    { token: "tok_a", principalEmail: "a@x.dev" },
+    { token: "tok_b" },
+  ];
+  it("is open with no configured entries (mock mode)", () => {
+    expect(resolveTokenPrincipal(null, [])).toEqual({ authorized: true });
+  });
+  it("authorizes and maps a token to its principal", () => {
+    expect(resolveTokenPrincipal("tok_a", entries)).toEqual({
+      authorized: true,
+      principalEmail: "a@x.dev",
+    });
+  });
+  it("authorizes a bare token with no principal", () => {
+    expect(resolveTokenPrincipal("tok_b", entries)).toEqual({ authorized: true });
+  });
+  it("rejects an unknown or missing token", () => {
+    expect(resolveTokenPrincipal("nope", entries)).toEqual({ authorized: false });
+    expect(resolveTokenPrincipal(null, entries)).toEqual({ authorized: false });
   });
 });
 

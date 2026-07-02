@@ -89,8 +89,10 @@ export interface AgentFilters {
 const MAX_LIST_RESULTS = 100;
 
 export async function listAgents(filters: AgentFilters = {}): Promise<AgentCardData[]> {
+  // Only `active` listings are public. `draft`/`suspended`/`archived` must not be
+  // enumerable in the marketplace — consistent with every other public read.
   const where: Prisma.AgentWhereInput = {
-    status: { in: ["active", "draft"] },
+    status: "active",
   };
 
   if (filters.search) {

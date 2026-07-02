@@ -11,7 +11,24 @@
  */
 
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser, type CurrentUser } from "@/lib/auth";
+import { getCurrentUser, UnauthenticatedError, type CurrentUser } from "@/lib/auth";
+
+/**
+ * Resolve the current user, or `null` if the request is anonymous under real
+ * auth. Every guard funnels through this so an unauthenticated request becomes a
+ * clean "must be signed in" rejection instead of an unhandled throw — and, in
+ * particular, never falls through to a privileged identity.
+ */
+async function currentUserOrNull(): Promise<CurrentUser | null> {
+  try {
+    return await getCurrentUser();
+  } catch (error) {
+    if (error instanceof UnauthenticatedError) return null;
+    throw error;
+  }
+}
+
+const SIGN_IN_REQUIRED = "You must be signed in." as const;
 
 /** Mirrors the actions-layer result so a failed guard returns directly as an ActionResult. */
 export type AuthzResult =
@@ -63,20 +80,21 @@ export function isTaskParticipant(
 // ----------------------------- Async guards -----------------------------
 
 export async function requireUser(): Promise<AuthzResult> {
-  const user = await getCurrentUser();
-  if (!user) return { ok: false, error: "You must be signed in." };
+  const user = await currentUserOrNull();
+  if (!user) return { ok: false, error: SIGN_IN_REQUIRED };
   return { ok: true, user };
 }
 
 export async function requireAdmin(): Promise<AuthzResult> {
-  const user = await getCurrentUser();
-  if (!user) return { ok: false, error: "You must be signed in." };
+  const user = await currentUserOrNull();
+  if (!user) return { ok: false, error: SIGN_IN_REQUIRED };
   if (!isAdmin(user)) return { ok: false, error: "Administrator access required." };
   return { ok: true, user };
 }
 
 export async function assertAgentOwner(agentId: string): Promise<AuthzResult> {
-  const user = await getCurrentUser();
+  const user = await currentUserOrNull();
+  if (!user) return { ok: false, error: SIGN_IN_REQUIRED };
   const agent = await prisma.agent.findUnique({
     where: { id: agentId },
     select: { ownerId: true },
@@ -97,7 +115,8 @@ async function loadTaskParties(taskId: string) {
 }
 
 export async function assertTaskBuyer(taskId: string): Promise<AuthzResult> {
-  const user = await getCurrentUser();
+  const user = await currentUserOrNull();
+  if (!user) return { ok: false, error: SIGN_IN_REQUIRED };
   const task = await loadTaskParties(taskId);
   if (!task) return { ok: false, error: "Task not found." };
   if (!canActAsBuyer(user, task)) {
@@ -107,7 +126,8 @@ export async function assertTaskBuyer(taskId: string): Promise<AuthzResult> {
 }
 
 export async function assertTaskSellerOwner(taskId: string): Promise<AuthzResult> {
-  const user = await getCurrentUser();
+  const user = await currentUserOrNull();
+  if (!user) return { ok: false, error: SIGN_IN_REQUIRED };
   const task = await loadTaskParties(taskId);
   if (!task) return { ok: false, error: "Task not found." };
   if (!canActAsSeller(user, task)) {
@@ -120,7 +140,8 @@ export async function assertTaskSellerOwner(taskId: string): Promise<AuthzResult
 }
 
 export async function assertTaskParticipant(taskId: string): Promise<AuthzResult> {
-  const user = await getCurrentUser();
+  const user = await currentUserOrNull();
+  if (!user) return { ok: false, error: SIGN_IN_REQUIRED };
   const task = await loadTaskParties(taskId);
   if (!task) return { ok: false, error: "Task not found." };
   if (!isTaskParticipant(user, task)) {

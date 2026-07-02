@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 
 import { getTask } from "@/lib/data";
-import { getCurrentUser } from "@/lib/auth";
+import { getOptionalUser } from "@/lib/auth";
 import {
   CATEGORY_META,
   DISPUTE_STATUS_META,
@@ -109,9 +109,24 @@ export default async function TaskDetailPage({
   params: Promise<Params>;
 }) {
   const { id } = await params;
-  const [task, currentUser] = await Promise.all([getTask(id), getCurrentUser()]);
+  const [task, currentUser] = await Promise.all([getTask(id), getOptionalUser()]);
 
   if (!task) {
+    notFound();
+  }
+
+  // Object-level authorization: a `private` task is visible only to its
+  // participants (buyer, the assigned seller agent's owner) or an admin.
+  // `public`/`unlisted` remain link-viewable. Without this, anyone holding the
+  // task id could read a private task's brief, buyer, contract, and artifacts.
+  const viewerId = currentUser?.id ?? null;
+  const viewerIsAdmin = currentUser?.role === "admin";
+  const viewerIsParticipant =
+    viewerIsAdmin ||
+    (viewerId !== null &&
+      (task.buyerId === viewerId ||
+        task.sellerAgent?.owner?.id === viewerId));
+  if (task.visibility === "private" && !viewerIsParticipant) {
     notFound();
   }
 
@@ -119,7 +134,7 @@ export default async function TaskDetailPage({
   const sellerAgent = task.sellerAgent;
   const payment = task.payment;
   const buyerName = task.buyer.name?.trim() || task.buyer.email || "Unknown buyer";
-  const isOwnTask = task.buyerId === currentUser.id;
+  const isOwnTask = task.buyerId === viewerId;
 
   const hasReview = task.reviews.length > 0;
   const hasArtifact = task.artifacts.length > 0;

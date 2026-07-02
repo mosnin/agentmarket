@@ -27,6 +27,20 @@ export type CurrentUser = User & { organization: Organization | null };
 
 export { isRealAuthConfigured } from "@/lib/authConfig";
 
+/**
+ * Thrown when real auth is configured but a request carries no verifiable
+ * identity (no Clerk session, no token-mapped API principal). Such requests must
+ * NOT be silently upgraded to the admin service operator — that would let an
+ * anonymous visitor act as admin on any server action reachable from a public
+ * page. Guards translate this into a clean "must be signed in" rejection.
+ */
+export class UnauthenticatedError extends Error {
+  constructor() {
+    super("Authentication required.");
+    this.name = "UnauthenticatedError";
+  }
+}
+
 /** Idempotently ensure the default organization exists; returns its id. */
 async function ensureDefaultOrgId(): Promise<string> {
   const org = await prisma.organization.upsert({
@@ -95,6 +109,12 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser> => {
   if (apiPrincipal?.email) {
     return provisionUser({ email: apiPrincipal.email, name: null });
   }
+  // A valid bearer token with no user mapping runs as the trusted service
+  // operator. This branch is reached ONLY after the API guard has verified the
+  // token, so it is authenticated infrastructure — not an anonymous request.
+  if (apiPrincipal?.serviceOperator) {
+    return getMockUser();
+  }
 
   if (isRealAuthConfigured) {
     // Load the Clerk runtime only when configured.
@@ -114,16 +134,33 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser> => {
         return provisionUser({ email, name });
       }
     }
-    // No Clerk session in this context (e.g. the bearer-authenticated agent API):
-    // fall through to the service operator so server-side reads still resolve.
+    // Real auth is configured but this request proved no identity (no session,
+    // no token-mapped principal). It is anonymous — never the admin operator.
+    throw new UnauthenticatedError();
   }
+  // Unconfigured/demo mode only: the single mock operator.
   return getMockUser();
 });
+
+/**
+ * View-layer identity: the current user, or `null` when the request is
+ * anonymous under real auth. Use this on PUBLIC pages that merely personalize
+ * the UI (e.g. "is this my task?"). Privileged work must still go through the
+ * `lib/authz` guards, which require a verified user.
+ */
+export async function getOptionalUser(): Promise<CurrentUser | null> {
+  try {
+    return await getCurrentUser();
+  } catch (error) {
+    if (error instanceof UnauthenticatedError) return null;
+    throw error;
+  }
+}
 
 export async function getCurrentUserId(): Promise<string> {
   return (await getCurrentUser()).id;
 }
 
 export async function getCurrentOrganization(): Promise<Organization | null> {
-  return (await getCurrentUser()).organization;
+  return (await getOptionalUser())?.organization ?? null;
 }

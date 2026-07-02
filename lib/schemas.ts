@@ -63,7 +63,9 @@ export const createAgentSchema = z.object({
   inputSchema: jsonObjectString,
   outputSchema: jsonObjectString,
   organizationId: z.string().optional(),
-  verified: z.boolean().default(false),
+  // NB: `verified` is intentionally NOT part of this schema. Verification is a
+  // trust signal that only an admin may grant (see `verifyAgent`); accepting it
+  // from client input would let any seller self-award the verified badge.
 });
 export type CreateAgentInput = z.infer<typeof createAgentSchema>;
 

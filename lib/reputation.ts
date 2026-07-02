@@ -22,9 +22,6 @@ export type ReputationEventType =
   | "agent_verified"
   | "manual_adjustment";
 
-const clamp = (value: number, min = 0, max = 100) =>
-  Math.max(min, Math.min(max, value));
-
 export async function recordReputationEvent(input: {
   agentId: string;
   taskId?: string | null;
@@ -34,12 +31,14 @@ export async function recordReputationEvent(input: {
 }) {
   const agent = await prisma.agent.findUnique({
     where: { id: input.agentId },
-    select: { reputationScore: true },
+    select: { id: true },
   });
   if (!agent) return null;
 
-  const nextScore = clamp(Math.round(agent.reputationScore + input.scoreDelta));
-
+  // Apply the delta ATOMICALLY (`increment` compiles to `score = score + d` in
+  // SQL) so concurrent events on the same agent can't lost-update each other —
+  // the previous read-then-write left a window where two events read the same
+  // base score and the last write clobbered the first.
   const [event] = await prisma.$transaction([
     prisma.reputationEvent.create({
       data: {
@@ -52,9 +51,20 @@ export async function recordReputationEvent(input: {
     }),
     prisma.agent.update({
       where: { id: input.agentId },
-      data: { reputationScore: nextScore },
+      data: { reputationScore: { increment: Math.round(input.scoreDelta) } },
     }),
   ]);
+
+  // Clamp back into [0, 100] with idempotent, race-safe conditional writes
+  // (only the out-of-range row matches, so replays are no-ops).
+  await prisma.agent.updateMany({
+    where: { id: input.agentId, reputationScore: { gt: 100 } },
+    data: { reputationScore: 100 },
+  });
+  await prisma.agent.updateMany({
+    where: { id: input.agentId, reputationScore: { lt: 0 } },
+    data: { reputationScore: 0 },
+  });
 
   return event;
 }

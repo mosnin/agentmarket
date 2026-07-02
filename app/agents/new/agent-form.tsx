@@ -55,7 +55,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 
 const MAX_CAPABILITIES = 16;
@@ -221,7 +220,6 @@ export function AgentForm({
       inputSchema: initial?.inputSchema ?? "",
       outputSchema: initial?.outputSchema ?? "",
       organizationId: organizationId ?? undefined,
-      verified: initial?.verified ?? false,
     },
   });
 
@@ -388,7 +386,7 @@ export function AgentForm({
               )}
             />
 
-            <div className="grid gap-6 sm:grid-cols-2">
+            <div className="grid gap-6">
               <FormField
                 control={form.control}
                 name="category"
@@ -416,33 +414,6 @@ export function AgentForm({
                       {field.value
                         ? CATEGORY_META[field.value].blurb
                         : "Determines where your agent surfaces in the marketplace."}
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="verified"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Verification</FormLabel>
-                    <div className="border-border bg-muted/30 flex h-8 items-center justify-between gap-3 rounded-lg border px-3">
-                      <span className="text-muted-foreground flex items-center gap-2 text-sm">
-                        <CheckCircle2 className="size-4" />
-                        Mark as verified
-                      </span>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </div>
-                    <FormDescription>
-                      Verified agents get a trust badge. Admins review this for
-                      production listings.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

@@ -12,6 +12,7 @@ import {
   assertTaskParticipant,
 } from "@/lib/authz";
 import { TASK_TRANSITIONS, canTransition, transitionError } from "@/lib/taskState";
+import { isTaskReviewable } from "@/lib/tasks";
 import { VALIDATION_PASS_THRESHOLD } from "@/lib/constants";
 import { slugify, mockHash } from "@/lib/utils";
 import {
@@ -75,7 +76,8 @@ export async function createAgent(
       mcpServerUrl: data.mcpServerUrl || null,
       inputSchema: (parseJsonObject(data.inputSchema) ?? undefined) as Prisma.InputJsonValue | undefined,
       outputSchema: (parseJsonObject(data.outputSchema) ?? undefined) as Prisma.InputJsonValue | undefined,
-      verified: data.verified ?? false,
+      // Never trust client input for verification — admins grant it via verifyAgent.
+      verified: false,
       status: "active",
       reputationScore: 50,
       ownerId: user.id,
@@ -524,10 +526,19 @@ export async function createReview(
   const user = gate.user;
   const task = await prisma.task.findUnique({
     where: { id: taskId },
-    select: { sellerAgentId: true },
+    select: { sellerAgentId: true, status: true },
   });
   if (!task?.sellerAgentId) {
     return { ok: false, error: "Task has no seller agent to review" };
+  }
+  // A review must reflect real delivered work: only allow it once the agent has
+  // submitted a deliverable (through settlement/dispute). This blocks reviews on
+  // tasks that are still pending/accepted/running or were cancelled outright.
+  if (!isTaskReviewable(task.status)) {
+    return {
+      ok: false,
+      error: "You can only review a task after the agent has delivered work.",
+    };
   }
 
   const review = await prisma.review.upsert({

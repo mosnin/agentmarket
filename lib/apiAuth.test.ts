@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 
 import {
+  apiAuth,
   extractBearer,
   isAuthorizedToken,
   readJsonBody,
@@ -10,6 +11,13 @@ import {
 
 function postReq(body: string): Request {
   return new Request("http://localhost/api", { method: "POST", body });
+}
+
+function writeReq(auth?: string): Request {
+  return new Request("http://localhost/api", {
+    method: "POST",
+    headers: auth ? { authorization: auth } : undefined,
+  });
 }
 
 describe("extractBearer", () => {
@@ -74,6 +82,27 @@ describe("resolveTokenPrincipal", () => {
   it("rejects an unknown or missing token", () => {
     expect(resolveTokenPrincipal("nope", entries)).toEqual({ authorized: false });
     expect(resolveTokenPrincipal(null, entries)).toEqual({ authorized: false });
+  });
+});
+
+describe("apiAuth (config-gated write authorization)", () => {
+  it("is open (unauthenticated) in pure demo mode — no real auth, no API tokens", () => {
+    const r = apiAuth(writeReq(), {
+      apiConfigured: false,
+      realAuthConfigured: false,
+    });
+    expect(r).toEqual({ ok: true, authenticated: false });
+  });
+
+  it("FAILS CLOSED when real auth is configured but API tokens are not", () => {
+    // The dangerous foot-gun: a Clerk-configured (production) deployment that
+    // forgot API_BEARER_TOKENS must NOT leave writes open as the service admin.
+    const r = apiAuth(writeReq("Bearer whatever"), {
+      apiConfigured: false,
+      realAuthConfigured: true,
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.status).toBe(401);
   });
 });
 

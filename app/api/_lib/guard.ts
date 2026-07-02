@@ -47,10 +47,15 @@ export function guardApi(
         status: auth.status,
       });
     }
-    // Run the request AS the token's principal (if mapped), so the action layer
-    // authorizes it as that user instead of the shared service operator.
+    // Bind a principal so `getCurrentUser` can distinguish an authenticated API
+    // call from an anonymous request:
+    //  - token mapped to an email → run AS that user (subject to authz);
+    //  - a valid bare token (auth configured) → the trusted service operator;
+    //  - demo mode (no auth configured) → leave unset; the demo mock applies.
     if (auth.principalEmail) {
       setRequestPrincipal({ email: auth.principalEmail });
+    } else if (auth.authenticated) {
+      setRequestPrincipal({ serviceOperator: true });
     }
   }
   return null;

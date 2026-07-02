@@ -1,11 +1,29 @@
 import { describe, it, expect } from "vitest";
 
-import { isTaskOverdue, isTaskDueSoon, taskUrgencyRank } from "@/lib/tasks";
+import {
+  isTaskOverdue,
+  isTaskDueSoon,
+  isTaskReviewable,
+  taskUrgencyRank,
+} from "@/lib/tasks";
 
 const NOW = new Date("2026-06-27T12:00:00Z").getTime();
 const PAST = "2026-06-20T12:00:00Z";
 const FUTURE = "2026-07-04T12:00:00Z";
 const SOON = "2026-06-27T18:00:00Z"; // 6h ahead — within the 24h window
+
+describe("isTaskReviewable", () => {
+  it("permits reviews only once the agent has delivered work", () => {
+    for (const s of ["submitted", "validating", "completed", "disputed"]) {
+      expect(isTaskReviewable(s)).toBe(true);
+    }
+  });
+  it("blocks reviews on pre-delivery or cancelled tasks", () => {
+    for (const s of ["draft", "pending", "accepted", "running", "cancelled"]) {
+      expect(isTaskReviewable(s)).toBe(false);
+    }
+  });
+});
 
 describe("isTaskOverdue", () => {
   it("flags an in-flight task whose deadline has passed", () => {

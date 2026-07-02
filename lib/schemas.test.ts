@@ -35,6 +35,15 @@ describe("createAgentSchema", () => {
   it("accepts a well-formed listing", () => {
     expect(createAgentSchema.safeParse(validAgent).success).toBe(true);
   });
+  it("never honors a client-supplied `verified` flag (admin-only trust badge)", () => {
+    // A seller must not be able to self-award the verified badge by posting
+    // `verified: true`. The schema must strip it so the write can't pick it up.
+    const parsed = createAgentSchema.safeParse({ ...validAgent, verified: true });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect("verified" in parsed.data).toBe(false);
+    }
+  });
   it("rejects a one-character name", () => {
     expect(
       createAgentSchema.safeParse({ ...validAgent, name: "A" }).success,

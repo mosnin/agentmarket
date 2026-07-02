@@ -8,6 +8,8 @@
  * writes publicly.
  */
 
+import { isRealAuthConfigured } from "@/lib/authConfig";
+
 export interface ApiTokenEntry {
   token: string;
   /** Optional principal this token authenticates as (from `token=email` syntax). */
@@ -69,17 +71,49 @@ export function resolveTokenPrincipal(
 }
 
 export type ApiAuthResult =
-  | { ok: true; principalEmail?: string }
+  | { ok: true; principalEmail?: string; authenticated: boolean }
   | { ok: false; status: number; error: string };
 
-export function apiAuth(request: Request): ApiAuthResult {
-  if (!isApiAuthConfigured) return { ok: true };
+/**
+ * Authorize a write against the programmable API.
+ *
+ * Fail-closed in production: if real auth is configured (a Clerk-backed
+ * deployment) but `API_BEARER_TOKENS` is unset, writes are DENIED rather than
+ * run open as the service operator — otherwise forgetting the token env would
+ * expose every mutating route as admin. Only the pure demo posture (no real auth
+ * AND no tokens) leaves the API open.
+ *
+ * `authenticated` is true only when a bearer token was actually verified, so the
+ * caller can bind the trusted service-operator principal for that case alone.
+ */
+export function apiAuth(
+  request: Request,
+  opts: { apiConfigured?: boolean; realAuthConfigured?: boolean } = {},
+): ApiAuthResult {
+  const apiConfigured = opts.apiConfigured ?? isApiAuthConfigured;
+  const realAuthConfigured = opts.realAuthConfigured ?? isRealAuthConfigured;
+
+  if (!apiConfigured) {
+    if (realAuthConfigured) {
+      return {
+        ok: false,
+        status: 401,
+        error:
+          "API authentication is required in this environment. Configure API_BEARER_TOKENS.",
+      };
+    }
+    return { ok: true, authenticated: false }; // demo mode: open
+  }
   const token = extractBearer(request.headers.get("authorization"));
   const resolution = resolveTokenPrincipal(token);
   if (!resolution.authorized) {
     return { ok: false, status: 401, error: "Missing or invalid API token." };
   }
-  return { ok: true, principalEmail: resolution.principalEmail };
+  return {
+    ok: true,
+    principalEmail: resolution.principalEmail,
+    authenticated: true,
+  };
 }
 
 /** Best-effort client key for rate limiting (first XFF hop, else x-real-ip). */

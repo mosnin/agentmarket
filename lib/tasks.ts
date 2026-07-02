@@ -9,6 +9,24 @@ import type { TaskStatusValue } from "@/lib/constants";
 const TERMINAL_TASK_STATUSES = new Set<string>(["completed", "cancelled"]);
 
 /**
+ * States in which a task may be reviewed: only once the agent has actually
+ * delivered work (submission onward), through settlement or dispute. A review on
+ * a `draft`/`pending`/`accepted`/`running`/`cancelled` task would rate work that
+ * doesn't exist, so the review action rejects those. Pure so it's shared by the
+ * server action and unit-tested without a database.
+ */
+const REVIEWABLE_TASK_STATUSES = new Set<string>([
+  "submitted",
+  "validating",
+  "completed",
+  "disputed",
+]);
+
+export function isTaskReviewable(status: TaskStatusValue | string): boolean {
+  return REVIEWABLE_TASK_STATUSES.has(status);
+}
+
+/**
  * A task is overdue when it has a deadline in the past **and** is still in flight
  * (not completed or cancelled). Pure + deterministic — pass `now` in tests — so the
  * detail page and the dashboard lists flag a blown deadline identically.

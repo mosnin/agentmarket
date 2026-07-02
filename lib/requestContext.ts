@@ -10,7 +10,15 @@ import { AsyncLocalStorage } from "node:async_hooks";
  * async_hooks); never imported by client or edge (middleware) code.
  */
 export interface RequestPrincipal {
-  email: string;
+  /** The user this request acts as, resolved from a `token=email` mapping. */
+  email?: string;
+  /**
+   * Set when a request is authenticated as the trusted service operator via a
+   * valid bearer token that has NO user mapping. This is what distinguishes an
+   * *authenticated* API call (allowed to run as the service identity) from an
+   * *unauthenticated* web request (which must never be treated as privileged).
+   */
+  serviceOperator?: boolean;
 }
 
 const storage = new AsyncLocalStorage<RequestPrincipal | undefined>();

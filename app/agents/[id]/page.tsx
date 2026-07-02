@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 
 import { getAgent, getRelatedAgents } from "@/lib/data";
-import { getCurrentUser } from "@/lib/auth";
+import { getOptionalUser } from "@/lib/auth";
 import {
   CATEGORY_META,
   PAYMENT_MODE_META,
@@ -245,13 +245,13 @@ export default async function AgentProfilePage({
   params: Promise<Params>;
 }) {
   const { id } = await params;
-  const [agent, currentUser] = await Promise.all([getAgent(id), getCurrentUser()]);
+  const [agent, currentUser] = await Promise.all([getAgent(id), getOptionalUser()]);
 
   if (!agent) {
     notFound();
   }
 
-  const isOwner = agent.ownerId === currentUser.id;
+  const isOwner = agent.ownerId === currentUser?.id;
 
   const categoryMeta = CATEGORY_META[agent.category as Category];
   const pricingMeta = PRICING_MODEL_META[agent.pricingModel as PricingModelValue];

@@ -164,8 +164,10 @@ function Endpoint({
           request ? "lg:grid-cols-2" : "lg:grid-cols-1",
         )}
       >
-        {request ? <JsonViewer title={request.title} data={request.data} /> : null}
-        <JsonViewer title={response.title} data={response.data} />
+        {request ? (
+          <JsonViewer title={request.title} data={request.data} expandable />
+        ) : null}
+        <JsonViewer title={response.title} data={response.data} expandable />
       </div>
 
       {note ? (
@@ -532,7 +534,7 @@ function IntegrationSection({
 
         {example ? (
           <div className="mt-5">
-            <JsonViewer title={example.title} data={example.data} />
+            <JsonViewer title={example.title} data={example.data} expandable />
           </div>
         ) : null}
 

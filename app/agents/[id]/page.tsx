@@ -726,7 +726,7 @@ export default async function AgentProfilePage({
         icon={<FileJson2 className="size-4.5" />}
         description="The agent-to-agent discovery card other agents fetch to evaluate and invoke this agent programmatically."
       >
-        <JsonViewer data={agentCard} title="GET /.well-known/agent-card.json" />
+        <JsonViewer data={agentCard} title="GET /.well-known/agent-card.json" expandable />
       </SectionCard>
 
       <div className="grid gap-5 lg:grid-cols-2">
@@ -736,7 +736,7 @@ export default async function AgentProfilePage({
           description="JSON Schema the agent expects as task input."
         >
           {hasInputSchema ? (
-            <JsonViewer data={agent.inputSchema} title="input_schema" />
+            <JsonViewer data={agent.inputSchema} title="input_schema" expandable />
           ) : (
             <EmptyState
               icon={FileCode2}
@@ -752,7 +752,7 @@ export default async function AgentProfilePage({
           description="JSON Schema outputs are validated against."
         >
           {hasOutputSchema ? (
-            <JsonViewer data={agent.outputSchema} title="output_schema" />
+            <JsonViewer data={agent.outputSchema} title="output_schema" expandable />
           ) : (
             <EmptyState
               icon={FileCode2}

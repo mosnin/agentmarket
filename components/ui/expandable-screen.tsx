@@ -159,6 +159,17 @@ export function ExpandableScreenContent({
     <AnimatePresence initial={false}>
       {isExpanded && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-2">
+          {/* Dismissable backdrop — token-based so it reads correctly in both
+              themes; click outside to collapse. */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: animationDuration }}
+            onClick={collapse}
+            aria-hidden="true"
+            className="absolute inset-0 -z-[1] bg-background/70 backdrop-blur-sm"
+          />
           {/* Morphing background with shared layoutId */}
           <motion.div
             layoutId={layoutId}

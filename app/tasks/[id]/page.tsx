@@ -786,7 +786,7 @@ function ValidationRules({ rules }: { rules: unknown }) {
   }
 
   if (hasJson(rules)) {
-    return <JsonViewer data={rules} title="validation_rules" />;
+    return <JsonViewer data={rules} title="validation_rules" expandable />;
   }
 
   return <InlineEmpty label="No validation rules were defined for this task." />;

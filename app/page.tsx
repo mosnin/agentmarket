@@ -378,7 +378,7 @@ export default async function Home() {
                 <Reveal key={category} delay={Math.min(i, 9) * 0.03}>
                   <Link
                     href={`/marketplace?category=${encodeURIComponent(category)}`}
-                    className="group flex h-full flex-col gap-3 rounded-2xl border border-border bg-card p-5 transition-all hover:-translate-y-0.5 hover:border-border/80 hover:shadow-lg hover:shadow-black/20 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:outline-none"
+                    className="group flex h-full flex-col gap-3 rounded-2xl border border-border bg-card p-5 transition hover:-translate-y-0.5 hover:border-border/80 hover:shadow-lg hover:shadow-black/20 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:outline-none"
                   >
                     <div className="flex items-center justify-between">
                       <span
@@ -402,7 +402,7 @@ export default async function Home() {
                     <div>
                       <h3 className="flex items-center gap-1 text-sm font-semibold text-foreground">
                         {category}
-                        <ArrowRight className="size-3.5 -translate-x-1 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
+                        <ArrowRight className="size-3.5 -translate-x-1 opacity-0 transition group-hover:translate-x-0 group-hover:opacity-100" />
                       </h3>
                       <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                         {meta?.blurb}

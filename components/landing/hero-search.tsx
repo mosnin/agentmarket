@@ -61,7 +61,7 @@ export function HeroSearch() {
           type="submit"
           className={cn(
             "inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl bg-brand px-4 text-sm font-medium text-brand-foreground",
-            "transition-all hover:opacity-90 active:translate-y-px",
+            "transition hover:opacity-90 active:translate-y-px",
             "focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
           )}
         >

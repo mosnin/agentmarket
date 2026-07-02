@@ -859,7 +859,7 @@ export default async function AgentProfilePage({
                         aria-hidden="true"
                       />
                       <span className="flex-1">{name}</span>
-                      <ArrowRight className="mt-0.5 size-3 shrink-0 -translate-x-1 text-muted-foreground opacity-0 transition-all group-hover/ask:translate-x-0 group-hover/ask:opacity-100" />
+                      <ArrowRight className="mt-0.5 size-3 shrink-0 -translate-x-1 text-muted-foreground opacity-0 transition group-hover/ask:translate-x-0 group-hover/ask:opacity-100" />
                     </Link>
                   </li>
                 ))}

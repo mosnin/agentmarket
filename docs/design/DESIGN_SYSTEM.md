@@ -51,9 +51,12 @@ primitive), section gaps `gap-6`/`space-y-6`/`space-y-8`, inline chip gaps
 ## Radius
 
 Derived from `--radius: 0.7rem`: `sm 0.6× · md 0.8× · lg 1× · xl 1.4× · 2xl 1.8× ·
-3xl 2.2× · 4xl 2.6×`. **Convention:** controls (button/input) `rounded-lg`; cards
-`rounded-xl`–`rounded-2xl`; pills/avatars `rounded-full`. *(Consistency note:
-primary content cards should standardize on one card radius — see the audit.)*
+3xl 2.2× · 4xl 2.6×`. **Nesting hierarchy (deliberate — keep it):** primary
+content containers `rounded-2xl`; cards *nested inside* a container (e.g. artifact
+/ review / contract cards on the task page) step down to `rounded-xl`; controls
+(button/input) `rounded-lg`; pills/avatars `rounded-full`. A nested surface should
+always be one step tighter than its parent — matching radii flattens the
+hierarchy. Don't unify these to a single value.
 
 ## Motion
 

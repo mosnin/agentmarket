@@ -8,7 +8,6 @@ import {
   Bot,
   CheckCircle2,
   CircleDollarSign,
-  Coins,
   Gavel,
   History,
   ScrollText,
@@ -91,12 +90,12 @@ function humanizeEventType(type: string): string {
 
 /** Icon-tile color treatment per reputation-event type. */
 const REPUTATION_EVENT_TILE: Record<ReputationEventTypeValue, string> = {
-  task_completed: "bg-emerald-500/10 text-emerald-400",
-  review_received: "bg-amber-500/10 text-amber-400",
-  dispute_opened: "bg-rose-500/10 text-rose-400",
-  dispute_resolved: "bg-sky-500/10 text-sky-400",
-  validation_passed: "bg-lime-500/10 text-lime-400",
-  validation_failed: "bg-rose-500/10 text-rose-400",
+  task_completed: "bg-success/10 text-success",
+  review_received: "bg-warning/10 text-warning",
+  dispute_opened: "bg-destructive/10 text-destructive",
+  dispute_resolved: "bg-chart-2/10 text-chart-2",
+  validation_passed: "bg-success/10 text-success",
+  validation_failed: "bg-destructive/10 text-destructive",
   agent_verified: "bg-brand/10 text-brand",
   manual_adjustment: "bg-muted text-muted-foreground",
 };
@@ -201,21 +200,16 @@ export default async function AdminPage() {
           <MetricCard
             label="Total agents"
             value={stats.totalAgents}
-            icon={Users}
             hint={`${agents.filter((a) => a.status === "active").length} active in the marketplace`}
           />
           <MetricCard
             label="Verified"
             value={stats.verifiedAgents}
-            icon={ShieldCheck}
-            accent="text-brand"
             hint={`${verifiedShare}% of the catalog is verified`}
           />
           <MetricCard
             label="Open disputes"
             value={stats.openDisputes}
-            icon={Gavel}
-            accent={stats.openDisputes > 0 ? "text-amber-400" : undefined}
             hint={
               stats.openDisputes > 0
                 ? "Awaiting an admin decision"
@@ -225,7 +219,6 @@ export default async function AdminPage() {
           <MetricCard
             label="Escrow held"
             value={formatCurrency(escrowedTotal)}
-            icon={Coins}
             hint={`${stats.totalPayments} payments in the ledger`}
           />
         </div>
@@ -449,7 +442,7 @@ function DisputesPanel({ disputes }: { disputes: AdminDispute[] }) {
                     </span>
                   </div>
                   {dispute.resolution ? (
-                    <div className="mt-1 flex items-start gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-xs text-emerald-300">
+                    <div className="mt-1 flex items-start gap-2 rounded-lg border border-success/20 bg-success/5 px-3 py-2 text-xs text-success">
                       <CheckCircle2 className="mt-0.5 size-3.5 shrink-0" aria-hidden />
                       <span className="leading-relaxed">{dispute.resolution}</span>
                     </div>
@@ -515,8 +508,8 @@ function SuspiciousTasksPanel({ tasks }: { tasks: AdminSuspiciousTask[] }) {
                 className={cn(
                   "flex size-9 shrink-0 items-center justify-center rounded-lg ring-1",
                   task.status === "disputed"
-                    ? "bg-rose-500/10 text-rose-400 ring-rose-500/20"
-                    : "bg-amber-500/10 text-amber-400 ring-amber-500/20",
+                    ? "bg-destructive/10 text-destructive ring-destructive/20"
+                    : "bg-warning/10 text-warning ring-warning/20",
                 )}
               >
                 <AlertTriangle className="size-4" aria-hidden />
@@ -716,8 +709,8 @@ function ReputationFeed({ events }: { events: AdminReputationEvent[] }) {
                   className={cn(
                     "inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums",
                     positive
-                      ? "bg-emerald-500/10 text-emerald-400"
-                      : "bg-rose-500/10 text-rose-400",
+                      ? "bg-success/10 text-success"
+                      : "bg-destructive/10 text-destructive",
                   )}
                 >
                   {positive ? (

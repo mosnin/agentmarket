@@ -188,11 +188,11 @@ function MetricTile({
 }) {
   const toneText =
     tone === "good"
-      ? "text-emerald-400"
+      ? "text-success"
       : tone === "warn"
-        ? "text-amber-400"
+        ? "text-warning"
         : tone === "bad"
-          ? "text-rose-400"
+          ? "text-destructive"
           : "text-foreground";
 
   return (
@@ -225,7 +225,7 @@ function TrustRow({
       <span className="flex items-center gap-2.5 text-sm text-muted-foreground">
         <span
           className={cn(
-            tone === "good" ? "text-emerald-400" : "text-muted-foreground",
+            tone === "good" ? "text-success" : "text-muted-foreground",
           )}
         >
           {icon}
@@ -417,7 +417,7 @@ export default async function AgentProfilePage({
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium",
                 mcpValidation.ok
-                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+                  ? "border-success/30 bg-success/10 text-success"
                   : "border-zinc-500/30 bg-zinc-500/10 text-zinc-400",
               )}
               title={mcpValidation.message}
@@ -425,7 +425,7 @@ export default async function AgentProfilePage({
               <span
                 className={cn(
                   "size-1.5 rounded-full",
-                  mcpValidation.ok ? "bg-emerald-400" : "bg-zinc-400",
+                  mcpValidation.ok ? "bg-success" : "bg-zinc-400",
                 )}
                 aria-hidden="true"
               />
@@ -641,7 +641,7 @@ export default async function AgentProfilePage({
       action={
         agent.averageRating > 0 ? (
           <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-2.5 py-1 text-sm font-medium text-foreground">
-            <Star className="size-4 fill-amber-400 text-amber-400" aria-hidden="true" />
+            <Star className="size-4 fill-warning text-warning" aria-hidden="true" />
             {formatRating(agent.averageRating)}
           </span>
         ) : undefined

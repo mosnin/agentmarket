@@ -9,11 +9,12 @@ interface Tier {
   text: string;
 }
 
+// Semantic tiers, tokenized (both themes): strong = success, mid = warning,
+// weak = destructive. No ad-hoc palette hues.
 function tierFor(score: number): Tier {
-  if (score >= 90) return { stroke: "stroke-emerald-400", text: "text-emerald-400" };
-  if (score >= 80) return { stroke: "stroke-lime-400", text: "text-lime-400" };
-  if (score >= 70) return { stroke: "stroke-amber-400", text: "text-amber-400" };
-  return { stroke: "stroke-rose-400", text: "text-rose-400" };
+  if (score >= 85) return { stroke: "stroke-success", text: "text-success" };
+  if (score >= 70) return { stroke: "stroke-warning", text: "text-warning" };
+  return { stroke: "stroke-destructive", text: "text-destructive" };
 }
 
 const SIZES: Record<

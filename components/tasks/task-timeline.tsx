@@ -142,7 +142,7 @@ function Step({
           isAbandoned && "border-border bg-muted/40 text-muted-foreground/60",
           isOffPath &&
             offPathStatus === "disputed" &&
-            "border-rose-500/40 bg-rose-500/15 text-rose-400",
+            "border-destructive/40 bg-destructive/15 text-destructive",
           isOffPath &&
             offPathStatus === "cancelled" &&
             "border-zinc-500/40 bg-zinc-500/15 text-zinc-400",
@@ -174,7 +174,7 @@ function Step({
             isDone && "text-foreground",
             isActive && "text-foreground",
             isAbandoned && "text-muted-foreground/60 line-through",
-            isOffPath && offPathStatus === "disputed" && "text-rose-400",
+            isOffPath && offPathStatus === "disputed" && "text-destructive",
             isOffPath && offPathStatus === "cancelled" && "text-muted-foreground",
             state === "upcoming" && "text-muted-foreground",
           )}

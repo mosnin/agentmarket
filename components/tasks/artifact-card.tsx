@@ -156,8 +156,8 @@ function ScoreGauge({ score, status }: { score: number; status: string }) {
   const passed =
     status === "passed" ||
     (status !== "failed" && clamped >= VALIDATION_PASS_THRESHOLD);
-  const stroke = passed ? "stroke-emerald-400" : "stroke-rose-400";
-  const text = passed ? "text-emerald-400" : "text-rose-400";
+  const stroke = passed ? "stroke-success" : "stroke-destructive";
+  const text = passed ? "text-success" : "text-destructive";
 
   return (
     <div className="relative size-11 shrink-0" title={`Validation score ${clamped}/100`}>

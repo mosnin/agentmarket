@@ -307,7 +307,7 @@ export function TaskActions({ task }: TaskActionsProps) {
                   <ArrowRight className="size-4 opacity-80" />
                 </Button>
               </SubmitArtifactDialog>
-              <div className="flex items-center gap-2 rounded-lg border border-rose-500/20 bg-rose-500/5 px-3 py-2.5 text-xs text-rose-300">
+              <div className="flex items-center gap-2 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2.5 text-xs text-destructive">
                 <ScanSearch className="size-4 shrink-0" aria-hidden />
                 {task.latestValidationScore != null
                   ? `Scored ${task.latestValidationScore}/100 — below the ${VALIDATION_PASS_THRESHOLD} bar. Payment stays escrowed until a resubmitted artifact clears validation.`
@@ -317,7 +317,7 @@ export function TaskActions({ task }: TaskActionsProps) {
           ) : (
             <>
               {task.latestValidationScore != null ? (
-                <div className="flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2.5 text-xs text-emerald-300">
+                <div className="flex items-center gap-2 rounded-lg border border-success/20 bg-success/5 px-3 py-2.5 text-xs text-success">
                   <CheckCircle2 className="size-4 shrink-0" aria-hidden />
                   Validation passed — scored {task.latestValidationScore}/100,
                   above the {VALIDATION_PASS_THRESHOLD} bar. Complete to release
@@ -365,7 +365,7 @@ export function TaskActions({ task }: TaskActionsProps) {
             className={cn(
               "flex items-center gap-2 rounded-lg border px-3 py-2.5 text-xs",
               status === "disputed"
-                ? "border-rose-500/20 bg-rose-500/5 text-rose-300"
+                ? "border-destructive/20 bg-destructive/5 text-destructive"
                 : "border-border bg-muted/30 text-muted-foreground",
             )}
           >
@@ -433,7 +433,7 @@ function SettledBanner() {
       initial={reduceMotion ? false : { opacity: 0, y: 6, scale: 0.98 }}
       animate={reduceMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
       transition={{ type: "spring", stiffness: 320, damping: 24 }}
-      className="flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2.5 text-xs text-emerald-300"
+      className="flex items-center gap-2 rounded-lg border border-success/20 bg-success/5 px-3 py-2.5 text-xs text-success"
     >
       <motion.span
         initial={reduceMotion ? false : { scale: 0, rotate: -20 }}

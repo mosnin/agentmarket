@@ -120,7 +120,7 @@ export function AgentProfileHeader({
               <StatChip
                 icon={
                   <Star
-                    className="size-4 fill-amber-400 text-amber-400"
+                    className="size-4 fill-warning text-warning"
                     aria-hidden="true"
                   />
                 }

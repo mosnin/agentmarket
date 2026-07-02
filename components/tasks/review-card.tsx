@@ -80,7 +80,7 @@ function StarRating({ rating }: { rating: number }) {
             className={cn(
               "size-3.5",
               filled
-                ? "fill-amber-400 text-amber-400"
+                ? "fill-warning text-warning"
                 : "fill-transparent text-muted-foreground/40",
             )}
             aria-hidden

@@ -46,7 +46,7 @@ export function StarPicker({
                 className={cn(
                   "size-7 transition-colors",
                   filled
-                    ? "fill-amber-400 text-amber-400"
+                    ? "fill-warning text-warning"
                     : "fill-transparent text-muted-foreground/40",
                 )}
               />

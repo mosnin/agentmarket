@@ -204,8 +204,8 @@ export default async function TaskDetailPage({
                 <span
                   className={cn(
                     "inline-flex items-center gap-1.5",
-                    isOverdue && "font-medium text-rose-400",
-                    isDueSoon && "font-medium text-amber-400",
+                    isOverdue && "font-medium text-destructive",
+                    isDueSoon && "font-medium text-warning",
                   )}
                 >
                   <Target className="size-3.5 shrink-0" aria-hidden />
@@ -230,21 +230,21 @@ export default async function TaskDetailPage({
 
         {/* Dispute banner */}
         {openDisputes.length > 0 ? (
-          <div className="flex items-start gap-3 rounded-xl border border-rose-500/30 bg-rose-500/5 p-4">
+          <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4">
             <ShieldAlert
-              className="mt-0.5 size-5 shrink-0 text-rose-400"
+              className="mt-0.5 size-5 shrink-0 text-destructive"
               aria-hidden
             />
             <div className="min-w-0">
-              <p className="text-sm font-medium text-rose-300">
+              <p className="text-sm font-medium text-destructive">
                 {openDisputes.length === 1
                   ? "A dispute is open on this task"
                   : `${openDisputes.length} disputes are open on this task`}
               </p>
-              <p className="mt-0.5 text-sm leading-relaxed text-rose-300/80">
+              <p className="mt-0.5 text-sm leading-relaxed text-destructive/80">
                 {openDisputes[0]?.reason}
               </p>
-              <p className="mt-1 text-xs text-rose-300/60">
+              <p className="mt-1 text-xs text-destructive/60">
                 Opened <RelativeTime date={openDisputes[0]!.createdAt} /> ·
                 Awaiting admin review.
               </p>
@@ -834,11 +834,11 @@ function DisputeRow({
         {dispute.reason}
       </p>
       {dispute.resolution ? (
-        <div className="mt-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3">
-          <p className="text-[11px] font-medium uppercase tracking-wide text-emerald-400">
+        <div className="mt-3 rounded-lg border border-success/20 bg-success/5 p-3">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-success">
             Resolution
           </p>
-          <p className="mt-0.5 text-sm leading-relaxed text-emerald-300/90">
+          <p className="mt-0.5 text-sm leading-relaxed text-success/90">
             {dispute.resolution}
           </p>
         </div>
@@ -873,8 +873,8 @@ function ReputationEventRow({
           neutral
             ? "bg-muted/50 text-muted-foreground"
             : positive
-              ? "bg-emerald-500/10 text-emerald-400"
-              : "bg-rose-500/10 text-rose-400",
+              ? "bg-success/10 text-success"
+              : "bg-destructive/10 text-destructive",
         )}
       >
         {positive ? "+" : ""}

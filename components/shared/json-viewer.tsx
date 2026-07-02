@@ -31,19 +31,19 @@ function highlight(json: string): React.ReactNode[] {
     if (str !== undefined) {
       const isKey = str.trimEnd().endsWith(":");
       nodes.push(
-        <span key={key++} className={isKey ? "text-sky-300" : "text-emerald-300"}>
+        <span key={key++} className={isKey ? "text-chart-2" : "text-chart-3"}>
           {str}
         </span>,
       );
     } else if (keyword !== undefined) {
       nodes.push(
-        <span key={key++} className="text-violet-300">
+        <span key={key++} className="text-chart-5">
           {keyword}
         </span>,
       );
     } else if (num !== undefined) {
       nodes.push(
-        <span key={key++} className="text-amber-300">
+        <span key={key++} className="text-chart-4">
           {num}
         </span>,
       );
@@ -106,7 +106,7 @@ export function JsonViewer({
     >
       {copied ? (
         <>
-          <Check className="size-3.5 text-emerald-400" aria-hidden="true" />
+          <Check className="size-3.5 text-success" aria-hidden="true" />
           Copied
         </>
       ) : (

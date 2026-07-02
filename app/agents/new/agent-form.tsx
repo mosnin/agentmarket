@@ -142,7 +142,7 @@ function JsonHint({ value }: { value: string | undefined }) {
     <p
       className={cn(
         "flex items-center gap-1.5 text-sm",
-        valid ? "text-emerald-400" : "text-amber-400",
+        valid ? "text-success" : "text-warning",
       )}
     >
       {valid ? (

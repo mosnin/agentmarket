@@ -19,10 +19,10 @@ export interface DocsNavGroup {
 }
 
 const METHOD_COLOR: Record<string, string> = {
-  GET: "text-sky-400",
-  POST: "text-emerald-400",
-  PUT: "text-amber-400",
-  DELETE: "text-rose-400",
+  GET: "text-chart-2",
+  POST: "text-success",
+  PUT: "text-warning",
+  DELETE: "text-destructive",
 };
 
 /**

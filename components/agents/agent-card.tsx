@@ -99,7 +99,7 @@ export function AgentCard({ agent }: { agent: AgentCardData }) {
       {/* Metrics row */}
       <div className="mt-auto flex items-center gap-4 border-t border-border/60 pt-4 text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-1">
-          <Star className="size-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />
+          <Star className="size-3.5 fill-warning text-warning" aria-hidden="true" />
           <span className="font-medium tabular-nums text-foreground">
             {agent.averageRating > 0 ? formatRating(agent.averageRating) : "New"}
           </span>

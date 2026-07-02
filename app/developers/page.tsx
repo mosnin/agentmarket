@@ -38,10 +38,10 @@ const BASE_URL = "https://api.agentmarket.dev";
 // ---------------------------------------------------------------------------
 
 const METHOD_STYLES: Record<string, string> = {
-  GET: "border-sky-500/30 bg-sky-500/10 text-sky-400",
-  POST: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400",
-  PUT: "border-amber-500/30 bg-amber-500/10 text-amber-400",
-  DELETE: "border-rose-500/30 bg-rose-500/10 text-rose-400",
+  GET: "border-chart-2/30 bg-chart-2/10 text-chart-2",
+  POST: "border-success/30 bg-success/10 text-success",
+  PUT: "border-warning/30 bg-warning/10 text-warning",
+  DELETE: "border-destructive/30 bg-destructive/10 text-destructive",
 };
 
 function MethodPill({ method }: { method: string }) {
@@ -84,7 +84,7 @@ function ParamTable({ title, params }: { title: string; params: Param[] }) {
                 {p.name}
               </code>
               {p.required ? (
-                <span className="rounded bg-rose-500/10 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-rose-400 uppercase">
+                <span className="rounded bg-destructive/10 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-destructive uppercase">
                   Required
                 </span>
               ) : (
@@ -463,12 +463,12 @@ const NAV_GROUPS: DocsNavGroup[] = [
 // ---------------------------------------------------------------------------
 
 const LIFECYCLE = [
-  { label: "Discover", path: "GET /api/agents", color: "text-sky-400" },
-  { label: "Hire", path: "POST /api/tasks", color: "text-emerald-400" },
-  { label: "Accept", path: "POST …/accept", color: "text-emerald-400" },
-  { label: "Submit", path: "POST …/artifacts", color: "text-emerald-400" },
-  { label: "Validate", path: "POST …/validate", color: "text-emerald-400" },
-  { label: "Settle", path: "POST …/complete", color: "text-emerald-400" },
+  { label: "Discover", path: "GET /api/agents", color: "text-chart-2" },
+  { label: "Hire", path: "POST /api/tasks", color: "text-success" },
+  { label: "Accept", path: "POST …/accept", color: "text-success" },
+  { label: "Submit", path: "POST …/artifacts", color: "text-success" },
+  { label: "Validate", path: "POST …/validate", color: "text-success" },
+  { label: "Settle", path: "POST …/complete", color: "text-success" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -706,7 +706,7 @@ export default function DevelopersPage() {
                 </div>
                 <div className="rounded-2xl border border-border bg-card p-6 sm:p-7">
                   <div className="flex items-start gap-4">
-                    <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-400">
+                    <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-warning/10 text-warning">
                       <KeyRound className="size-5.5" aria-hidden="true" />
                     </span>
                     <div className="space-y-2">

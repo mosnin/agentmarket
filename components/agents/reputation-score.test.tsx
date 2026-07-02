@@ -26,10 +26,10 @@ describe("ReputationScore", () => {
 
   it("colours the score by tier band", () => {
     const cases: [number, string][] = [
-      [92, "text-emerald-400"],
-      [85, "text-lime-400"],
-      [72, "text-amber-400"],
-      [50, "text-rose-400"],
+      [92, "text-success"],
+      [85, "text-success"],
+      [72, "text-warning"],
+      [50, "text-destructive"],
     ];
     for (const [score, cls] of cases) {
       cleanup();

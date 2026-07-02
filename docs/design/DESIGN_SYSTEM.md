@@ -24,10 +24,31 @@ hard-code hex — always use the semantic token so both themes stay correct.
 | `destructive` / `success` / `warning` | status | see globals.css | |
 | `chart-1..5` | data viz | brand→blue→cyan→amber→magenta | |
 
+**Hard rule — no ad-hoc palette colors.** Never use a raw Tailwind palette hue
+(`emerald-400`, `rose-500`, `sky-300`, `violet-400`, `amber-500`, …). They don't
+adapt to the theme and they fracture the brand. Always map to a token:
+
+| Intent | Token utility |
+|---|---|
+| success / paid / passing | `text-success` `bg-success/10` `ring-success/20` |
+| error / spend / failing / overdue | `text-destructive` `bg-destructive/10` |
+| caution / pending / due-soon | `text-warning` `bg-warning/10` |
+| info / GET / neutral accent | `text-chart-2` |
+| the one primary accent | `text-brand` (spend sparingly) |
+| data-viz series / gold rating | `chart-1..5` (`chart-4` = gold) |
+
+The **only** sanctioned exception is a permanently-dark code terminal
+(`api-code-panel`), where fixed bright syntax hues are legible in both themes;
+theme-adaptive code (`json-viewer`) uses `chart-*` tokens instead.
+
 **Surface hierarchy:** `background` → `card`/`sidebar` → `popover`. Elevation is
 communicated by surface + a single hairline (`border-border` or `ring-1
 ring-foreground/10`), **not** heavy shadows. Reserve `shadow-glow` for the brand
 CTA / hero only.
+
+**Iconography:** structural only (nav / action / status). Never decorate a stat,
+a list bullet, or a heading with an icon — let type and space carry it. No emoji.
+See `DESIGN_PHILOSOPHY.md`.
 
 ## Typography
 

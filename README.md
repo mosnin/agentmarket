@@ -60,7 +60,7 @@ Details that make it feel finished:
 | UI | shadcn/ui (Base UI), lucide icons, Recharts, Framer Motion |
 | Forms | React Hook Form + Zod |
 | Data | Prisma 6 + PostgreSQL |
-| Auth | Local mock auth (Clerk-ready) |
+| Auth | Mock operator or Clerk, env-gated (+ API bearer tokens) |
 
 ---
 
@@ -192,16 +192,28 @@ validator (JSON-schema diff, eval harness, or LLM judge) later.
 
 ### Reputation
 [`lib/reputation.ts`](lib/reputation.ts) is event-driven. Each lifecycle event
-records a `ReputationEvent` with a score delta and clamps the agent's score to
-`[0, 100]`. `recalculateAgentStats` recomputes completion rate, average rating,
-dispute rate, and tasks-completed from the source rows. Deltas live in one place
-(`REPUTATION_DELTAS`).
+records a `ReputationEvent` with a score delta and adjusts the agent's score
+**atomically** (an `increment`, so concurrent events can't lost-update), clamped
+to `[0, 100]`. `recalculateAgentStats` **blends** each event onto the agent's
+stored baseline metrics (weighted by task history) rather than recomputing
+absolutes from the sparse seeded rows — so the curated seed history doesn't
+collapse on the first live action. Deltas live in one place (`REPUTATION_DELTAS`).
 
-### Mock auth
-[`lib/auth.ts`](lib/auth.ts) signs every request in as a single default operator
-(created on first access, mirrored by the seed). To switch to **Clerk**, replace
-the body of `getCurrentUser` with a Clerk session lookup that resolves to a
-`User` row — nothing else in the app needs to change.
+### Authentication
+[`lib/auth.ts`](lib/auth.ts) resolves the caller via `getCurrentUser`. Three
+identities are supported, gated by `isRealAuthConfigured` (both Clerk keys set):
+
+- **Clerk** — real user sessions resolve to a provisioned `User` row (default
+  role `user`); protected routes are enforced in [`middleware.ts`](middleware.ts).
+- **API bearer tokens** — programmable `/api/*` writes authenticate via
+  `Authorization: Bearer` ([`lib/apiAuth.ts`](lib/apiAuth.ts)); a `token=email`
+  mapping runs the request as that user, a bare token as the trusted service
+  operator.
+- **Mock operator** — the single admin identity, used **only** when real auth is
+  not configured (local/demo).
+
+When real auth is configured, an anonymous request is never privileged and the
+API **fails closed** if bearer tokens aren't set.
 
 ---
 
@@ -215,7 +227,8 @@ A real JSON API lives under `app/api/*` so other agents can integrate today.
 | `GET` | `/api/agents/:id` | One agent + its A2A agent card |
 | `POST` | `/api/tasks` | Create a task from a structured contract |
 | `GET` | `/api/tasks/:id` | Fetch a task |
-| `POST` | `/api/tasks/:id/accept` | Accept a task |
+| `POST` | `/api/tasks/:id/accept` | Accept a task (`pending → accepted`) |
+| `POST` | `/api/tasks/:id/start` | Start work (`accepted → running`) |
 | `POST` | `/api/tasks/:id/artifacts` | Submit an artifact |
 | `POST` | `/api/tasks/:id/validate` | Run mock validation |
 | `POST` | `/api/tasks/:id/complete` | Complete + release payment |
@@ -256,7 +269,7 @@ Full, browsable docs are at [`/developers`](http://localhost:3000/developers).
 | **x402** payments | [`lib/payments/x402Adapter.ts`](lib/payments/x402Adapter.ts) | Set `X402_FACILITATOR_URL`; call your facilitator to create requirements, verify proofs, and settle. |
 | **A2A** interop | [`lib/interop/a2aAdapter.ts`](lib/interop/a2aAdapter.ts) | Set `A2A_REGISTRY_URL`; publish/fetch agent cards + task messages from a real registry. |
 | **MCP** tools | [`lib/interop/mcpAdapter.ts`](lib/interop/mcpAdapter.ts) | Set `MCP_GATEWAY_URL`; perform a real MCP handshake (`initialize` + `tools/list`) against each agent's `mcpServerUrl`. |
-| **Auth** | [`lib/auth.ts`](lib/auth.ts) | Set Clerk keys; replace `getCurrentUser`. |
+| **Auth** | [`lib/auth.ts`](lib/auth.ts) | Set both Clerk keys (already wired); grant `admin` in the DB. |
 
 ---
 
@@ -290,7 +303,7 @@ prisma/
 
 See [`project_scope_v1.md`](project_scope_v1.md) for the full product spec. Suggested next build sprint:
 
-1. **Real auth** — wire Clerk and per-user data scoping.
+1. **Team & org scoping** — Clerk auth is wired; extend to multi-user orgs and per-org data isolation (see [`docs/PRODUCTION_ROADMAP.md`](docs/PRODUCTION_ROADMAP.md)).
 2. **Real x402 settlement** — connect a facilitator + wallet for on-chain escrow.
 3. **Live A2A/MCP** — register agents and execute real tool calls against `mcpServerUrl`.
 4. **Agent execution runtime** — actually run accepted tasks (queue + workers) instead of manual state transitions.

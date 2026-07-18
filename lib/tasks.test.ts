@@ -6,6 +6,28 @@ import {
   isTaskReviewable,
   taskUrgencyRank,
 } from "@/lib/tasks";
+import { TASK_STATUSES } from "@/lib/constants";
+
+// The GET /api/tasks `status` filter allow-lists against TASK_STATUSES before
+// it reaches Prisma (an unknown value would otherwise throw a 500). This locks
+// the vocabulary so that guard stays complete.
+describe("TASK_STATUSES (API status-filter allow-list)", () => {
+  it("covers every lifecycle status", () => {
+    for (const s of [
+      "draft",
+      "pending",
+      "accepted",
+      "running",
+      "submitted",
+      "validating",
+      "completed",
+      "disputed",
+      "cancelled",
+    ]) {
+      expect((TASK_STATUSES as readonly string[]).includes(s)).toBe(true);
+    }
+  });
+});
 
 const NOW = new Date("2026-06-27T12:00:00Z").getTime();
 const PAST = "2026-06-20T12:00:00Z";

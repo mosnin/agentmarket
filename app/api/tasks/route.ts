@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { listAgents, getAgent, getTask, listTasks } from "@/lib/data";
 import { createTask } from "@/lib/actions";
 import { apiCreateTaskSchema } from "@/lib/schemas";
-import { CATEGORIES, type Category } from "@/lib/constants";
+import { CATEGORIES, TASK_STATUSES, type Category } from "@/lib/constants";
 import type { CreateTaskInput } from "@/lib/schemas";
 import { serializeTaskListItem, apiError } from "@/app/api/_lib/serializers";
 import { guardApi } from "@/app/api/_lib/guard";
@@ -29,8 +29,12 @@ export async function GET(request: NextRequest) {
       visibility: "public",
     };
 
+    // Allow-list the status filter (like `category` below): an unrecognized
+    // value would otherwise reach Prisma as an invalid enum and throw a 500.
     const status = sp.get("status")?.trim();
-    if (status) filters.status = status;
+    if (status && (TASK_STATUSES as readonly string[]).includes(status)) {
+      filters.status = status;
+    }
 
     const category = sp.get("category")?.trim();
     if (category && (CATEGORIES as readonly string[]).includes(category)) {

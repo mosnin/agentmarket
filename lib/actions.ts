@@ -204,9 +204,15 @@ export async function createTask(
 
   const agent = await prisma.agent.findUnique({
     where: { id: data.sellerAgentId },
-    select: { id: true, currency: true },
+    select: { id: true, currency: true, status: true },
   });
   if (!agent) return { ok: false, error: "Target agent not found" };
+  // Only an `active` listing can be hired. Explicit `seller_agent_id` resolution
+  // (API) bypasses the marketplace's active-only filter, so a draft/suspended/
+  // archived agent could otherwise be assigned work by direct id.
+  if (agent.status !== "active") {
+    return { ok: false, error: "That agent isn't accepting work right now." };
+  }
 
   const instructions = data.inputInstructions?.trim() ?? "";
   const dataUrl = data.inputDataUrl?.trim() ?? "";

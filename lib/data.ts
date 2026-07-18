@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { taskUrgencyRank } from "@/lib/tasks";
 import type { Category } from "@/lib/constants";
 
 /**
@@ -84,9 +85,14 @@ export interface AgentFilters {
   sort?: "reputation" | "price" | "completion" | "newest" | "rating";
 }
 
+/** Hard upper bound on rows returned by a single list query (cost / DoS guard). */
+const MAX_LIST_RESULTS = 100;
+
 export async function listAgents(filters: AgentFilters = {}): Promise<AgentCardData[]> {
+  // Only `active` listings are public. `draft`/`suspended`/`archived` must not be
+  // enumerable in the marketplace — consistent with every other public read.
   const where: Prisma.AgentWhereInput = {
-    status: { in: ["active", "draft"] },
+    status: "active",
   };
 
   if (filters.search) {
@@ -123,12 +129,31 @@ export async function listAgents(filters: AgentFilters = {}): Promise<AgentCardD
             ? { createdAt: "desc" }
             : { reputationScore: "desc" };
 
-  return prisma.agent.findMany({ where, include: agentCardInclude, orderBy });
+  return prisma.agent.findMany({
+    where,
+    include: agentCardInclude,
+    orderBy,
+    take: MAX_LIST_RESULTS,
+  });
 }
 
 export async function getFeaturedAgents(limit = 6): Promise<AgentCardData[]> {
   return prisma.agent.findMany({
     where: { status: "active" },
+    include: agentCardInclude,
+    orderBy: { reputationScore: "desc" },
+    take: limit,
+  });
+}
+
+/** Other active agents in the same category, by reputation, excluding one. */
+export async function getRelatedAgents(
+  category: string,
+  excludeId: string,
+  limit = 3,
+): Promise<AgentCardData[]> {
+  return prisma.agent.findMany({
+    where: { status: "active", category, id: { not: excludeId } },
     include: agentCardInclude,
     orderBy: { reputationScore: "desc" },
     take: limit,
@@ -186,16 +211,21 @@ export async function listTasks(filters: {
   buyerId?: string;
   sellerAgentId?: string;
   category?: string;
+  visibility?: string;
 } = {}): Promise<TaskListItem[]> {
   const where: Prisma.TaskWhereInput = {};
   if (filters.status) where.status = filters.status as Prisma.TaskWhereInput["status"];
   if (filters.buyerId) where.buyerId = filters.buyerId;
   if (filters.sellerAgentId) where.sellerAgentId = filters.sellerAgentId;
   if (filters.category) where.category = filters.category;
+  if (filters.visibility) {
+    where.visibility = filters.visibility as Prisma.TaskWhereInput["visibility"];
+  }
   return prisma.task.findMany({
     where,
     include: taskListInclude,
     orderBy: { createdAt: "desc" },
+    take: MAX_LIST_RESULTS,
   });
 }
 
@@ -242,7 +272,11 @@ export async function getDashboardData() {
   const totalSpend = spendPayments.reduce((sum, p) => sum + p.amount, 0);
   const totalEarnings = earningPayments.reduce((sum, p) => sum + p.amount, 0);
   const activeStatuses = ["pending", "accepted", "running", "submitted", "validating"];
-  const activeTasks = buyerTasks.filter((t) => activeStatuses.includes(t.status));
+  const activeTasks = buyerTasks
+    .filter((t) => activeStatuses.includes(t.status))
+    // Float overdue, then due-soon, to the top of the operator's glance list; a
+    // stable sort keeps the newest-first order within each urgency band.
+    .sort((a, b) => taskUrgencyRank(a) - taskUrgencyRank(b));
   const tasksCompleted = buyerTasks.filter((t) => t.status === "completed").length;
   const averageReputation =
     ownedAgents.length > 0
@@ -343,14 +377,27 @@ export async function getSellerData() {
   ]);
 
   const totalEarnings = releasedPayments.reduce((s, p) => s + p.amount, 0);
-  const openInbound = inboundTasks.filter((t) =>
-    ["pending", "accepted", "running", "submitted", "validating"].includes(t.status),
-  );
+  // A task still needs the seller's attention until it settles (completed,
+  // cancelled and disputed leave the action queue).
+  const isOpen = (t: { status: string }) =>
+    ["pending", "accepted", "running", "submitted", "validating"].includes(
+      t.status,
+    );
+  const openInbound = inboundTasks.filter(isOpen);
+
+  // Lead the inbound table with the work that needs attention: first by time
+  // urgency (overdue, then due-soon), then float still-open tasks above settled
+  // ones, keeping newest-first within each band (the fetch is createdAt desc).
+  const sortedInbound = [...inboundTasks].sort((a, b) => {
+    const byUrgency = taskUrgencyRank(a) - taskUrgencyRank(b);
+    if (byUrgency !== 0) return byUrgency;
+    return Number(isOpen(b)) - Number(isOpen(a));
+  });
 
   return {
     user,
     agents,
-    inboundTasks,
+    inboundTasks: sortedInbound,
     openInbound,
     reviews,
     totalEarnings,

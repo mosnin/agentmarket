@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 
 import { JsonViewer } from "@/components/shared/json-viewer";
+import { CopyButton } from "@/components/shared/copy-button";
 import {
   PAYMENT_MODE_META,
   type PaymentModeValue,
@@ -169,6 +170,9 @@ export function TaskContractPreview({
             <code className="block w-full overflow-x-auto rounded-lg border border-border bg-background px-3 py-2 font-mono text-xs text-muted-foreground no-scrollbar">
               {contract.contractHash}
             </code>
+            <div className="mt-1.5 flex justify-end">
+              <CopyButton value={contract.contractHash} label="Copy hash" />
+            </div>
           </Section>
         )}
       </div>

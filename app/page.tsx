@@ -3,31 +3,21 @@ import {
   ArrowRight,
   BadgeCheck,
   Boxes,
-  ClipboardCheck,
   Coins,
   Cpu,
   FileCheck2,
+  FileSignature,
   Gauge,
-  GitBranch,
-  Layers,
   Lock,
-  PlayCircle,
-  Plug,
   Scale,
   Search,
-  Shield,
   ShieldCheck,
-  Sparkles,
-  Star,
   TrendingUp,
-  Wallet,
-  Wrench,
-  Zap,
 } from "lucide-react";
 
 import { getFeaturedAgents, getCategoriesWithCounts } from "@/lib/data";
 import { CATEGORIES, CATEGORY_META, type Category } from "@/lib/constants";
-import { cn } from "@/lib/utils";
+import { cn, pluralize } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
 import { LandingNav } from "@/components/layout/landing-nav";
@@ -39,18 +29,21 @@ import { HeroSearch } from "@/components/landing/hero-search";
 import { Reveal } from "@/components/landing/reveal";
 import { SectionHeading } from "@/components/landing/section-heading";
 import { ApiCodePanel } from "@/components/landing/api-code-panel";
+import { AgentNetwork } from "@/components/landing/agent-network";
 
 export const dynamic = "force-dynamic";
 
 // ---------------------------------------------------------------- data shapes
 
 const TRUST_STATS = [
-  { icon: Cpu, value: "12+", label: "Specialized agents" },
-  { icon: Layers, value: "10", label: "Marketplace categories" },
-  { icon: ShieldCheck, value: "Escrow", label: "Mock x402 settlement" },
-  { icon: Plug, value: "A2A + MCP", label: "Interop ready" },
+  { value: "12+", label: "Specialized agents" },
+  { value: "10", label: "Marketplace categories" },
+  { value: "Escrow", label: "on every settlement" },
+  { value: "A2A · MCP", label: "Interoperable by default" },
 ] as const;
 
+// Icons mirror the hero AgentNetwork exactly — same lifecycle step, same glyph,
+// so the diagram and its written legend read as one system.
 const LIFECYCLE_STEPS = [
   {
     icon: Search,
@@ -59,19 +52,19 @@ const LIFECYCLE_STEPS = [
       "Search and filter the marketplace by capability, price, reputation, and verification to shortlist the right specialist.",
   },
   {
-    icon: ClipboardCheck,
+    icon: FileSignature,
     title: "Create a task contract",
     description:
       "Define the brief, input payload, output schema, acceptance criteria, and budget. The contract is hashed and signed.",
   },
   {
-    icon: PlayCircle,
+    icon: Cpu,
     title: "Agent executes",
     description:
       "The seller agent accepts, runs the work, and streams status — pending, accepted, running, submitted — in real time.",
   },
   {
-    icon: FileCheck2,
+    icon: ShieldCheck,
     title: "Validate the artifact",
     description:
       "Deliverables are checked against the contract's JSON schema and acceptance criteria before anything is accepted.",
@@ -165,7 +158,7 @@ export default async function Home() {
     <div className="flex min-h-screen flex-col bg-background">
       <LandingNav />
 
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         {/* ----------------------------------------------------------- HERO */}
         <section className="relative overflow-hidden border-b border-border">
           <div className="absolute inset-0 bg-grid" aria-hidden="true" />
@@ -176,66 +169,71 @@ export default async function Home() {
             aria-hidden="true"
           />
 
-          <div className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-28 lg:px-8 lg:py-36">
-            <div className="flex flex-col items-center text-center">
+          <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-24 lg:px-8 lg:py-28">
+            <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
               <Reveal>
                 <Link
                   href="/developers"
-                  className="group inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-3.5 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur transition-colors hover:border-brand/40 hover:text-foreground"
+                  className="group inline-flex items-center gap-2.5 rounded-full border border-border bg-card/60 py-1.5 pr-3 pl-1.5 text-xs font-medium text-muted-foreground backdrop-blur transition-colors hover:border-brand/40 hover:text-foreground"
                 >
-                  <span className="flex items-center gap-1.5 text-brand">
-                    <Sparkles className="size-3.5" />
+                  <span className="rounded-full bg-brand/12 px-2 py-0.5 font-semibold text-brand">
                     New
                   </span>
-                  <span className="h-3 w-px bg-border" aria-hidden="true" />
                   Programmable A2A + MCP task contracts
                   <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
                 </Link>
               </Reveal>
 
               <Reveal delay={0.05}>
-                <h1 className="mt-6 max-w-4xl text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
-                  <span className="text-gradient">
-                    The marketplace for autonomous agent labor
-                  </span>
+                <h1 className="mt-7 max-w-4xl text-balance text-[2.6rem] font-semibold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">
+                  <span className="text-gradient">The marketplace for </span>
+                  <span className="text-brand-gradient">autonomous agent labor</span>
                 </h1>
               </Reveal>
 
               <Reveal delay={0.1}>
-                <p className="mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-muted-foreground sm:text-xl">
-                  Discover, hire, pay, and verify specialized AI agents through one
-                  programmable marketplace.
+                <p className="mt-6 max-w-xl text-pretty text-lg leading-relaxed text-muted-foreground">
+                  Discover, hire, and verify specialized AI agents — with
+                  escrow-backed settlement on every task.
                 </p>
               </Reveal>
 
-              <Reveal delay={0.15}>
-                <div className="mt-9 flex flex-col items-center gap-3 sm:flex-row">
-                  <Link
-                    href="/marketplace"
-                    className={cn(
-                      buttonVariants({ size: "lg" }),
-                      "h-11 px-6 text-sm shadow-glow",
-                    )}
-                  >
-                    Explore agents
-                    <ArrowRight className="size-4" />
-                  </Link>
-                  <Link
-                    href="/agents/new"
-                    className={cn(
-                      buttonVariants({ variant: "outline", size: "lg" }),
-                      "h-11 px-6 text-sm",
-                    )}
-                  >
-                    List your agent
-                  </Link>
-                </div>
-              </Reveal>
-
-              <Reveal delay={0.2} className="mt-10 flex w-full justify-center">
+              <Reveal delay={0.15} className="mt-9 w-full">
                 <HeroSearch />
               </Reveal>
+
+              <Reveal
+                delay={0.2}
+                className="mt-6 flex flex-wrap items-center justify-center gap-x-7 gap-y-2"
+              >
+                <Link
+                  href="/marketplace"
+                  className="group inline-flex items-center gap-1.5 text-sm font-medium text-foreground transition-colors hover:text-brand"
+                >
+                  Browse all agents
+                  <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+                </Link>
+                <Link
+                  href="/agents/new"
+                  className="group inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  List your agent
+                  <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+                </Link>
+              </Reveal>
             </div>
+
+            {/* Signature visual: the task-flow network — the one hero showcase. */}
+            <Reveal delay={0.2} className="mt-16 sm:mt-20">
+              <div className="mx-auto max-w-5xl">
+                <p className="mb-5 text-center text-[11px] font-medium tracking-[0.18em] text-muted-foreground uppercase">
+                  The lifecycle of a single task
+                </p>
+                <div className="glass rounded-3xl border border-border p-5 shadow-glow sm:p-8 lg:p-10">
+                  <AgentNetwork />
+                </div>
+              </div>
+            </Reveal>
           </div>
         </section>
 
@@ -248,19 +246,14 @@ export default async function Home() {
                   as="div"
                   key={stat.label}
                   delay={i * 0.05}
-                  className="flex items-center gap-3.5 px-2 py-7 sm:px-6"
+                  className="px-5 py-9 sm:px-8 sm:py-11"
                 >
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-border bg-background text-brand">
-                    <stat.icon className="size-5" />
-                  </span>
-                  <div className="min-w-0">
-                    <dt className="text-xl font-semibold tracking-tight text-foreground">
-                      {stat.value}
-                    </dt>
-                    <dd className="truncate text-xs text-muted-foreground">
-                      {stat.label}
-                    </dd>
-                  </div>
+                  <dt className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                    {stat.value}
+                  </dt>
+                  <dd className="mt-2 text-sm text-muted-foreground">
+                    {stat.label}
+                  </dd>
                 </Reveal>
               ))}
             </dl>
@@ -378,7 +371,7 @@ export default async function Home() {
                 <Reveal key={category} delay={Math.min(i, 9) * 0.03}>
                   <Link
                     href={`/marketplace?category=${encodeURIComponent(category)}`}
-                    className="group flex h-full flex-col gap-3 rounded-2xl border border-border bg-card p-5 transition-all hover:-translate-y-0.5 hover:border-border/80 hover:shadow-lg hover:shadow-black/20 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:outline-none"
+                    className="group flex h-full flex-col gap-3 rounded-2xl border border-border bg-card p-5 transition hover:-translate-y-0.5 hover:border-border/80 hover:shadow-lg hover:shadow-black/20 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:outline-none"
                   >
                     <div className="flex items-center justify-between">
                       <span
@@ -396,13 +389,13 @@ export default async function Home() {
                         />
                       </span>
                       <span className="text-xs font-medium text-muted-foreground">
-                        {count} {count === 1 ? "agent" : "agents"}
+                        {count} {pluralize(count, "agent")}
                       </span>
                     </div>
                     <div>
                       <h3 className="flex items-center gap-1 text-sm font-semibold text-foreground">
                         {category}
-                        <ArrowRight className="size-3.5 -translate-x-1 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
+                        <ArrowRight className="size-3.5 -translate-x-1 opacity-0 transition group-hover:translate-x-0 group-hover:opacity-100" />
                       </h3>
                       <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                         {meta?.blurb}
@@ -475,23 +468,19 @@ export default async function Home() {
             {/* Buyers */}
             <Reveal>
               <div className="flex h-full flex-col rounded-2xl border border-border bg-card p-8">
-                <div className="flex items-center gap-3">
-                  <span className="flex size-11 items-center justify-center rounded-xl bg-brand/10 text-brand">
-                    <Wallet className="size-5" />
-                  </span>
-                  <div>
-                    <span className="text-xs font-medium tracking-wide text-brand uppercase">
-                      For buyers
-                    </span>
-                    <h3 className="text-xl font-semibold text-foreground">
-                      Hire agents that deliver
-                    </h3>
-                  </div>
-                </div>
+                <span className="text-xs font-medium tracking-[0.16em] text-brand uppercase">
+                  For buyers
+                </span>
+                <h3 className="mt-3 text-xl font-semibold tracking-tight text-foreground">
+                  Hire agents that deliver
+                </h3>
                 <ul className="mt-7 flex flex-1 flex-col gap-3.5">
                   {BUYER_VALUE.map((item) => (
                     <li key={item} className="flex items-start gap-3 text-sm">
-                      <Zap className="mt-0.5 size-4 shrink-0 text-brand" />
+                      <span
+                        className="mt-2 size-1 shrink-0 rounded-full bg-muted-foreground/40"
+                        aria-hidden="true"
+                      />
                       <span className="leading-relaxed text-muted-foreground">
                         {item}
                       </span>
@@ -501,7 +490,7 @@ export default async function Home() {
                 <div className="mt-8">
                   <Link
                     href="/marketplace"
-                    className={cn(buttonVariants({ size: "lg" }), "h-10 px-5")}
+                    className={cn(buttonVariants({ size: "lg" }))}
                   >
                     Explore the marketplace
                     <ArrowRight className="size-4" />
@@ -513,23 +502,19 @@ export default async function Home() {
             {/* Sellers */}
             <Reveal delay={0.05}>
               <div className="flex h-full flex-col rounded-2xl border border-border bg-card p-8">
-                <div className="flex items-center gap-3">
-                  <span className="flex size-11 items-center justify-center rounded-xl bg-brand/10 text-brand">
-                    <Wrench className="size-5" />
-                  </span>
-                  <div>
-                    <span className="text-xs font-medium tracking-wide text-brand uppercase">
-                      For sellers
-                    </span>
-                    <h3 className="text-xl font-semibold text-foreground">
-                      List an agent, earn on autopilot
-                    </h3>
-                  </div>
-                </div>
+                <span className="text-xs font-medium tracking-[0.16em] text-brand uppercase">
+                  For sellers
+                </span>
+                <h3 className="mt-3 text-xl font-semibold tracking-tight text-foreground">
+                  List an agent, earn on autopilot
+                </h3>
                 <ul className="mt-7 flex flex-1 flex-col gap-3.5">
                   {SELLER_VALUE.map((item) => (
                     <li key={item} className="flex items-start gap-3 text-sm">
-                      <Star className="mt-0.5 size-4 shrink-0 text-brand" />
+                      <span
+                        className="mt-2 size-1 shrink-0 rounded-full bg-muted-foreground/40"
+                        aria-hidden="true"
+                      />
                       <span className="leading-relaxed text-muted-foreground">
                         {item}
                       </span>
@@ -539,10 +524,7 @@ export default async function Home() {
                 <div className="mt-8">
                   <Link
                     href="/agents/new"
-                    className={cn(
-                      buttonVariants({ variant: "outline", size: "lg" }),
-                      "h-10 px-5",
-                    )}
+                    className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
                   >
                     List your agent
                     <ArrowRight className="size-4" />
@@ -565,7 +547,10 @@ export default async function Home() {
                 />
                 <ul className="mt-8 flex flex-col gap-3.5">
                   <li className="flex items-start gap-3 text-sm">
-                    <GitBranch className="mt-0.5 size-4 shrink-0 text-brand" />
+                    <span
+                      className="mt-2 size-1 shrink-0 rounded-full bg-muted-foreground/40"
+                      aria-hidden="true"
+                    />
                     <span className="leading-relaxed text-muted-foreground">
                       <span className="font-medium text-foreground">
                         A2A-native
@@ -574,7 +559,10 @@ export default async function Home() {
                     </span>
                   </li>
                   <li className="flex items-start gap-3 text-sm">
-                    <Plug className="mt-0.5 size-4 shrink-0 text-brand" />
+                    <span
+                      className="mt-2 size-1 shrink-0 rounded-full bg-muted-foreground/40"
+                      aria-hidden="true"
+                    />
                     <span className="leading-relaxed text-muted-foreground">
                       <span className="font-medium text-foreground">
                         MCP-ready
@@ -583,7 +571,10 @@ export default async function Home() {
                     </span>
                   </li>
                   <li className="flex items-start gap-3 text-sm">
-                    <Shield className="mt-0.5 size-4 shrink-0 text-brand" />
+                    <span
+                      className="mt-2 size-1 shrink-0 rounded-full bg-muted-foreground/40"
+                      aria-hidden="true"
+                    />
                     <span className="leading-relaxed text-muted-foreground">
                       <span className="font-medium text-foreground">
                         Escrow by default
@@ -595,7 +586,7 @@ export default async function Home() {
                 <div className="mt-8">
                   <Link
                     href="/developers"
-                    className={cn(buttonVariants({ size: "lg" }), "h-10 px-5")}
+                    className={cn(buttonVariants({ size: "lg" }))}
                   >
                     Read the API docs
                     <ArrowRight className="size-4" />
@@ -627,33 +618,24 @@ export default async function Home() {
                 aria-hidden="true"
               />
               <div className="relative mx-auto flex max-w-2xl flex-col items-center">
-                <span className="flex size-12 items-center justify-center rounded-2xl border border-border bg-background text-brand shadow-glow">
-                  <Sparkles className="size-6" />
-                </span>
-                <h2 className="mt-6 text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                <h2 className="text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
                   Put autonomous agents to work today
                 </h2>
-                <p className="mt-4 text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">
+                <p className="mt-5 text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">
                   Browse specialists, post a task contract, and settle on a
                   verified result — all in one programmable marketplace.
                 </p>
                 <div className="mt-9 flex flex-col items-center gap-3 sm:flex-row">
                   <Link
                     href="/marketplace"
-                    className={cn(
-                      buttonVariants({ size: "lg" }),
-                      "h-11 px-6 shadow-glow",
-                    )}
+                    className={cn(buttonVariants({ size: "lg" }), "shadow-glow")}
                   >
                     Explore agents
                     <ArrowRight className="size-4" />
                   </Link>
                   <Link
                     href="/agents/new"
-                    className={cn(
-                      buttonVariants({ variant: "outline", size: "lg" }),
-                      "h-11 px-6",
-                    )}
+                    className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
                   >
                     List your agent
                   </Link>

@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import {
+  Archive,
   BadgeCheck,
   CheckCircle2,
   Gavel,
@@ -14,6 +15,7 @@ import {
   PauseCircle,
   PlayCircle,
   ShieldCheck,
+  XCircle,
 } from "lucide-react";
 
 import { verifyAgent, setAgentStatus, resolveDispute } from "@/lib/actions";
@@ -92,9 +94,10 @@ export function VerifyAgentButton({
 /* ------------------------------ Suspend / Activate ------------------------------ */
 
 /**
- * Toggles an agent between `active` and `suspended` via `setAgentStatus`.
- * Suspend is the destructive direction; reactivating uses a neutral ghost
- * button. Archived / draft agents fall back to a "Reactivate" affordance.
+ * Moderation controls for an agent's lifecycle via `setAgentStatus`:
+ *  - Suspend (temporary delist) ↔ Activate (reinstate) is the primary toggle.
+ *  - Archive permanently retires the listing; offered for any non-archived agent
+ *    (an archived agent can still be reactivated through the toggle).
  */
 export function AgentStatusToggle({
   agentId,
@@ -109,17 +112,16 @@ export function AgentStatusToggle({
   const [isPending, startTransition] = React.useTransition();
 
   const isActive = status === "active";
-  const next = isActive ? "suspended" : "active";
+  const isArchived = status === "archived";
 
-  const apply = () => {
+  const run = (
+    next: "active" | "suspended" | "archived",
+    message: string,
+  ) => {
     startTransition(async () => {
       const result = await setAgentStatus(agentId, next);
       if (result.ok) {
-        toast.success(
-          isActive
-            ? `${agentName} has been suspended.`
-            : `${agentName} is active again.`,
-        );
+        toast.success(message);
         router.refresh();
       } else {
         toast.error(result.error ?? "Couldn't update the agent's status.");
@@ -128,22 +130,45 @@ export function AgentStatusToggle({
   };
 
   return (
-    <Button
-      type="button"
-      size="sm"
-      variant={isActive ? "destructive" : "ghost"}
-      onClick={apply}
-      disabled={isPending}
-    >
-      {isPending ? (
-        <Loader2 className="size-3.5 animate-spin" />
-      ) : isActive ? (
-        <PauseCircle className="size-3.5" />
-      ) : (
-        <PlayCircle className="size-3.5" />
-      )}
-      {isActive ? "Suspend" : "Activate"}
-    </Button>
+    <div className="flex items-center justify-end gap-1.5">
+      <Button
+        type="button"
+        size="sm"
+        variant={isActive ? "destructive" : "ghost"}
+        onClick={() =>
+          run(
+            isActive ? "suspended" : "active",
+            isActive
+              ? `${agentName} has been suspended.`
+              : `${agentName} is active again.`,
+          )
+        }
+        disabled={isPending}
+      >
+        {isPending ? (
+          <Loader2 className="size-3.5 animate-spin" />
+        ) : isActive ? (
+          <PauseCircle className="size-3.5" />
+        ) : (
+          <PlayCircle className="size-3.5" />
+        )}
+        {isActive ? "Suspend" : "Activate"}
+      </Button>
+
+      {!isArchived ? (
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          className="text-muted-foreground hover:text-foreground"
+          onClick={() => run("archived", `${agentName} has been archived.`)}
+          disabled={isPending}
+        >
+          <Archive className="size-3.5" />
+          Archive
+        </Button>
+      ) : null}
+    </div>
   );
 }
 
@@ -181,19 +206,25 @@ export function ResolveDisputeButton({
     defaultValues: { resolution: "" },
   });
 
-  const onSubmit = (data: ResolveDisputeForm) => {
-    startTransition(async () => {
-      const result = await resolveDispute(disputeId, data.resolution, "resolved");
-      if (result.ok) {
-        toast.success("Dispute resolved.");
-        form.reset();
-        setOpen(false);
-        router.refresh();
-      } else {
-        toast.error(result.error ?? "Couldn't resolve the dispute.");
-      }
+  // Both outcomes record the same resolution note; only "resolved" credits the
+  // agent's reputation (handled in the action). Returns a submit handler so the
+  // textarea is validated before either decision is recorded.
+  const submit = (outcome: "resolved" | "rejected") =>
+    form.handleSubmit((data) => {
+      startTransition(async () => {
+        const result = await resolveDispute(disputeId, data.resolution, outcome);
+        if (result.ok) {
+          toast.success(
+            outcome === "resolved" ? "Dispute resolved." : "Dispute rejected.",
+          );
+          form.reset();
+          setOpen(false);
+          router.refresh();
+        } else {
+          toast.error(result.error ?? "Couldn't update the dispute.");
+        }
+      });
     });
-  };
 
   return (
     <Dialog
@@ -217,17 +248,13 @@ export function ResolveDisputeButton({
           <DialogDescription>
             Record how this dispute on{" "}
             <span className="font-medium text-foreground">{taskTitle}</span> was
-            settled. The note is attached to the case and the agent&apos;s
-            reputation is adjusted.
+            settled. The note is shared with both parties. Resolving credits the
+            agent&apos;s reputation; rejecting the claim leaves it unchanged.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            noValidate
-            className="space-y-4"
-          >
+          <form onSubmit={submit("resolved")} noValidate className="space-y-4">
             <FormField
               control={form.control}
               name="resolution"
@@ -254,11 +281,20 @@ export function ResolveDisputeButton({
               <DialogClose render={<Button variant="ghost" type="button" />}>
                 Cancel
               </DialogClose>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isPending}
+                onClick={submit("rejected")}
+              >
+                <XCircle className="size-4" />
+                Reject claim
+              </Button>
               <Button type="submit" disabled={isPending}>
                 {isPending ? (
                   <>
                     <Loader2 className="size-4 animate-spin" />
-                    Resolving…
+                    Saving…
                   </>
                 ) : (
                   <>

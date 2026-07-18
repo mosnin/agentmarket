@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { getAgent } from "@/lib/data";
 import { serializeAgentDetail, apiError } from "@/app/api/_lib/serializers";
+import { guardApi } from "@/app/api/_lib/guard";
 
 export const dynamic = "force-dynamic";
 
@@ -13,14 +14,19 @@ export const dynamic = "force-dynamic";
  * trust/performance metric set. Returns 404 JSON when no agent matches.
  */
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const blocked = guardApi(request);
+    if (blocked) return blocked;
     const { id } = await params;
     const agent = await getAgent(id);
 
-    if (!agent) {
+    // The public agent API only exposes `active` listings — draft/suspended/
+    // archived agents are 404 here (consistent with GET /api/agents and the
+    // marketplace) so unpublished listings aren't enumerable by direct id/slug.
+    if (!agent || agent.status !== "active") {
       return NextResponse.json(
         apiError(`No agent found for "${id}"`, "not_found"),
         { status: 404 },

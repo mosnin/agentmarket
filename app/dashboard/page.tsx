@@ -5,7 +5,6 @@ import {
   ArrowRight,
   Banknote,
   Bot,
-  CheckCircle2,
   CircleDollarSign,
   FilePlus2,
   Gauge,
@@ -17,7 +16,8 @@ import {
 } from "lucide-react";
 
 import { getDashboardData } from "@/lib/data";
-import { cn, formatCurrency, formatRelativeTime } from "@/lib/utils";
+import { cn, formatCurrency, pluralize } from "@/lib/utils";
+import { isTaskOverdue, isTaskDueSoon } from "@/lib/tasks";
 import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
@@ -30,6 +30,7 @@ import {
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
+import { RelativeTime } from "@/components/shared/relative-time";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { DashboardChart } from "@/components/dashboard/dashboard-chart";
 import { TaskStatusBadge } from "@/components/tasks/task-status-badge";
@@ -48,6 +49,7 @@ export const metadata: Metadata = {
   title: "Dashboard — Agent Market",
   description:
     "Your marketplace activity at a glance: spend, earnings, active tasks, owned agents, reputation trends and the latest payments.",
+  robots: { index: false },
 };
 
 type DashboardData = Awaited<ReturnType<typeof getDashboardData>>;
@@ -168,7 +170,6 @@ function ActiveTasksSection({ tasks }: { tasks: DashboardData["activeTasksList"]
     <SectionCard
       title="Active tasks"
       icon={ListChecks}
-      action={tasks.length > 0 ? <ViewAllLink href="/seller" /> : undefined}
     >
       {tasks.length === 0 ? (
         <EmptyState
@@ -214,6 +215,17 @@ function ActiveTasksSection({ tasks }: { tasks: DashboardData["activeTasksList"]
                     <span className="tabular-nums">
                       {formatCurrency(task.budget, task.currency)}
                     </span>
+                    {isTaskOverdue(task.deadline, task.status) ? (
+                      <>
+                        <span aria-hidden="true">·</span>
+                        <span className="font-medium text-destructive">Overdue</span>
+                      </>
+                    ) : isTaskDueSoon(task.deadline, task.status) ? (
+                      <>
+                        <span aria-hidden="true">·</span>
+                        <span className="font-medium text-warning">Due soon</span>
+                      </>
+                    ) : null}
                   </p>
                 </div>
                 <TaskStatusBadge status={task.status} />
@@ -262,8 +274,8 @@ function RecentPaymentsSection({
                     className={cn(
                       "flex size-9 shrink-0 items-center justify-center rounded-lg ring-1",
                       isSpend
-                        ? "bg-rose-500/10 text-rose-400 ring-rose-500/20"
-                        : "bg-emerald-500/10 text-emerald-400 ring-emerald-500/20",
+                        ? "bg-destructive/10 text-destructive ring-destructive/20"
+                        : "bg-success/10 text-success ring-success/20",
                     )}
                   >
                     <CircleDollarSign className="size-4" aria-hidden="true" />
@@ -275,14 +287,14 @@ function RecentPaymentsSection({
                     <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
                       <span>{isSpend ? "Spend" : "Earned"}</span>
                       <span aria-hidden="true">·</span>
-                      <span>{formatRelativeTime(payment.createdAt)}</span>
+                      <RelativeTime date={payment.createdAt} />
                     </p>
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-1">
                     <span
                       className={cn(
                         "text-sm font-semibold tabular-nums",
-                        isSpend ? "text-foreground" : "text-emerald-400",
+                        isSpend ? "text-foreground" : "text-success",
                       )}
                     >
                       {isSpend ? "−" : "+"}
@@ -342,7 +354,7 @@ function MarketplaceActivitySection({
                   <p className="mt-0.5 flex items-center gap-1.5 truncate text-xs text-muted-foreground">
                     <span className="truncate">{task.category}</span>
                     <span aria-hidden="true">·</span>
-                    <span>{formatRelativeTime(task.createdAt)}</span>
+                    <RelativeTime date={task.createdAt} />
                   </p>
                 </div>
                 <TaskStatusBadge status={task.status} />
@@ -388,8 +400,8 @@ function ReputationChangesSection({
                   className={cn(
                     "mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg ring-1",
                     positive
-                      ? "bg-emerald-500/10 text-emerald-400 ring-emerald-500/20"
-                      : "bg-rose-500/10 text-rose-400 ring-rose-500/20",
+                      ? "bg-success/10 text-success ring-success/20"
+                      : "bg-destructive/10 text-destructive ring-destructive/20",
                   )}
                 >
                   <Icon className="size-4" aria-hidden="true" />
@@ -402,7 +414,7 @@ function ReputationChangesSection({
                     <span
                       className={cn(
                         "shrink-0 text-sm font-semibold tabular-nums",
-                        positive ? "text-emerald-400" : "text-rose-400",
+                        positive ? "text-success" : "text-destructive",
                       )}
                     >
                       {positive ? "+" : ""}
@@ -412,7 +424,7 @@ function ReputationChangesSection({
                   <p className="mt-0.5 truncate text-xs text-muted-foreground">
                     <span className="text-foreground/80">{event.agent.name}</span>
                     <span aria-hidden="true"> · </span>
-                    {formatRelativeTime(event.createdAt)}
+                    <RelativeTime date={event.createdAt} />
                   </p>
                 </div>
               </li>
@@ -472,7 +484,7 @@ function OwnedAgentsSection({ agents }: { agents: DashboardData["ownedAgents"] }
                     <span aria-hidden="true">·</span>
                     <span className="tabular-nums">
                       {agent._count.tasks}{" "}
-                      {agent._count.tasks === 1 ? "task" : "tasks"}
+                      {pluralize(agent._count.tasks, "task")}
                     </span>
                   </p>
                 </div>
@@ -526,43 +538,31 @@ export default async function DashboardPage() {
           <MetricCard
             label="Total spend"
             value={formatCurrency(cards.totalSpend)}
-            icon={CircleDollarSign}
-            accent="text-rose-400"
             hint="Released across your tasks"
           />
           <MetricCard
             label="Total earnings"
             value={formatCurrency(cards.totalEarnings)}
-            icon={Banknote}
-            accent="text-emerald-400"
             hint="Paid out to your agents"
           />
           <MetricCard
             label="Active tasks"
             value={cards.activeTasks}
-            icon={ListChecks}
-            accent="text-sky-400"
             hint="In flight right now"
           />
           <MetricCard
             label="Agents owned"
             value={cards.agentsOwned}
-            icon={Bot}
-            accent="text-violet-400"
             hint="Listed by your org"
           />
           <MetricCard
             label="Avg. reputation"
             value={cards.averageReputation}
-            icon={Gauge}
-            accent="text-amber-400"
             hint="Blended across your fleet"
           />
           <MetricCard
             label="Tasks completed"
             value={cards.tasksCompleted}
-            icon={CheckCircle2}
-            accent="text-brand"
             hint="Settled successfully"
           />
         </div>

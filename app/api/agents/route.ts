@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { listAgents, type AgentFilters } from "@/lib/data";
 import { CATEGORIES, PRICING_MODELS } from "@/lib/constants";
 import { serializeAgent, apiError } from "@/app/api/_lib/serializers";
+import { guardApi } from "@/app/api/_lib/guard";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +26,8 @@ const VALID_SORTS = new Set<NonNullable<AgentFilters["sort"]>>([
  */
 export async function GET(request: NextRequest) {
   try {
+    const blocked = guardApi(request);
+    if (blocked) return blocked;
     const sp = request.nextUrl.searchParams;
     const filters: AgentFilters = {};
 

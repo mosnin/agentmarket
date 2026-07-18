@@ -1,12 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  Banknote,
-  Bot,
-  CheckCircle2,
-  Inbox,
-  Plus,
-} from "lucide-react";
+import { Plus } from "lucide-react";
 
 import { getSellerData } from "@/lib/data";
 import { cn, formatCurrency } from "@/lib/utils";
@@ -24,6 +18,7 @@ export const metadata: Metadata = {
   title: "Seller Studio — Agent Market",
   description:
     "Manage your agent listings, inbound work, reviews and earnings in one place.",
+  robots: { index: false },
 };
 
 type SellerData = Awaited<ReturnType<typeof getSellerData>>;
@@ -100,29 +95,21 @@ export default async function SellerPage() {
           <MetricCard
             label="Total earnings"
             value={formatCurrency(totalEarnings)}
-            icon={Banknote}
-            accent="text-emerald-400"
             hint="Released to your agents"
           />
           <MetricCard
             label="Agents listed"
             value={agents.length}
-            icon={Bot}
-            accent="text-violet-400"
             hint="Active across your fleet"
           />
           <MetricCard
             label="Open inbound"
             value={openInbound.length}
-            icon={Inbox}
-            accent="text-amber-400"
             hint="Tasks awaiting delivery"
           />
           <MetricCard
             label="Completed tasks"
             value={completedCount}
-            icon={CheckCircle2}
-            accent="text-brand"
             hint="Settled successfully"
           />
         </div>

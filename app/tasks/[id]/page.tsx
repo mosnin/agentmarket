@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 
 import { getTask } from "@/lib/data";
-import { getCurrentUser } from "@/lib/auth";
+import { getOptionalUser } from "@/lib/auth";
 import {
   CATEGORY_META,
   DISPUTE_STATUS_META,
@@ -40,9 +40,9 @@ import {
   formatCurrency,
   formatDate,
   formatDateTime,
-  formatRelativeTime,
   initials,
 } from "@/lib/utils";
+import { isTaskOverdue, isTaskDueSoon } from "@/lib/tasks";
 
 import { buttonVariants } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -59,6 +59,8 @@ import { TaskStatusBadge } from "@/components/tasks/task-status-badge";
 import { PaymentStatusBadge } from "@/components/tasks/payment-status-badge";
 import { TaskTimeline } from "@/components/tasks/task-timeline";
 import { TaskContractPreview } from "@/components/tasks/task-contract-preview";
+import { CopyButton } from "@/components/shared/copy-button";
+import { RelativeTime } from "@/components/shared/relative-time";
 import { ArtifactCard } from "@/components/tasks/artifact-card";
 import { ReviewCard } from "@/components/tasks/review-card";
 
@@ -78,9 +80,14 @@ export async function generateMetadata({
   if (!task) {
     return { title: "Task not found — Agent Market" };
   }
+  const title = `${task.title} — Agent Market`;
+  const description = task.objective.slice(0, 160);
   return {
-    title: `${task.title} — Agent Market`,
-    description: task.objective.slice(0, 160),
+    title,
+    description,
+    alternates: { canonical: `/tasks/${task.id}` },
+    openGraph: { title, description, type: "article", siteName: "Agent Market" },
+    twitter: { card: "summary_large_image", title, description },
   };
 }
 
@@ -102,9 +109,24 @@ export default async function TaskDetailPage({
   params: Promise<Params>;
 }) {
   const { id } = await params;
-  const [task, currentUser] = await Promise.all([getTask(id), getCurrentUser()]);
+  const [task, currentUser] = await Promise.all([getTask(id), getOptionalUser()]);
 
   if (!task) {
+    notFound();
+  }
+
+  // Object-level authorization: a `private` task is visible only to its
+  // participants (buyer, the assigned seller agent's owner) or an admin.
+  // `public`/`unlisted` remain link-viewable. Without this, anyone holding the
+  // task id could read a private task's brief, buyer, contract, and artifacts.
+  const viewerId = currentUser?.id ?? null;
+  const viewerIsAdmin = currentUser?.role === "admin";
+  const viewerIsParticipant =
+    viewerIsAdmin ||
+    (viewerId !== null &&
+      (task.buyerId === viewerId ||
+        task.sellerAgent?.owner?.id === viewerId));
+  if (task.visibility === "private" && !viewerIsParticipant) {
     notFound();
   }
 
@@ -112,7 +134,7 @@ export default async function TaskDetailPage({
   const sellerAgent = task.sellerAgent;
   const payment = task.payment;
   const buyerName = task.buyer.name?.trim() || task.buyer.email || "Unknown buyer";
-  const isOwnTask = task.buyerId === currentUser.id;
+  const isOwnTask = task.buyerId === viewerId;
 
   const hasReview = task.reviews.length > 0;
   const hasArtifact = task.artifacts.length > 0;
@@ -120,7 +142,13 @@ export default async function TaskDetailPage({
   const latestValidationStatus =
     (task.artifacts[0]?.validationStatus as ValidationStatusValue | undefined) ??
     null;
+  const latestValidationScore = task.artifacts[0]?.validationScore ?? null;
   const openDisputes = task.disputes.filter((d) => d.status === "open");
+
+  // Flag a blown deadline so it reads at a glance (shared with the task lists),
+  // and a proactive "due soon" the day before.
+  const isOverdue = isTaskOverdue(task.deadline, task.status);
+  const isDueSoon = !isOverdue && isTaskDueSoon(task.deadline, task.status);
 
   const paymentMode = (payment?.mode ?? task.contract?.paymentMode) as
     | PaymentModeValue
@@ -149,9 +177,17 @@ export default async function TaskDetailPage({
             Tasks
           </Link>
           <ChevronRight className="size-3.5 shrink-0 opacity-60" aria-hidden />
-          <span className="truncate font-medium text-foreground">
+          <span
+            aria-current="page"
+            className="truncate font-medium text-foreground"
+          >
             {task.title}
           </span>
+          <CopyButton
+            value={`https://agentmarket.dev/tasks/${task.id}`}
+            label="Copy link"
+            className="ml-auto shrink-0"
+          />
         </nav>
 
         {/* Header */}
@@ -177,12 +213,19 @@ export default async function TaskDetailPage({
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <CalendarClock className="size-3.5 shrink-0" aria-hidden />
-                Created {formatRelativeTime(task.createdAt)}
+                Created <RelativeTime date={task.createdAt} />
               </span>
               {task.deadline ? (
-                <span className="inline-flex items-center gap-1.5">
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1.5",
+                    isOverdue && "font-medium text-destructive",
+                    isDueSoon && "font-medium text-warning",
+                  )}
+                >
                   <Target className="size-3.5 shrink-0" aria-hidden />
-                  Due {formatDate(task.deadline)}
+                  {isOverdue ? "Overdue —" : isDueSoon ? "Due soon —" : "Due"}{" "}
+                  <RelativeTime date={task.deadline} />
                 </span>
               ) : null}
             </span>
@@ -202,22 +245,22 @@ export default async function TaskDetailPage({
 
         {/* Dispute banner */}
         {openDisputes.length > 0 ? (
-          <div className="flex items-start gap-3 rounded-xl border border-rose-500/30 bg-rose-500/5 p-4">
+          <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4">
             <ShieldAlert
-              className="mt-0.5 size-5 shrink-0 text-rose-400"
+              className="mt-0.5 size-5 shrink-0 text-destructive"
               aria-hidden
             />
             <div className="min-w-0">
-              <p className="text-sm font-medium text-rose-300">
+              <p className="text-sm font-medium text-destructive">
                 {openDisputes.length === 1
                   ? "A dispute is open on this task"
                   : `${openDisputes.length} disputes are open on this task`}
               </p>
-              <p className="mt-0.5 text-sm leading-relaxed text-rose-300/80">
+              <p className="mt-0.5 text-sm leading-relaxed text-destructive/80">
                 {openDisputes[0]?.reason}
               </p>
-              <p className="mt-1 text-xs text-rose-300/60">
-                Opened {formatRelativeTime(openDisputes[0]!.createdAt)} ·
+              <p className="mt-1 text-xs text-destructive/60">
+                Opened <RelativeTime date={openDisputes[0]!.createdAt} /> ·
                 Awaiting admin review.
               </p>
             </div>
@@ -475,6 +518,7 @@ export default async function TaskDetailPage({
                 hasReview,
                 hasArtifact,
                 latestValidationStatus,
+                latestValidationScore,
               }}
             />
 
@@ -537,6 +581,9 @@ export default async function TaskDetailPage({
                     <code className="block w-full overflow-x-auto rounded-lg border border-border bg-background px-2.5 py-1.5 font-mono text-xs text-muted-foreground no-scrollbar">
                       {payment.transactionHash}
                     </code>
+                    <div className="mt-1.5 flex justify-end">
+                      <CopyButton value={payment.transactionHash} label="Copy hash" />
+                    </div>
                   </div>
                 ) : null}
 
@@ -754,7 +801,7 @@ function ValidationRules({ rules }: { rules: unknown }) {
   }
 
   if (hasJson(rules)) {
-    return <JsonViewer data={rules} title="validation_rules" />;
+    return <JsonViewer data={rules} title="validation_rules" expandable />;
   }
 
   return <InlineEmpty label="No validation rules were defined for this task." />;
@@ -802,11 +849,11 @@ function DisputeRow({
         {dispute.reason}
       </p>
       {dispute.resolution ? (
-        <div className="mt-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3">
-          <p className="text-[11px] font-medium uppercase tracking-wide text-emerald-400">
+        <div className="mt-3 rounded-lg border border-success/20 bg-success/5 p-3">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-success">
             Resolution
           </p>
-          <p className="mt-0.5 text-sm leading-relaxed text-emerald-300/90">
+          <p className="mt-0.5 text-sm leading-relaxed text-success/90">
             {dispute.resolution}
           </p>
         </div>
@@ -841,8 +888,8 @@ function ReputationEventRow({
           neutral
             ? "bg-muted/50 text-muted-foreground"
             : positive
-              ? "bg-emerald-500/10 text-emerald-400"
-              : "bg-rose-500/10 text-rose-400",
+              ? "bg-success/10 text-success"
+              : "bg-destructive/10 text-destructive",
         )}
       >
         {positive ? "+" : ""}
@@ -854,7 +901,7 @@ function ReputationEventRow({
           {event.reason}
         </p>
         <p className="mt-1 text-[11px] text-muted-foreground/70">
-          {formatRelativeTime(event.createdAt)}
+          <RelativeTime date={event.createdAt} />
         </p>
       </div>
     </li>

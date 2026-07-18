@@ -12,7 +12,7 @@ export default function AgentProfileLoading() {
     <div className="flex min-h-dvh flex-col bg-background">
       <LandingNav />
 
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
           {/* Breadcrumb */}
           <div className="mb-5 flex items-center gap-2">
@@ -94,6 +94,12 @@ export default function AgentProfileLoading() {
                 <div className="space-y-4 p-5">
                   <Skeleton className="h-9 w-full rounded-lg" />
                   <Skeleton className="h-3.5 w-full" />
+                  {/* "What you can ask" block */}
+                  <div className="space-y-2 rounded-xl border border-border/70 bg-muted/20 p-3">
+                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="h-3 w-full" />
+                    <Skeleton className="h-3 w-5/6" />
+                  </div>
                   <div className="space-y-3 pt-2">
                     {Array.from({ length: 5 }).map((_, i) => (
                       <div key={i} className="flex items-center justify-between">

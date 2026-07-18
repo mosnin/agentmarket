@@ -50,10 +50,22 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Motion system — quiet, functional easing + durations (Apple/Stripe feel).
+     Easings generate `ease-out-quart` / `ease-spring` utilities; durations are
+     referenced via `duration-[var(--duration-fast)]`. Standard: interactive
+     feedback (hover/press) = fast; enter/exit (dropdown/modal) = base; larger
+     surface transitions = slow. All settle instantly under prefers-reduced-motion. */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
 }
 
 /* Light theme (dark is the default — see <html class="dark">) */
 :root {
+  color-scheme: light;
   --background: oklch(0.99 0.002 265);
   --foreground: oklch(0.18 0.01 265);
   --card: oklch(1 0 0);
@@ -94,6 +106,7 @@
 
 /* Dark theme — premium technical marketplace, high contrast */
 .dark {
+  color-scheme: dark;
   --background: oklch(0.155 0.012 265);
   --foreground: oklch(0.97 0.003 265);
   --card: oklch(0.195 0.013 265);
@@ -206,5 +219,19 @@
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+}
+
+/* Respect prefers-reduced-motion: near-instantly settle decorative animation +
+   transitions for motion-sensitive users. Essential text feedback (e.g. the
+   "Saving…" label beside a spinner) is unaffected. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

@@ -4,9 +4,11 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import {
   Code2,
+  FilePlus2,
   LayoutDashboard,
   Loader2,
   Package,
+  PackagePlus,
   Search,
   Store,
 } from "lucide-react";
@@ -65,6 +67,23 @@ const QUICK_NAV: QuickNavItem[] = [
   },
 ];
 
+// Primary actions — the verbs, surfaced first so the core jobs-to-be-done are a
+// keystroke away, not buried behind navigation.
+const ACTIONS: QuickNavItem[] = [
+  {
+    label: "Post a task",
+    href: "/tasks/new",
+    icon: FilePlus2,
+    hint: "Hire an agent",
+  },
+  {
+    label: "List an agent",
+    href: "/agents/new",
+    icon: PackagePlus,
+    hint: "Sell on the marketplace",
+  },
+];
+
 export function SearchCommand() {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
@@ -73,12 +92,41 @@ export function SearchCommand() {
   const [errored, setErrored] = React.useState(false);
   const hasFetched = React.useRef(false);
 
+  // Show the correct modifier for the user's platform. Default to ⌘ on the server
+  // + first paint (matches the design's primary audience and avoids a hydration
+  // mismatch), then correct to Ctrl on non-Apple platforms after mount.
+  const [isMac, setIsMac] = React.useState(true);
+  React.useEffect(() => {
+    const platform =
+      typeof navigator !== "undefined"
+        ? navigator.platform ||
+          (navigator as { userAgentData?: { platform?: string } }).userAgentData
+            ?.platform ||
+          ""
+        : "";
+    setIsMac(/mac|iphone|ipad|ipod/i.test(platform));
+  }, []);
+
   // ⌘K / Ctrl+K to open the palette anywhere on the page.
   React.useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setOpen((prev) => !prev);
+        return;
+      }
+      // "/" opens the palette — unless the user is typing into a field.
+      if (e.key === "/" && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        const el = e.target as HTMLElement | null;
+        const typing =
+          el?.tagName === "INPUT" ||
+          el?.tagName === "TEXTAREA" ||
+          el?.tagName === "SELECT" ||
+          el?.isContentEditable === true;
+        if (!typing) {
+          e.preventDefault();
+          setOpen(true);
+        }
       }
     };
     document.addEventListener("keydown", onKeyDown);
@@ -155,7 +203,7 @@ export function SearchCommand() {
         <Search className="size-4 shrink-0" />
         <span className="hidden flex-1 text-left sm:inline">Search agents…</span>
         <kbd className="ml-auto hidden items-center gap-0.5 rounded border border-border bg-background px-1.5 font-mono text-[10px] font-medium text-muted-foreground sm:inline-flex">
-          <span className="text-[11px]">⌘</span>K
+          {isMac ? <span className="text-[11px]">⌘</span> : <span>Ctrl</span>}K
         </kbd>
       </button>
 
@@ -175,6 +223,25 @@ export function SearchCommand() {
                   ? "Couldn't load agents. Try again."
                   : "No results found."}
             </CommandEmpty>
+
+            <CommandGroup heading="Actions">
+              {ACTIONS.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <CommandItem
+                    key={item.href}
+                    value={`${item.label} ${item.hint}`}
+                    onSelect={() => go(item.href)}
+                  >
+                    <Icon className="text-muted-foreground" />
+                    <span>{item.label}</span>
+                    <CommandShortcut>{item.hint}</CommandShortcut>
+                  </CommandItem>
+                );
+              })}
+            </CommandGroup>
+
+            <CommandSeparator />
 
             <CommandGroup heading="Go to">
               {QUICK_NAV.map((item) => {

@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { CopyButton } from "@/components/shared/copy-button";
 
 /**
  * Minimal, dependency-free JSON syntax highlighter for the API teaser.
@@ -74,6 +75,7 @@ export function ApiCodePanel({
   className,
 }: ApiCodePanelProps) {
   const json = JSON.stringify(body, null, 2);
+  const copyText = `${method} ${path}\n\n${json}`;
 
   return (
     <div
@@ -82,21 +84,17 @@ export function ApiCodePanel({
         className,
       )}
     >
-      {/* Window chrome */}
-      <div className="flex items-center gap-2 border-b border-border/80 bg-black/20 px-4 py-3">
-        <div className="flex gap-1.5" aria-hidden="true">
-          <span className="size-3 rounded-full bg-red-500/70" />
-          <span className="size-3 rounded-full bg-amber-500/70" />
-          <span className="size-3 rounded-full bg-emerald-500/70" />
-        </div>
-        <span className="ml-2 font-mono text-xs text-muted-foreground">
+      {/* Window chrome — filename + copy, no skeuomorphic traffic lights */}
+      <div className="flex items-center gap-2 border-b border-border/80 bg-black/20 px-4 py-2.5">
+        <span className="font-mono text-xs text-muted-foreground">
           api.agentmarket.dev
         </span>
+        <CopyButton value={copyText} label="Copy" className="ml-auto" />
       </div>
 
       {/* Request line */}
       <div className="flex items-center gap-2.5 border-b border-border/60 px-4 py-3 font-mono text-[13px]">
-        <span className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 text-xs font-semibold text-emerald-400">
+        <span className="rounded-md border border-success/30 bg-success/10 px-1.5 py-0.5 text-xs font-semibold text-success">
           {method}
         </span>
         <span className="truncate text-foreground">{path}</span>

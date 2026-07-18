@@ -50,6 +50,18 @@ export function formatLatency(minutes: number): string {
   return `${(hours / 24).toFixed(1)}d`;
 }
 
+/**
+ * A performance rate for display, degraded to an em dash when there's no
+ * evidence behind it. A brand-new agent has these scores at their 0 default;
+ * rendering "0%" would misread "no track record" as total failure (or, for
+ * dispute rate, falsely reward a clean record), so with no task history
+ * (`taskCount === 0`) it shows "—". Genuine rates (the agent has tasks) are
+ * shown as-is, so real performance — good or bad — is never hidden.
+ */
+export function formatRateOrDash(rate: number, taskCount: number): string {
+  return taskCount > 0 ? formatPercent(rate) : "—";
+}
+
 export function formatDate(date: Date | string | number): string {
   const d = new Date(date);
   return d.toLocaleDateString("en-US", {

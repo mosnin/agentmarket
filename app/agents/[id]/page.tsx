@@ -24,7 +24,8 @@ import {
   Target,
 } from "lucide-react";
 
-import { getAgent } from "@/lib/data";
+import { getAgent, getRelatedAgents } from "@/lib/data";
+import { getOptionalUser } from "@/lib/auth";
 import {
   CATEGORY_META,
   PAYMENT_MODE_META,
@@ -37,13 +38,16 @@ import { getAgentCard } from "@/lib/interop/a2aAdapter";
 import { listToolsForAgent, validateMcpServer } from "@/lib/interop/mcpAdapter";
 import {
   cn,
+  formatRateOrDash,
   formatCurrency,
   formatLatency,
   formatNumber,
-  formatPercent,
   formatRating,
-  formatRelativeTime,
+  pluralize,
 } from "@/lib/utils";
+import { formatAgentPrice } from "@/lib/pricing";
+import { RelativeTime } from "@/components/shared/relative-time";
+import { CopyButton } from "@/components/shared/copy-button";
 import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
@@ -52,6 +56,7 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { EmptyState } from "@/components/shared/empty-state";
 import { JsonViewer } from "@/components/shared/json-viewer";
 import { AgentProfileHeader } from "@/components/agents/agent-profile-header";
+import { AgentCard } from "@/components/agents/agent-card";
 import { CapabilityBadge } from "@/components/agents/capability-badge";
 import { ReputationScore } from "@/components/agents/reputation-score";
 import { TaskStatusBadge } from "@/components/tasks/task-status-badge";
@@ -74,9 +79,22 @@ export async function generateMetadata({
   if (!agent) {
     return { title: "Agent not found — Agent Market" };
   }
+  const title = `${agent.name} — Agent Market`;
   return {
-    title: `${agent.name} — Agent Market`,
+    title,
     description: agent.shortDescription,
+    alternates: { canonical: `/agents/${agent.slug}` },
+    openGraph: {
+      title,
+      description: agent.shortDescription,
+      type: "profile",
+      siteName: "Agent Market",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description: agent.shortDescription,
+    },
   };
 }
 
@@ -170,11 +188,11 @@ function MetricTile({
 }) {
   const toneText =
     tone === "good"
-      ? "text-emerald-400"
+      ? "text-success"
       : tone === "warn"
-        ? "text-amber-400"
+        ? "text-warning"
         : tone === "bad"
-          ? "text-rose-400"
+          ? "text-destructive"
           : "text-foreground";
 
   return (
@@ -207,7 +225,7 @@ function TrustRow({
       <span className="flex items-center gap-2.5 text-sm text-muted-foreground">
         <span
           className={cn(
-            tone === "good" ? "text-emerald-400" : "text-muted-foreground",
+            tone === "good" ? "text-success" : "text-muted-foreground",
           )}
         >
           {icon}
@@ -227,9 +245,18 @@ export default async function AgentProfilePage({
   params: Promise<Params>;
 }) {
   const { id } = await params;
-  const agent = await getAgent(id);
+  const [agent, currentUser] = await Promise.all([getAgent(id), getOptionalUser()]);
 
   if (!agent) {
+    notFound();
+  }
+
+  const isOwner = agent.ownerId === currentUser?.id;
+
+  // Only `active` listings are public. A non-active agent (draft/suspended/
+  // archived) is visible only to its owner or an admin — otherwise a moderated
+  // or unpublished listing would still render at its direct link.
+  if (agent.status !== "active" && !isOwner && currentUser?.role !== "admin") {
     notFound();
   }
 
@@ -237,11 +264,7 @@ export default async function AgentProfilePage({
   const pricingMeta = PRICING_MODEL_META[agent.pricingModel as PricingModelValue];
   const capabilityNames = agent.capabilities.map((c) => c.capability.name);
 
-  const priceLabel =
-    agent.pricingModel === "free"
-      ? "Free"
-      : formatCurrency(agent.startingPrice, agent.currency);
-  const priceSuffix = agent.pricingModel === "free" ? "" : (pricingMeta?.suffix ?? "");
+  const { value: priceLabel, suffix: priceSuffix } = formatAgentPrice(agent);
 
   // Interop payloads (mock adapters).
   const mcpTools = listToolsForAgent({
@@ -355,7 +378,14 @@ export default async function AgentProfilePage({
       >
         <dl className="divide-y divide-border/60">
           <KeyValueRow label="A2A agent id" mono>
-            {agentCard.agent_id}
+            <span className="inline-flex items-center gap-2 sm:justify-end">
+              <span className="break-all">{agentCard.agent_id}</span>
+              <CopyButton
+                value={agentCard.agent_id}
+                label="Copy"
+                className="shrink-0 font-sans"
+              />
+            </span>
           </KeyValueRow>
           <KeyValueRow label="Endpoint URL" mono>
             {agent.endpointUrl ? (
@@ -367,6 +397,7 @@ export default async function AgentProfilePage({
               >
                 <Globe className="size-3.5" aria-hidden="true" />
                 {agent.endpointUrl}
+                <span className="sr-only"> (opens in a new tab)</span>
               </Link>
             ) : (
               <span className="text-muted-foreground">Not published</span>
@@ -382,6 +413,7 @@ export default async function AgentProfilePage({
               >
                 <Server className="size-3.5" aria-hidden="true" />
                 {agent.mcpServerUrl}
+                <span className="sr-only"> (opens in a new tab)</span>
               </Link>
             ) : (
               <span className="text-muted-foreground">Not published</span>
@@ -392,7 +424,7 @@ export default async function AgentProfilePage({
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium",
                 mcpValidation.ok
-                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+                  ? "border-success/30 bg-success/10 text-success"
                   : "border-zinc-500/30 bg-zinc-500/10 text-zinc-400",
               )}
               title={mcpValidation.message}
@@ -400,7 +432,7 @@ export default async function AgentProfilePage({
               <span
                 className={cn(
                   "size-1.5 rounded-full",
-                  mcpValidation.ok ? "bg-emerald-400" : "bg-zinc-400",
+                  mcpValidation.ok ? "bg-success" : "bg-zinc-400",
                 )}
                 aria-hidden="true"
               />
@@ -422,7 +454,7 @@ export default async function AgentProfilePage({
         icon={<Layers className="size-4.5" />}
         description={
           capabilityNames.length > 0
-            ? `${capabilityNames.length} declared ${capabilityNames.length === 1 ? "capability" : "capabilities"} this agent can be hired for.`
+            ? `${capabilityNames.length} declared ${pluralize(capabilityNames.length, "capability", "capabilities")} this agent can be hired for.`
             : "This agent has not declared any capabilities yet."
         }
       >
@@ -452,7 +484,7 @@ export default async function AgentProfilePage({
         action={
           <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-2.5 py-1 text-xs font-medium text-muted-foreground">
             <Code2 className="size-3.5" aria-hidden="true" />
-            {mcpTools.length} {mcpTools.length === 1 ? "tool" : "tools"}
+            {mcpTools.length} {pluralize(mcpTools.length, "tool")}
           </span>
         }
       >
@@ -499,7 +531,7 @@ export default async function AgentProfilePage({
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
           <MetricTile
             label="Completion rate"
-            value={formatPercent(agent.completionRate)}
+            value={formatRateOrDash(agent.completionRate, agent._count.tasks)}
             icon={<Target className="size-4" />}
             tone={agent.completionRate >= 90 ? "good" : "default"}
             hint="Tasks delivered vs. accepted"
@@ -524,14 +556,22 @@ export default async function AgentProfilePage({
           />
           <MetricTile
             label="Dispute rate"
-            value={formatPercent(agent.disputeRate)}
+            value={formatRateOrDash(agent.disputeRate, agent._count.tasks)}
             icon={<ShieldAlert className="size-4" />}
-            tone={agent.disputeRate <= 5 ? "good" : agent.disputeRate <= 15 ? "warn" : "bad"}
+            tone={
+              agent._count.tasks === 0
+                ? "default"
+                : agent.disputeRate <= 5
+                  ? "good"
+                  : agent.disputeRate <= 15
+                    ? "warn"
+                    : "bad"
+            }
             hint="Tasks ending in dispute"
           />
           <MetricTile
             label="Schema compliance"
-            value={formatPercent(agent.schemaComplianceScore)}
+            value={formatRateOrDash(agent.schemaComplianceScore, agent._count.tasks)}
             icon={<FileCode2 className="size-4" />}
             tone={agent.schemaComplianceScore >= 90 ? "good" : "default"}
             hint="Outputs matching contract schema"
@@ -571,7 +611,7 @@ export default async function AgentProfilePage({
                     </p>
                     <p className="mt-0.5 truncate text-xs text-muted-foreground">
                       {formatCurrency(task.budget, task.currency)} ·{" "}
-                      {formatRelativeTime(task.createdAt)}
+                      <RelativeTime date={task.createdAt} />
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-3">
@@ -602,13 +642,13 @@ export default async function AgentProfilePage({
       icon={<MessageSquareQuote className="size-4.5" />}
       description={
         agent._count.reviews > 0
-          ? `${formatNumber(agent._count.reviews)} ${agent._count.reviews === 1 ? "review" : "reviews"} · ${formatRating(agent.averageRating)} average rating`
+          ? `${formatNumber(agent._count.reviews)} ${pluralize(agent._count.reviews, "review")} · ${formatRating(agent.averageRating)} average rating`
           : "Verified feedback from agents that have hired this agent."
       }
       action={
         agent.averageRating > 0 ? (
           <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-2.5 py-1 text-sm font-medium text-foreground">
-            <Star className="size-4 fill-amber-400 text-amber-400" aria-hidden="true" />
+            <Star className="size-4 fill-warning text-warning" aria-hidden="true" />
             {formatRating(agent.averageRating)}
           </span>
         ) : undefined
@@ -693,7 +733,7 @@ export default async function AgentProfilePage({
         icon={<FileJson2 className="size-4.5" />}
         description="The agent-to-agent discovery card other agents fetch to evaluate and invoke this agent programmatically."
       >
-        <JsonViewer data={agentCard} title="GET /.well-known/agent-card.json" />
+        <JsonViewer data={agentCard} title="GET /.well-known/agent-card.json" expandable />
       </SectionCard>
 
       <div className="grid gap-5 lg:grid-cols-2">
@@ -703,7 +743,7 @@ export default async function AgentProfilePage({
           description="JSON Schema the agent expects as task input."
         >
           {hasInputSchema ? (
-            <JsonViewer data={agent.inputSchema} title="input_schema" />
+            <JsonViewer data={agent.inputSchema} title="input_schema" expandable />
           ) : (
             <EmptyState
               icon={FileCode2}
@@ -719,7 +759,7 @@ export default async function AgentProfilePage({
           description="JSON Schema outputs are validated against."
         >
           {hasOutputSchema ? (
-            <JsonViewer data={agent.outputSchema} title="output_schema" />
+            <JsonViewer data={agent.outputSchema} title="output_schema" expandable />
           ) : (
             <EmptyState
               icon={FileCode2}
@@ -809,6 +849,31 @@ export default async function AgentProfilePage({
             passes contract validation.
           </p>
 
+          {capabilityNames.length > 0 ? (
+            <div className="mt-4 rounded-xl border border-border/70 bg-muted/20 p-3">
+              <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+                What you can ask
+              </p>
+              <ul className="mt-2 space-y-0.5">
+                {capabilityNames.slice(0, 3).map((name) => (
+                  <li key={name}>
+                    <Link
+                      href={`/tasks/new?agent=${agent.id}&objective=${encodeURIComponent(name)}`}
+                      className="group/ask -mx-1.5 flex items-start gap-2 rounded-md px-1.5 py-1 text-xs leading-snug text-foreground transition-colors hover:bg-muted/50"
+                    >
+                      <span
+                        className="bg-brand mt-1.5 size-1 shrink-0 rounded-full"
+                        aria-hidden="true"
+                      />
+                      <span className="flex-1">{name}</span>
+                      <ArrowRight className="mt-0.5 size-3 shrink-0 -translate-x-1 text-muted-foreground opacity-0 transition group-hover/ask:translate-x-0 group-hover/ask:opacity-100" />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
           <Separator className="my-4" />
 
           <ul className="divide-y divide-border/60">
@@ -832,7 +897,7 @@ export default async function AgentProfilePage({
             <TrustRow
               icon={<Target className="size-4" aria-hidden="true" />}
               label="Completion"
-              value={formatPercent(agent.completionRate)}
+              value={formatRateOrDash(agent.completionRate, agent._count.tasks)}
             />
             <TrustRow
               icon={<Clock className="size-4" aria-hidden="true" />}
@@ -876,11 +941,48 @@ export default async function AgentProfilePage({
     </aside>
   );
 
+  const related = await getRelatedAgents(agent.category, agent.id, 3);
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: agent.name,
+    description: agent.shortDescription,
+    category: agent.category,
+    ...(agent.startingPrice > 0
+      ? {
+          offers: {
+            "@type": "Offer",
+            price: agent.startingPrice,
+            priceCurrency: agent.currency,
+            availability: "https://schema.org/InStock",
+          },
+        }
+      : {}),
+    ...(agent.averageRating > 0 && agent._count.reviews > 0
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: agent.averageRating,
+            reviewCount: agent._count.reviews,
+            bestRating: 5,
+            worstRating: 1,
+          },
+        }
+      : {}),
+  };
+
   return (
     <div className="flex min-h-dvh flex-col bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
       <LandingNav />
 
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
           {/* Breadcrumb */}
           <nav
@@ -898,10 +1000,17 @@ export default async function AgentProfilePage({
               {agent.category}
             </Link>
             <span aria-hidden="true">/</span>
-            <span className="truncate font-medium text-foreground">{agent.name}</span>
+            <span aria-current="page" className="truncate font-medium text-foreground">
+              {agent.name}
+            </span>
+            <CopyButton
+              value={`https://agentmarket.dev/agents/${agent.slug}`}
+              label="Copy link"
+              className="ml-auto shrink-0"
+            />
           </nav>
 
-          <AgentProfileHeader agent={agent} />
+          <AgentProfileHeader agent={agent} canEdit={isOwner} />
 
           {/* Two-column responsive layout */}
           <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
@@ -910,6 +1019,27 @@ export default async function AgentProfilePage({
             </div>
             {aside}
           </div>
+
+          {related.length > 0 ? (
+            <section className="mt-12">
+              <div className="mb-5 flex items-end justify-between gap-4">
+                <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                  More in {agent.category}
+                </h2>
+                <Link
+                  href={`/marketplace?category=${encodeURIComponent(agent.category)}`}
+                  className="text-sm font-medium text-brand transition-colors hover:text-foreground"
+                >
+                  View all
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {related.map((a) => (
+                  <AgentCard key={a.id} agent={a} />
+                ))}
+              </div>
+            </section>
+          ) : null}
         </div>
       </main>
 

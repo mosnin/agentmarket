@@ -1,10 +1,11 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { AlertTriangle, RotateCcw } from "lucide-react";
 
 import { AppShell } from "@/components/layout/app-shell";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 
 /**
  * Error boundary for /admin. A failed moderation-data read renders an on-brand
@@ -40,6 +41,9 @@ export default function AdminError({
               <RotateCcw aria-hidden="true" />
               Try again
             </Button>
+            <Link href="/marketplace" className={buttonVariants({ variant: "outline" })}>
+              Back to marketplace
+            </Link>
           </div>
         </div>
       </div>

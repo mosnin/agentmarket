@@ -6,9 +6,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
   BadgeCheck,
+  Ban,
   CheckCircle2,
   CircleDollarSign,
   FlagTriangleRight,
@@ -30,6 +32,7 @@ import {
   completeTask,
   createReview,
   openDispute,
+  cancelTask,
 } from "@/lib/actions";
 import {
   submitArtifactSchema,
@@ -76,6 +79,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { StarPicker } from "@/components/tasks/star-picker";
 
 /** Resolver *input* shape for the review form (rating is coerced to a number). */
 type ReviewFormInput = z.input<typeof reviewSchema>;
@@ -88,6 +92,8 @@ export interface TaskActionsProps {
     hasArtifact: boolean;
     /** Validation status of the most recently submitted artifact, if any. */
     latestValidationStatus: ValidationStatusValue | null;
+    /** Score (0–100) of the most recently submitted artifact, if validated. */
+    latestValidationScore: number | null;
   };
 }
 
@@ -137,6 +143,7 @@ export function TaskActions({ task }: TaskActionsProps) {
   const [submitOpen, setSubmitOpen] = React.useState(false);
   const [reviewOpen, setReviewOpen] = React.useState(false);
   const [disputeOpen, setDisputeOpen] = React.useState(false);
+  const [cancelOpen, setCancelOpen] = React.useState(false);
 
   const status = task.status;
   const validationFailed =
@@ -158,6 +165,11 @@ export function TaskActions({ task }: TaskActionsProps) {
     status === "submitted" ||
     status === "validating" ||
     status === "completed";
+
+  // Cancelling is sensible while the task is in flight, before a deliverable
+  // exists — the escrow is refunded to the buyer.
+  const canCancel =
+    status === "pending" || status === "accepted" || status === "running";
 
   const runSimpleAction = (
     action: () => Promise<{ ok: boolean; error?: string }>,
@@ -295,20 +307,31 @@ export function TaskActions({ task }: TaskActionsProps) {
                   <ArrowRight className="size-4 opacity-80" />
                 </Button>
               </SubmitArtifactDialog>
-              <div className="flex items-center gap-2 rounded-lg border border-rose-500/20 bg-rose-500/5 px-3 py-2.5 text-xs text-rose-300">
+              <div className="flex items-center gap-2 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2.5 text-xs text-destructive">
                 <ScanSearch className="size-4 shrink-0" aria-hidden />
-                Validation didn&apos;t pass. Payment stays escrowed until a
-                resubmitted artifact clears validation.
+                {task.latestValidationScore != null
+                  ? `Scored ${task.latestValidationScore}/100 — below the ${VALIDATION_PASS_THRESHOLD} bar. Payment stays escrowed until a resubmitted artifact clears validation.`
+                  : "Validation didn't pass. Payment stays escrowed until a resubmitted artifact clears validation."}
               </div>
             </>
           ) : (
-            <PrimaryButton
-              onClick={handleComplete}
-              pending={isPending}
-              icon={CircleDollarSign}
-              label="Complete task & release payment"
-              pendingLabel="Releasing payment…"
-            />
+            <>
+              {task.latestValidationScore != null ? (
+                <div className="flex items-center gap-2 rounded-lg border border-success/20 bg-success/5 px-3 py-2.5 text-xs text-success">
+                  <CheckCircle2 className="size-4 shrink-0" aria-hidden />
+                  Validation passed — scored {task.latestValidationScore}/100,
+                  above the {VALIDATION_PASS_THRESHOLD} bar. Complete to release
+                  the escrowed payment.
+                </div>
+              ) : null}
+              <PrimaryButton
+                onClick={handleComplete}
+                pending={isPending}
+                icon={CircleDollarSign}
+                label="Complete task & release payment"
+                pendingLabel="Releasing payment…"
+              />
+            </>
           ))}
 
         {status === "completed" && (
@@ -333,11 +356,7 @@ export function TaskActions({ task }: TaskActionsProps) {
                 {task.hasReview ? "Edit your review" : "Leave a review"}
               </Button>
             </ReviewDialog>
-            <div className="flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2.5 text-xs text-emerald-300">
-              <CheckCircle2 className="size-4 shrink-0" aria-hidden />
-              Settled. The agent&apos;s reputation reflects this completed
-              contract.
-            </div>
+            <SettledBanner />
           </>
         )}
 
@@ -346,7 +365,7 @@ export function TaskActions({ task }: TaskActionsProps) {
             className={cn(
               "flex items-center gap-2 rounded-lg border px-3 py-2.5 text-xs",
               status === "disputed"
-                ? "border-rose-500/20 bg-rose-500/5 text-rose-300"
+                ? "border-destructive/20 bg-destructive/5 text-destructive"
                 : "border-border bg-muted/30 text-muted-foreground",
             )}
           >
@@ -374,8 +393,58 @@ export function TaskActions({ task }: TaskActionsProps) {
             </Button>
           </DisputeDialog>
         )}
+
+        {/* Cancel a task that's still in flight — refunds the escrow. */}
+        {canCancel && (
+          <CancelTaskDialog
+            open={cancelOpen}
+            onOpenChange={setCancelOpen}
+            taskId={task.id}
+            onSuccess={() => {
+              setCancelOpen(false);
+              router.refresh();
+            }}
+          >
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full text-muted-foreground hover:text-foreground"
+            >
+              <Ban className="size-4" />
+              Cancel task
+            </Button>
+          </CancelTaskDialog>
+        )}
       </div>
     </div>
+  );
+}
+
+/* --------------------------------- Completion delight --------------------------------- */
+
+/**
+ * The peak of the loop. When a task settles, the confirmation springs in with a
+ * popped check — a small, earned moment of delight. Respects reduced-motion.
+ */
+function SettledBanner() {
+  const reduceMotion = useReducedMotion();
+  return (
+    <motion.div
+      initial={reduceMotion ? false : { opacity: 0, y: 6, scale: 0.98 }}
+      animate={reduceMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
+      transition={{ type: "spring", stiffness: 320, damping: 24 }}
+      className="flex items-center gap-2 rounded-lg border border-success/20 bg-success/5 px-3 py-2.5 text-xs text-success"
+    >
+      <motion.span
+        initial={reduceMotion ? false : { scale: 0, rotate: -20 }}
+        animate={reduceMotion ? undefined : { scale: 1, rotate: 0 }}
+        transition={{ type: "spring", stiffness: 500, damping: 18, delay: 0.08 }}
+        className="flex shrink-0"
+      >
+        <CheckCircle2 className="size-4" aria-hidden />
+      </motion.span>
+      Settled. The agent&apos;s reputation reflects this completed contract.
+    </motion.div>
   );
 }
 
@@ -738,54 +807,72 @@ function ReviewDialog({
   );
 }
 
-function StarPicker({
-  value,
-  onChange,
+/* --------------------------------- Cancel task --------------------------------- */
+
+function CancelTaskDialog({
+  open,
+  onOpenChange,
+  taskId,
+  children,
+  onSuccess,
 }: {
-  value: number;
-  onChange: (value: number) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  taskId: string;
+  children: React.ReactElement;
+  onSuccess: () => void;
 }) {
-  const [hover, setHover] = React.useState<number | null>(null);
-  const active = hover ?? value;
-  const labels = ["", "Poor", "Fair", "Good", "Great", "Excellent"];
+  const [isPending, startTransition] = React.useTransition();
+
+  const handleConfirm = () => {
+    startTransition(async () => {
+      const result = await cancelTask(taskId);
+      if (result.ok) {
+        toast.success("Task cancelled — escrowed funds were refunded.");
+        onSuccess();
+      } else {
+        toast.error(result.error ?? "Couldn't cancel the task.");
+      }
+    });
+  };
 
   return (
-    <div className="flex items-center gap-3">
-      <div
-        className="flex items-center gap-1"
-        role="radiogroup"
-        aria-label="Star rating"
-        onMouseLeave={() => setHover(null)}
-      >
-        {[1, 2, 3, 4, 5].map((star) => {
-          const filled = star <= active;
-          return (
-            <button
-              key={star}
-              type="button"
-              role="radio"
-              aria-checked={value === star}
-              aria-label={`${star} star${star === 1 ? "" : "s"}`}
-              onClick={() => onChange(star)}
-              onMouseEnter={() => setHover(star)}
-              className="rounded-md p-0.5 outline-none transition-transform hover:scale-110 focus-visible:ring-3 focus-visible:ring-ring/40"
-            >
-              <Star
-                className={cn(
-                  "size-7 transition-colors",
-                  filled
-                    ? "fill-amber-400 text-amber-400"
-                    : "fill-transparent text-muted-foreground/40",
-                )}
-              />
-            </button>
-          );
-        })}
-      </div>
-      <span className="text-sm font-medium tabular-nums text-muted-foreground">
-        {active > 0 ? `${active} · ${labels[active]}` : "Tap to rate"}
-      </span>
-    </div>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogTrigger render={children} />
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Cancel this task?</DialogTitle>
+          <DialogDescription>
+            The contract is closed and any escrowed funds are refunded to you.
+            This can&apos;t be undone.
+          </DialogDescription>
+        </DialogHeader>
+
+        <DialogFooter>
+          <DialogClose render={<Button variant="ghost" type="button" />}>
+            Keep task
+          </DialogClose>
+          <Button
+            type="button"
+            variant="destructive"
+            disabled={isPending}
+            onClick={handleConfirm}
+          >
+            {isPending ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Cancelling…
+              </>
+            ) : (
+              <>
+                <Ban className="size-4" />
+                Cancel task
+              </>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

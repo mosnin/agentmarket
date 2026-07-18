@@ -16,14 +16,15 @@ import {
 } from "lucide-react";
 
 import type { TaskListItem } from "@/lib/data";
-import { PRICING_MODEL_META, type PricingModelValue } from "@/lib/constants";
+import { formatAgentPrice } from "@/lib/pricing";
 import {
   cn,
   formatCurrency,
   formatPercent,
   formatRating,
-  formatRelativeTime,
 } from "@/lib/utils";
+import { isTaskOverdue, isTaskDueSoon } from "@/lib/tasks";
+import { RelativeTime } from "@/components/shared/relative-time";
 import { buttonVariants } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -83,20 +84,6 @@ interface SellerTabsProps {
   inboundTasks: TaskListItem[];
   openInboundIds: string[];
   reviews: SellerReview[];
-}
-
-function pricingSuffix(model: string): string {
-  return PRICING_MODEL_META[model as PricingModelValue]?.suffix ?? "";
-}
-
-function priceLabel(agent: Pick<SellerAgent, "pricingModel" | "startingPrice" | "currency">) {
-  if (agent.pricingModel === "free" || agent.startingPrice === 0) {
-    return { value: "Free", suffix: "" };
-  }
-  return {
-    value: formatCurrency(agent.startingPrice, agent.currency),
-    suffix: pricingSuffix(agent.pricingModel),
-  };
 }
 
 /* --------------------------------- Shell ---------------------------------- */
@@ -238,7 +225,7 @@ function ListingsPanel({ agents }: { agents: SellerAgent[] }) {
         </TableHeader>
         <TableBody>
           {agents.map((agent) => {
-            const price = priceLabel(agent);
+            const price = formatAgentPrice(agent);
             return (
               <TableRow key={agent.id} className="group">
                 <TableCell className="max-w-[260px] py-3 pl-5">
@@ -345,12 +332,12 @@ function InboundTasksPanel({
       count={tasks.length}
       action={
         openIds.size > 0 ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-400">
-            <span className="size-1.5 animate-pulse rounded-full bg-amber-400" aria-hidden />
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-2.5 py-1 text-xs font-medium text-warning">
+            <span className="size-1.5 animate-pulse rounded-full bg-warning" aria-hidden />
             {openIds.size} open
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-success/30 bg-success/10 px-2.5 py-1 text-xs font-medium text-success">
             <CheckCircle2 className="size-3.5" aria-hidden="true" />
             All settled
           </span>
@@ -377,7 +364,7 @@ function InboundTasksPanel({
                 key={task.id}
                 className={cn(
                   "group relative",
-                  isOpen && "bg-amber-500/[0.04] hover:bg-amber-500/[0.08]",
+                  isOpen && "bg-warning/[0.04] hover:bg-warning/[0.08]",
                 )}
               >
                 <TableCell className="max-w-[280px] py-3 pl-5">
@@ -386,7 +373,7 @@ function InboundTasksPanel({
                       className={cn(
                         "flex size-9 shrink-0 items-center justify-center rounded-lg ring-1",
                         isOpen
-                          ? "bg-amber-500/10 ring-amber-500/20"
+                          ? "bg-warning/10 ring-warning/20"
                           : "bg-muted/60 ring-border",
                       )}
                     >
@@ -394,7 +381,7 @@ function InboundTasksPanel({
                         category={task.category}
                         className={cn(
                           "size-4",
-                          isOpen ? "text-amber-400" : "text-muted-foreground",
+                          isOpen ? "text-warning" : "text-muted-foreground",
                         )}
                       />
                     </span>
@@ -404,6 +391,17 @@ function InboundTasksPanel({
                       </p>
                       <p className="mt-0.5 truncate text-xs text-muted-foreground">
                         {task.category}
+                        {isTaskOverdue(task.deadline, task.status) ? (
+                          <>
+                            <span aria-hidden="true"> · </span>
+                            <span className="font-medium text-destructive">Overdue</span>
+                          </>
+                        ) : isTaskDueSoon(task.deadline, task.status) ? (
+                          <>
+                            <span aria-hidden="true"> · </span>
+                            <span className="font-medium text-warning">Due soon</span>
+                          </>
+                        ) : null}
                       </p>
                     </div>
                   </Link>
@@ -439,7 +437,7 @@ function InboundTasksPanel({
                   {formatCurrency(task.budget, task.currency)}
                 </TableCell>
                 <TableCell className="pr-5 text-right text-xs whitespace-nowrap text-muted-foreground">
-                  {formatRelativeTime(task.createdAt)}
+                  <RelativeTime date={task.createdAt} />
                 </TableCell>
               </TableRow>
             );
@@ -482,8 +480,8 @@ function ReviewsPanel({ reviews }: { reviews: SellerReview[] }) {
       description="Feedback buyers leave after your agents complete a task."
       count={reviews.length}
       action={
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-400">
-          <Star className="size-3.5 fill-amber-400" aria-hidden="true" />
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-2.5 py-1 text-xs font-medium text-warning">
+          <Star className="size-3.5 fill-warning" aria-hidden="true" />
           {formatRating(averageRating)} avg
         </span>
       }
@@ -526,6 +524,7 @@ function MetricValue({
   warn,
   invert = false,
   suffix = "%",
+  hasData = true,
 }: {
   value: number;
   good: number;
@@ -533,14 +532,24 @@ function MetricValue({
   /** When true, lower is better (e.g. dispute rate). */
   invert?: boolean;
   suffix?: string;
+  /** When false the agent has no track record yet — render a neutral dash
+   *  instead of grading a zero (a fresh listing shouldn't read as red "0%"). */
+  hasData?: boolean;
 }) {
+  if (!hasData) {
+    return (
+      <span className="text-sm font-medium tabular-nums text-muted-foreground">
+        —
+      </span>
+    );
+  }
   const isGood = invert ? value <= good : value >= good;
   const isWarn = invert ? value <= warn : value >= warn;
   const tone = isGood
-    ? "text-emerald-400"
+    ? "text-success"
     : isWarn
-      ? "text-amber-400"
-      : "text-rose-400";
+      ? "text-warning"
+      : "text-destructive";
 
   return (
     <span className={cn("text-sm font-medium tabular-nums", tone)}>
@@ -601,19 +610,35 @@ function PerformancePanel({ agents }: { agents: SellerAgent[] }) {
                 <AgentIdentity agent={agent} />
               </TableCell>
               <TableCell className="text-right">
-                <MetricValue value={agent.completionRate} good={90} warn={75} />
+                <MetricValue
+                  value={agent.completionRate}
+                  good={90}
+                  warn={75}
+                  hasData={agent._count.tasks > 0}
+                />
               </TableCell>
               <TableCell className="text-right">
                 <span className="inline-flex items-center justify-end gap-1 text-sm font-medium tabular-nums text-foreground">
-                  <Star className="size-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />
-                  {formatRating(agent.averageRating)}
+                  <Star className="size-3.5 fill-warning text-warning" aria-hidden="true" />
+                  {agent.averageRating > 0 ? formatRating(agent.averageRating) : "New"}
                 </span>
               </TableCell>
               <TableCell className="text-right">
-                <MetricValue value={agent.disputeRate} good={2} warn={5} invert />
+                <MetricValue
+                  value={agent.disputeRate}
+                  good={2}
+                  warn={5}
+                  invert
+                  hasData={agent._count.tasks > 0}
+                />
               </TableCell>
               <TableCell className="text-right">
-                <MetricValue value={agent.schemaComplianceScore} good={95} warn={85} />
+                <MetricValue
+                  value={agent.schemaComplianceScore}
+                  good={95}
+                  warn={85}
+                  hasData={agent._count.tasks > 0}
+                />
               </TableCell>
               <TableCell className="pr-5 text-right text-sm tabular-nums text-muted-foreground">
                 {agent.totalTasksCompleted}
@@ -649,7 +674,7 @@ export function SellerTabs({
             <Inbox className="size-4" aria-hidden="true" />
             Inbound
             {openCount > 0 ? (
-              <span className="ml-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500/15 px-1 text-[10px] font-semibold tabular-nums text-amber-400">
+              <span className="ml-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-warning/15 px-1 text-[10px] font-semibold tabular-nums text-warning">
                 {openCount}
               </span>
             ) : null}

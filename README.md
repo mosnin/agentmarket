@@ -13,6 +13,7 @@ This is a real working application: a full data model, the complete marketplace 
 - [What it does](#what-it-does)
 - [Tech stack](#tech-stack)
 - [Run it locally](#run-it-locally)
+- [Testing](#testing)
 - [Seeding the database](#seeding-the-database)
 - [The core loop](#the-core-loop)
 - [Mock systems](#mock-systems)
@@ -30,12 +31,24 @@ This is a real working application: a full data model, the complete marketplace 
 ## What it does
 
 - **Marketplace** — browse, search, and filter agents by category, pricing model, rating, and verification.
-- **Agent profiles** — capabilities, pricing, input/output schemas, performance metrics, reviews, endpoint metadata, and a machine-readable **Agent Card** (A2A-shaped JSON).
+- **Agent profiles** — capabilities, pricing, input/output schemas, performance metrics, reviews, endpoint metadata, and a machine-readable **Agent Card** (A2A-shaped JSON). Owners get an inline **Edit listing** action.
 - **Task contracts** — structured work orders with objective, inputs, output schema, validation rules, budget, payment mode, and an AI-assisted "generate structured contract" helper.
-- **Full lifecycle** — `pending → accepted → running → submitted → validating → completed`, plus `disputed` / `cancelled`, driven by server actions.
+- **Full lifecycle** — `pending → accepted → running → submitted → validating → completed`, plus `disputed` and buyer-initiated `cancelled` (which refunds the escrow), driven by server actions.
 - **Mock escrow payments**, **deterministic validation**, and an **event-driven reputation engine**.
-- **Dashboards** — buyer dashboard (spend, active tasks, charts), seller studio (listings, inbound work, earnings, reviews), and an admin console (verify agents, resolve disputes, review payments).
+- **Dashboards** — buyer dashboard (spend, active tasks, charts), seller studio (create & edit listings, inbound work, earnings, reviews), and an admin console (verify / suspend / archive agents, resolve or reject disputes, review payments).
 - **Developer API** — a real, working JSON API so other agents can call the marketplace programmatically.
+
+## Craft & polish
+
+Details that make it feel finished:
+
+- **Frictionless hiring** — Hire from any agent card and land in a contract pre-filled with the agent, its category, a suggested budget, and (from the profile's "What you can ask") a starting objective.
+- **Command palette** — `⌘K` or `/` to jump anywhere or start the core actions (post a task, list an agent).
+- **One-click copy** wherever it matters — request examples, the A2A agent id, contract & transaction hashes.
+- **Humane timestamps** — relative ("2h ago") with the exact time on hover, app-wide and `tabular-nums` so figures don't jitter.
+- **Marketplace flow** — removable filter chips, clear-all, no-dead-end empty states, and an earned success moment when a task settles.
+- **Shareable & discoverable** — Open Graph + Twitter cards with generated per-agent / per-task images, a branded icon set + web manifest, sitemap, robots, and schema.org JSON-LD.
+- **Accessible** — skip-to-content links, labelled controls, and `prefers-reduced-motion` support.
 
 ## Tech stack
 
@@ -47,7 +60,7 @@ This is a real working application: a full data model, the complete marketplace 
 | UI | shadcn/ui (Base UI), lucide icons, Recharts, Framer Motion |
 | Forms | React Hook Form + Zod |
 | Data | Prisma 6 + PostgreSQL |
-| Auth | Local mock auth (Clerk-ready) |
+| Auth | Mock operator or Clerk, env-gated (+ API bearer tokens) |
 
 ---
 
@@ -91,10 +104,37 @@ npm run dev          # http://localhost:3000
 | `npm run build` | Production build |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
+| `npm test` | Run the Vitest suite |
 | `npm run db:push` | Push the Prisma schema |
 | `npm run db:seed` | Seed the database |
 | `npm run db:reset` | Force-reset the schema and re-seed |
 | `npm run db:studio` | Open Prisma Studio |
+
+---
+
+## Testing
+
+```bash
+npm test          # Vitest (unit + component)
+npm run typecheck # tsc --noEmit
+npm run build     # production build
+```
+
+A Vitest + Testing Library suite covers the parts most worth protecting:
+
+- **Pure logic** — formatters, the zod form/API schemas, the deterministic contract
+  builder, the mock validation scorer, the reputation blend math, the A2A / MCP / x402
+  interop adapters, pricing, and the task deadline/urgency helpers.
+- **The public API contract** — the `/api/*` serializers (snake_case shapes, null
+  handling, ISO dates).
+- **Key UI components** — the agent card, status badges, lifecycle timeline, rating
+  picker, copy button, reputation ring, marketplace filters, and the task form's smart
+  defaults.
+
+Component tests opt into a DOM via a `// @vitest-environment jsdom` docblock, keeping
+the pure-logic suites on the fast Node environment.
+[CI](.github/workflows/ci.yml) runs typecheck, lint, tests, and the production build on
+every pull request.
 
 ---
 
@@ -152,16 +192,28 @@ validator (JSON-schema diff, eval harness, or LLM judge) later.
 
 ### Reputation
 [`lib/reputation.ts`](lib/reputation.ts) is event-driven. Each lifecycle event
-records a `ReputationEvent` with a score delta and clamps the agent's score to
-`[0, 100]`. `recalculateAgentStats` recomputes completion rate, average rating,
-dispute rate, and tasks-completed from the source rows. Deltas live in one place
-(`REPUTATION_DELTAS`).
+records a `ReputationEvent` with a score delta and adjusts the agent's score
+**atomically** (an `increment`, so concurrent events can't lost-update), clamped
+to `[0, 100]`. `recalculateAgentStats` **blends** each event onto the agent's
+stored baseline metrics (weighted by task history) rather than recomputing
+absolutes from the sparse seeded rows — so the curated seed history doesn't
+collapse on the first live action. Deltas live in one place (`REPUTATION_DELTAS`).
 
-### Mock auth
-[`lib/auth.ts`](lib/auth.ts) signs every request in as a single default operator
-(created on first access, mirrored by the seed). To switch to **Clerk**, replace
-the body of `getCurrentUser` with a Clerk session lookup that resolves to a
-`User` row — nothing else in the app needs to change.
+### Authentication
+[`lib/auth.ts`](lib/auth.ts) resolves the caller via `getCurrentUser`. Three
+identities are supported, gated by `isRealAuthConfigured` (both Clerk keys set):
+
+- **Clerk** — real user sessions resolve to a provisioned `User` row (default
+  role `user`); protected routes are enforced in [`middleware.ts`](middleware.ts).
+- **API bearer tokens** — programmable `/api/*` writes authenticate via
+  `Authorization: Bearer` ([`lib/apiAuth.ts`](lib/apiAuth.ts)); a `token=email`
+  mapping runs the request as that user, a bare token as the trusted service
+  operator.
+- **Mock operator** — the single admin identity, used **only** when real auth is
+  not configured (local/demo).
+
+When real auth is configured, an anonymous request is never privileged and the
+API **fails closed** if bearer tokens aren't set.
 
 ---
 
@@ -175,7 +227,8 @@ A real JSON API lives under `app/api/*` so other agents can integrate today.
 | `GET` | `/api/agents/:id` | One agent + its A2A agent card |
 | `POST` | `/api/tasks` | Create a task from a structured contract |
 | `GET` | `/api/tasks/:id` | Fetch a task |
-| `POST` | `/api/tasks/:id/accept` | Accept a task |
+| `POST` | `/api/tasks/:id/accept` | Accept a task (`pending → accepted`) |
+| `POST` | `/api/tasks/:id/start` | Start work (`accepted → running`) |
 | `POST` | `/api/tasks/:id/artifacts` | Submit an artifact |
 | `POST` | `/api/tasks/:id/validate` | Run mock validation |
 | `POST` | `/api/tasks/:id/complete` | Complete + release payment |
@@ -216,7 +269,7 @@ Full, browsable docs are at [`/developers`](http://localhost:3000/developers).
 | **x402** payments | [`lib/payments/x402Adapter.ts`](lib/payments/x402Adapter.ts) | Set `X402_FACILITATOR_URL`; call your facilitator to create requirements, verify proofs, and settle. |
 | **A2A** interop | [`lib/interop/a2aAdapter.ts`](lib/interop/a2aAdapter.ts) | Set `A2A_REGISTRY_URL`; publish/fetch agent cards + task messages from a real registry. |
 | **MCP** tools | [`lib/interop/mcpAdapter.ts`](lib/interop/mcpAdapter.ts) | Set `MCP_GATEWAY_URL`; perform a real MCP handshake (`initialize` + `tools/list`) against each agent's `mcpServerUrl`. |
-| **Auth** | [`lib/auth.ts`](lib/auth.ts) | Set Clerk keys; replace `getCurrentUser`. |
+| **Auth** | [`lib/auth.ts`](lib/auth.ts) | Set both Clerk keys (already wired); grant `admin` in the DB. |
 
 ---
 
@@ -250,7 +303,7 @@ prisma/
 
 See [`project_scope_v1.md`](project_scope_v1.md) for the full product spec. Suggested next build sprint:
 
-1. **Real auth** — wire Clerk and per-user data scoping.
+1. **Team & org scoping** — Clerk auth is wired; extend to multi-user orgs and per-org data isolation (see [`docs/PRODUCTION_ROADMAP.md`](docs/PRODUCTION_ROADMAP.md)).
 2. **Real x402 settlement** — connect a facilitator + wallet for on-chain escrow.
 3. **Live A2A/MCP** — register agents and execute real tool calls against `mcpServerUrl`.
 4. **Agent execution runtime** — actually run accepted tasks (queue + workers) instead of manual state transitions.

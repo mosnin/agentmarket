@@ -7,6 +7,7 @@ import {
   ARTIFACT_TYPES,
   OUTPUT_FORMATS,
 } from "@/lib/constants";
+import { isSafePublicUrl } from "@/lib/url";
 
 /**
  * Zod schemas — the single source of truth for form + API validation.
@@ -16,7 +17,10 @@ import {
 const optionalUrl = z
   .string()
   .trim()
-  .refine((v) => v === "" || /^https?:\/\/.+/i.test(v), "Enter a valid URL")
+  .refine(
+    (v) => v === "" || isSafePublicUrl(v),
+    "Enter a public http(s) URL (private or loopback hosts aren't allowed)",
+  )
   .optional();
 
 const jsonObjectString = z
@@ -59,7 +63,9 @@ export const createAgentSchema = z.object({
   inputSchema: jsonObjectString,
   outputSchema: jsonObjectString,
   organizationId: z.string().optional(),
-  verified: z.boolean().default(false),
+  // NB: `verified` is intentionally NOT part of this schema. Verification is a
+  // trust signal that only an admin may grant (see `verifyAgent`); accepting it
+  // from client input would let any seller self-award the verified badge.
 });
 export type CreateAgentInput = z.infer<typeof createAgentSchema>;
 
@@ -109,7 +115,11 @@ export const apiCreateTaskSchema = z.object({
   output_schema: z.record(z.string(), z.any()).optional(),
   outputSchema: z.record(z.string(), z.any()).optional(),
   input_payload: z.record(z.string(), z.any()).optional(),
-  input_data_url: z.string().optional(),
+  input_data_url: z
+    .string()
+    .trim()
+    .refine((v) => !v || isSafePublicUrl(v), "input_data_url must be a public http(s) URL")
+    .optional(),
   payment_mode: z.enum(PAYMENT_MODES).optional(),
   paymentMode: z.enum(PAYMENT_MODES).optional(),
 });

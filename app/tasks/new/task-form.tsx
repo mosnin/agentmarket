@@ -19,7 +19,7 @@ import {
   Workflow,
 } from "lucide-react";
 
-import { formatCurrency } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { createTaskSchema, type CreateTaskInput } from "@/lib/schemas";
 import { createTask } from "@/lib/actions";
 import { buildStructuredContract } from "@/lib/contract";
@@ -31,6 +31,7 @@ import {
   PAYMENT_MODE_META,
   VISIBILITY_OPTIONS,
   VISIBILITY_META,
+  type Category,
 } from "@/lib/constants";
 
 import { Button } from "@/components/ui/button";
@@ -118,6 +119,11 @@ function SectionHeader({
   );
 }
 
+/** Narrow an agent's stored category string to the Category enum. */
+function isCategory(value: string | undefined): value is Category {
+  return !!value && (CATEGORIES as readonly string[]).includes(value);
+}
+
 /** Build the preview contract from current form values (live, always-on draft). */
 function draftContractFromValues(
   values: Partial<TaskFormInput>,
@@ -171,9 +177,11 @@ function structuredToPreview(
 export function TaskForm({
   agents,
   preselectedAgentId,
+  defaultObjective,
 }: {
   agents: SelectAgent[];
   preselectedAgentId?: string;
+  defaultObjective?: string;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = React.useTransition();
@@ -186,6 +194,20 @@ export function TaskForm({
     objective: string;
   } | null>(null);
 
+  // Today (local, yyyy-mm-dd) as the earliest selectable deadline. Resolved
+  // after mount so the `min` attribute can't trigger an SSR/timezone hydration
+  // mismatch — without it a buyer could pick a past date and post a task that
+  // reads "Overdue" the moment it's created.
+  const [minDeadline, setMinDeadline] = React.useState<string>("");
+  React.useEffect(() => {
+    const now = new Date();
+    setMinDeadline(
+      `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(
+        now.getDate(),
+      ).padStart(2, "0")}`,
+    );
+  }, []);
+
   // The schema coerces `budget` to a number, so the resolver's *input* type
   // differs from its *output* (transformed) type. Type the form with the input
   // shape for fields and the output (CreateTaskInput) for the submit handler.
@@ -194,7 +216,7 @@ export function TaskForm({
     mode: "onBlur",
     defaultValues: {
       title: "",
-      objective: "",
+      objective: defaultObjective ?? "",
       category: undefined,
       sellerAgentId: preselectedAgentId ?? "",
       inputInstructions: "",
@@ -235,6 +257,26 @@ export function TaskForm({
       setGenerated(null);
     }
   }, [values.objective, generated]);
+
+  // Smart defaults — the contract drafts itself around the chosen specialist.
+  // When an agent is selected (including via the "Hire this agent" deep link),
+  // adopt its category and suggest its starting price as the budget, unless the
+  // buyer has already set those fields. "It just works": pick an agent and the
+  // routing, category, and budget are sensible before you type a word.
+  React.useEffect(() => {
+    if (!selectedAgent) return;
+    if (!form.getValues("category") && isCategory(selectedAgent.category)) {
+      form.setValue("category", selectedAgent.category);
+    }
+    if (
+      !form.formState.dirtyFields.budget &&
+      selectedAgent.pricingModel !== "free" &&
+      selectedAgent.startingPrice > 0
+    ) {
+      form.setValue("budget", selectedAgent.startingPrice);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedAgent?.id]);
 
   // The preview shows the generated contract if present, else the live draft.
   // Payment mode is always read live so it reflects the current selection.
@@ -312,6 +354,7 @@ export function TaskForm({
                     <FormLabel>Task title</FormLabel>
                     <FormControl>
                       <Input
+                        autoFocus
                         placeholder="e.g. Enrich 200 inbound leads with firmographics"
                         autoComplete="off"
                         maxLength={140}
@@ -614,6 +657,29 @@ export function TaskForm({
                           />
                         </div>
                       </FormControl>
+                      {selectedAgent && selectedAgent.startingPrice > 0 ? (
+                        <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                          {[1, 2, 5].map((mult) => {
+                            const amount = selectedAgent.startingPrice * mult;
+                            const active = Number(field.value) === amount;
+                            return (
+                              <button
+                                key={mult}
+                                type="button"
+                                onClick={() => field.onChange(amount)}
+                                className={cn(
+                                  "rounded-md border px-2 py-0.5 text-xs font-medium tabular-nums transition-colors",
+                                  active
+                                    ? "border-brand/40 bg-brand/10 text-foreground"
+                                    : "border-border text-muted-foreground hover:border-border/80 hover:text-foreground",
+                                )}
+                              >
+                                {mult}× · {formatCurrency(amount, selectedAgent.currency)}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ) : null}
                       <FormDescription>
                         Held in escrow until the deliverable passes validation.
                       </FormDescription>
@@ -639,7 +705,8 @@ export function TaskForm({
                         <CalendarClock className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
                         <Input
                           type="date"
-                          className="pl-8 [color-scheme:dark]"
+                          min={minDeadline || undefined}
+                          className="pl-8"
                           {...field}
                         />
                       </div>

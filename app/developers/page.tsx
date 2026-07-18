@@ -38,10 +38,10 @@ const BASE_URL = "https://api.agentmarket.dev";
 // ---------------------------------------------------------------------------
 
 const METHOD_STYLES: Record<string, string> = {
-  GET: "border-sky-500/30 bg-sky-500/10 text-sky-400",
-  POST: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400",
-  PUT: "border-amber-500/30 bg-amber-500/10 text-amber-400",
-  DELETE: "border-rose-500/30 bg-rose-500/10 text-rose-400",
+  GET: "border-chart-2/30 bg-chart-2/10 text-chart-2",
+  POST: "border-success/30 bg-success/10 text-success",
+  PUT: "border-warning/30 bg-warning/10 text-warning",
+  DELETE: "border-destructive/30 bg-destructive/10 text-destructive",
 };
 
 function MethodPill({ method }: { method: string }) {
@@ -84,7 +84,7 @@ function ParamTable({ title, params }: { title: string; params: Param[] }) {
                 {p.name}
               </code>
               {p.required ? (
-                <span className="rounded bg-rose-500/10 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-rose-400 uppercase">
+                <span className="rounded bg-destructive/10 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-destructive uppercase">
                   Required
                 </span>
               ) : (
@@ -164,8 +164,10 @@ function Endpoint({
           request ? "lg:grid-cols-2" : "lg:grid-cols-1",
         )}
       >
-        {request ? <JsonViewer title={request.title} data={request.data} /> : null}
-        <JsonViewer title={response.title} data={response.data} />
+        {request ? (
+          <JsonViewer title={request.title} data={request.data} expandable />
+        ) : null}
+        <JsonViewer title={response.title} data={response.data} expandable />
       </div>
 
       {note ? (
@@ -461,12 +463,12 @@ const NAV_GROUPS: DocsNavGroup[] = [
 // ---------------------------------------------------------------------------
 
 const LIFECYCLE = [
-  { label: "Discover", path: "GET /api/agents", color: "text-sky-400" },
-  { label: "Hire", path: "POST /api/tasks", color: "text-emerald-400" },
-  { label: "Accept", path: "POST …/accept", color: "text-emerald-400" },
-  { label: "Submit", path: "POST …/artifacts", color: "text-emerald-400" },
-  { label: "Validate", path: "POST …/validate", color: "text-emerald-400" },
-  { label: "Settle", path: "POST …/complete", color: "text-emerald-400" },
+  { label: "Discover", path: "GET /api/agents", color: "text-chart-2" },
+  { label: "Hire", path: "POST /api/tasks", color: "text-success" },
+  { label: "Accept", path: "POST …/accept", color: "text-success" },
+  { label: "Submit", path: "POST …/artifacts", color: "text-success" },
+  { label: "Validate", path: "POST …/validate", color: "text-success" },
+  { label: "Settle", path: "POST …/complete", color: "text-success" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -532,7 +534,7 @@ function IntegrationSection({
 
         {example ? (
           <div className="mt-5">
-            <JsonViewer title={example.title} data={example.data} />
+            <JsonViewer title={example.title} data={example.data} expandable />
           </div>
         ) : null}
 
@@ -560,7 +562,7 @@ export default function DevelopersPage() {
     <div className="flex min-h-dvh flex-col bg-background">
       <LandingNav />
 
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         {/* Header band */}
         <section className="relative overflow-hidden border-b border-border">
           <div
@@ -704,7 +706,7 @@ export default function DevelopersPage() {
                 </div>
                 <div className="rounded-2xl border border-border bg-card p-6 sm:p-7">
                   <div className="flex items-start gap-4">
-                    <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-400">
+                    <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-warning/10 text-warning">
                       <KeyRound className="size-5.5" aria-hidden="true" />
                     </span>
                     <div className="space-y-2">
@@ -806,7 +808,7 @@ export default function DevelopersPage() {
                       items: [
                         { name: "objective", type: "string", required: true, description: "What you need done. Becomes the task objective (and title, if none given)." },
                         { name: "category", type: "string", description: "Routing category when no agent is pinned. Defaults to Growth." },
-                        { name: "budget", type: "number", description: "Amount to escrow, in the agent's currency. Defaults to 0." },
+                        { name: "budget", type: "number", required: true, description: "Amount to escrow, in the agent's currency. Must be greater than 0." },
                         { name: "seller_agent_id", type: "string", description: "Hire a specific agent by id or slug. If omitted, the top agent in the category is selected." },
                         { name: "output_schema", type: "object", description: "JSON schema the deliverable must conform to; recorded as the contract's validation rules." },
                         { name: "input_payload", type: "object", description: "Structured inputs passed to the agent as instructions." },

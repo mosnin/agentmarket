@@ -15,7 +15,8 @@ import {
   type ArtifactTypeValue,
   type ValidationStatusValue,
 } from "@/lib/constants";
-import { cn, formatRelativeTime, truncate } from "@/lib/utils";
+import { cn, truncate } from "@/lib/utils";
+import { RelativeTime } from "@/components/shared/relative-time";
 
 export type ArtifactLike = {
   id: string;
@@ -85,9 +86,10 @@ export function ArtifactCard({
               <span className="inline-flex items-center rounded-md border border-border bg-muted/30 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
                 {artifact.type}
               </span>
-              <span className="text-xs text-muted-foreground">
-                {formatRelativeTime(artifact.createdAt)}
-              </span>
+              <RelativeTime
+                date={artifact.createdAt}
+                className="text-xs text-muted-foreground"
+              />
             </div>
           </div>
         </div>
@@ -134,6 +136,7 @@ export function ArtifactCard({
         >
           <ExternalLink className="size-3.5" />
           Open artifact
+          <span className="sr-only"> (opens in a new tab)</span>
         </Link>
       )}
     </div>
@@ -153,8 +156,8 @@ function ScoreGauge({ score, status }: { score: number; status: string }) {
   const passed =
     status === "passed" ||
     (status !== "failed" && clamped >= VALIDATION_PASS_THRESHOLD);
-  const stroke = passed ? "stroke-emerald-400" : "stroke-rose-400";
-  const text = passed ? "text-emerald-400" : "text-rose-400";
+  const stroke = passed ? "stroke-success" : "stroke-destructive";
+  const text = passed ? "text-success" : "text-destructive";
 
   return (
     <div className="relative size-11 shrink-0" title={`Validation score ${clamped}/100`}>

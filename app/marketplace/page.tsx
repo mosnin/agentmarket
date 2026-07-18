@@ -1,15 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SearchX, Sparkles } from "lucide-react";
+import { SearchX, Sparkles, X } from "lucide-react";
 
 import { listAgents, type AgentFilters } from "@/lib/data";
-import {
-  CATEGORIES,
-  PRICING_MODELS,
-  PRICING_MODEL_META,
-  type PricingModelValue,
-} from "@/lib/constants";
-import { cn } from "@/lib/utils";
+import { cn, pluralize } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
 import { LandingNav } from "@/components/layout/landing-nav";
@@ -18,6 +12,11 @@ import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { AgentCard } from "@/components/agents/agent-card";
 import { MarketplaceFilters } from "@/components/marketplace/marketplace-filters";
+import {
+  parseFilters,
+  activeFilterChips,
+  type SearchParams,
+} from "./filters";
 
 export const dynamic = "force-dynamic";
 
@@ -27,8 +26,6 @@ export const metadata: Metadata = {
     "Discover and hire specialized AI agents. Filter by category, pricing model, rating and reputation to find the right agent for any task.",
 };
 
-type SearchParams = Record<string, string | undefined>;
-
 const SORT_LABELS: Record<NonNullable<AgentFilters["sort"]>, string> = {
   reputation: "top reputation",
   rating: "highest rated",
@@ -36,68 +33,6 @@ const SORT_LABELS: Record<NonNullable<AgentFilters["sort"]>, string> = {
   completion: "completion rate",
   newest: "newest first",
 };
-
-const VALID_SORTS = new Set<NonNullable<AgentFilters["sort"]>>([
-  "reputation",
-  "rating",
-  "price",
-  "completion",
-  "newest",
-]);
-
-/**
- * Translate the URL query string (owned by MarketplaceFilters) into the typed
- * AgentFilters shape that lib/data#listAgents expects. Unknown/blank values are
- * dropped so the server query stays clean and the filters round-trip cleanly.
- */
-function parseFilters(sp: SearchParams): {
-  filters: AgentFilters;
-  active: boolean;
-} {
-  const filters: AgentFilters = {};
-
-  const search = sp.q?.trim();
-  if (search) filters.search = search;
-
-  const category = sp.category?.trim();
-  if (category && (CATEGORIES as readonly string[]).includes(category)) {
-    filters.category = category;
-  }
-
-  const pricing = sp.pricing?.trim();
-  if (pricing && (PRICING_MODELS as readonly string[]).includes(pricing)) {
-    filters.pricingModel = pricing;
-  }
-
-  const ratingRaw = sp.rating?.trim();
-  if (ratingRaw) {
-    const parsed = Number.parseFloat(ratingRaw);
-    if (Number.isFinite(parsed) && parsed > 0) filters.minRating = parsed;
-  }
-
-  if (sp.verified === "true") filters.verified = true;
-
-  const sort = sp.sort?.trim();
-  if (sort && VALID_SORTS.has(sort as NonNullable<AgentFilters["sort"]>)) {
-    filters.sort = sort as NonNullable<AgentFilters["sort"]>;
-  }
-
-  const active = Object.keys(filters).length > 0;
-  return { filters, active };
-}
-
-/** Human-readable list of the active constraints, shown under the result count. */
-function describeFilters(filters: AgentFilters): string[] {
-  const parts: string[] = [];
-  if (filters.search) parts.push(`matching “${filters.search}”`);
-  if (filters.category) parts.push(`in ${filters.category}`);
-  if (filters.pricingModel) {
-    parts.push(PRICING_MODEL_META[filters.pricingModel as PricingModelValue]?.label ?? filters.pricingModel);
-  }
-  if (filters.minRating) parts.push(`${filters.minRating.toFixed(1)}+ rating`);
-  if (filters.verified) parts.push("verified only");
-  return parts;
-}
 
 export default async function MarketplacePage({
   searchParams,
@@ -110,13 +45,13 @@ export default async function MarketplacePage({
 
   const count = agents.length;
   const sortLabel = SORT_LABELS[filters.sort ?? "reputation"];
-  const descriptors = describeFilters(filters);
+  const chips = activeFilterChips(sp);
 
   return (
     <div className="flex min-h-dvh flex-col bg-background">
       <LandingNav />
 
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         {/* Ambient header band */}
         <section className="relative overflow-hidden border-b border-border">
           <div
@@ -155,20 +90,43 @@ export default async function MarketplacePage({
             >
               {count === 0
                 ? "No agents found"
-                : `${count.toLocaleString()} ${count === 1 ? "agent" : "agents"}`}
-              {descriptors.length > 0 ? (
-                <span className="font-normal text-muted-foreground">
-                  {" "}
-                  · {descriptors.join(" · ")}
-                </span>
-              ) : null}
+                : `${count.toLocaleString()} ${pluralize(count, "agent")}`}
             </h2>
             {count > 0 ? (
-              <span className="text-xs text-muted-foreground">
-                Sorted by {sortLabel}
-              </span>
+              <div className="flex items-center gap-3">
+                {active ? (
+                  <Link
+                    href="/marketplace"
+                    className="text-xs font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+                  >
+                    Clear all
+                  </Link>
+                ) : null}
+                <span className="text-xs text-muted-foreground">
+                  Sorted by {sortLabel}
+                </span>
+              </div>
             ) : null}
           </div>
+
+          {chips.length > 0 ? (
+            <div className="-mt-2 mb-6 flex flex-wrap items-center gap-2">
+              {chips.map((chip) => (
+                <Link
+                  key={chip.key}
+                  href={chip.href}
+                  aria-label={`Remove filter: ${chip.label}`}
+                  className="group inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:border-border/80 hover:bg-muted"
+                >
+                  {chip.label}
+                  <X
+                    className="size-3 text-muted-foreground transition-colors group-hover:text-foreground"
+                    aria-hidden="true"
+                  />
+                </Link>
+              ))}
+            </div>
+          ) : null}
 
           {/* Results grid / empty state */}
           {count > 0 ? (

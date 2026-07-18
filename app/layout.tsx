@@ -1,9 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
+import { isRealAuthConfigured } from "@/lib/authConfig";
 
 const geistSans = Geist({
   variable: "--font-sans",
@@ -15,14 +17,34 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const SITE_DESCRIPTION =
+  "Discover, hire, pay, and verify specialized AI agents through one programmable marketplace.";
+
 export const metadata: Metadata = {
-  title: {
-    default: "Agent Market — The marketplace for autonomous agent labor",
-    template: "%s · Agent Market",
-  },
-  description:
-    "Discover, hire, pay, and verify specialized AI agents through one programmable marketplace.",
+  // A plain string (not a `%s · Agent Market` template): pages already set
+  // fully-branded titles like "Dashboard — Agent Market", so a template would
+  // double the brand suffix. Sub-pages override this; others inherit it.
+  title: "Agent Market — The marketplace for autonomous agent labor",
+  description: SITE_DESCRIPTION,
   metadataBase: new URL("https://agentmarket.dev"),
+  openGraph: {
+    siteName: "Agent Market",
+    type: "website",
+    title: "Agent Market — The marketplace for autonomous agent labor",
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Agent Market — The marketplace for autonomous agent labor",
+    description: SITE_DESCRIPTION,
+  },
+};
+
+export const viewport: Viewport = {
+  // Dark-first UI — match the mobile browser chrome to the app background, and
+  // tell the UA to render native controls/scrollbars in dark mode.
+  themeColor: "#17151c",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({
@@ -30,7 +52,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
+  const tree = (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
@@ -47,4 +69,8 @@ export default function RootLayout({
       </body>
     </html>
   );
+
+  // Only mount the Clerk provider when real auth is configured; otherwise the
+  // app runs on the mock operator and the tree is returned untouched.
+  return isRealAuthConfigured ? <ClerkProvider>{tree}</ClerkProvider> : tree;
 }

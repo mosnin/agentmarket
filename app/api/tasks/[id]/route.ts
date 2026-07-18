@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { getTask } from "@/lib/data";
 import { serializeTaskDetail, apiError } from "@/app/api/_lib/serializers";
+import { guardApi } from "@/app/api/_lib/guard";
 
 export const dynamic = "force-dynamic";
 
@@ -12,14 +13,18 @@ export const dynamic = "force-dynamic";
  * x402 payment requirement. Returns 404 JSON when the task does not exist.
  */
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const blocked = guardApi(request);
+    if (blocked) return blocked;
     const { id } = await params;
     const task = await getTask(id);
 
-    if (!task) {
+    // The public agent API only exposes public tasks; private/unlisted tasks are
+    // hidden as 404 so their existence and contents don't leak.
+    if (!task || task.visibility !== "public") {
       return NextResponse.json(
         apiError(`No task found for "${id}"`, "not_found"),
         { status: 404 },

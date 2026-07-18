@@ -22,9 +22,6 @@ export type ReputationEventType =
   | "agent_verified"
   | "manual_adjustment";
 
-const clamp = (value: number, min = 0, max = 100) =>
-  Math.max(min, Math.min(max, value));
-
 export async function recordReputationEvent(input: {
   agentId: string;
   taskId?: string | null;
@@ -34,12 +31,14 @@ export async function recordReputationEvent(input: {
 }) {
   const agent = await prisma.agent.findUnique({
     where: { id: input.agentId },
-    select: { reputationScore: true },
+    select: { id: true },
   });
   if (!agent) return null;
 
-  const nextScore = clamp(Math.round(agent.reputationScore + input.scoreDelta));
-
+  // Apply the delta ATOMICALLY (`increment` compiles to `score = score + d` in
+  // SQL) so concurrent events on the same agent can't lost-update each other —
+  // the previous read-then-write left a window where two events read the same
+  // base score and the last write clobbered the first.
   const [event] = await prisma.$transaction([
     prisma.reputationEvent.create({
       data: {
@@ -52,9 +51,20 @@ export async function recordReputationEvent(input: {
     }),
     prisma.agent.update({
       where: { id: input.agentId },
-      data: { reputationScore: nextScore },
+      data: { reputationScore: { increment: Math.round(input.scoreDelta) } },
     }),
   ]);
+
+  // Clamp back into [0, 100] with idempotent, race-safe conditional writes
+  // (only the out-of-range row matches, so replays are no-ops).
+  await prisma.agent.updateMany({
+    where: { id: input.agentId, reputationScore: { gt: 100 } },
+    data: { reputationScore: 100 },
+  });
+  await prisma.agent.updateMany({
+    where: { id: input.agentId, reputationScore: { lt: 0 } },
+    data: { reputationScore: 0 },
+  });
 
   return event;
 }
@@ -72,19 +82,69 @@ export type AgentStatsEvent =
 
 const round1 = (value: number) => Math.round(value * 10) / 10;
 
+/** An agent's aggregate performance metrics — the inputs to the blend math. */
+export interface AgentStats {
+  totalTasksCompleted: number;
+  completionRate: number;
+  disputeRate: number;
+  averageRating: number;
+}
+
+/** The subset of metrics a single lifecycle event changes. */
+export type AgentStatsUpdate = Partial<AgentStats>;
+
 /**
- * Blend an agent's aggregate metrics in response to a single lifecycle event.
+ * Pure blend math: given an agent's current aggregate metrics and a single
+ * lifecycle event, return the fields to update. No DB access — the async
+ * `recalculateAgentStats` wrapper fetches the agent and persists the result, so
+ * this core logic stays unit-testable.
  *
- * The seed (lib/seed.ts) deliberately writes curated baseline metrics so the
- * marketplace feels alive (e.g. Growth Research Agent: 412 tasks, 98.2%
- * completion, 4.9★). Those stored values represent the agent's established
- * history, so we treat them as an immutable baseline and layer live deltas on
- * top — rather than recomputing absolute values from the ~10 seeded Task/Review
- * rows, which would collapse a 400-task history to whatever the sparse table
- * holds. `totalTasksCompleted` is incremented; the rate/rating metrics use a
- * weighted blend keyed on the established task count, so a single new data
- * point can't swing a large history (spec §11: "increase totalTasksCompleted;
- * recalculate completionRate; update averageRating if a review exists").
+ * The seed (prisma/seed.ts) deliberately writes curated baseline metrics so the
+ * marketplace feels alive (e.g. 412 tasks, 98.2% completion, 4.9★). Those stored
+ * values represent the agent's established history, so we treat them as a baseline
+ * and layer live deltas on top — rather than recomputing absolutes from the ~10
+ * seeded Task/Review rows, which would collapse a 400-task history to whatever the
+ * sparse table holds. The rate/rating metrics use a weighted blend keyed on the
+ * established task count, so a single new data point can't swing a large history
+ * (spec §11: "increase totalTasksCompleted; recalculate completionRate; update
+ * averageRating if a review exists").
+ */
+export function computeStatsUpdate(
+  current: AgentStats,
+  event: AgentStatsEvent,
+): AgentStatsUpdate {
+  // The established history acts as the weight: a single new observation moves a
+  // 400-task average by ~0.25%, but meaningfully shifts a brand-new agent.
+  const history = Math.max(current.totalTasksCompleted, 1);
+  const data: AgentStatsUpdate = {};
+
+  if (event.kind === "task_completed") {
+    // A successful delivery: increment the count and nudge completion toward 100%.
+    data.totalTasksCompleted = current.totalTasksCompleted + 1;
+    data.completionRate = round1((current.completionRate * history + 100) / (history + 1));
+  }
+
+  if (event.kind === "dispute_opened") {
+    // A dispute is one negative engagement: nudge completion down, dispute up.
+    data.completionRate = round1((current.completionRate * history) / (history + 1));
+    data.disputeRate = round1((current.disputeRate * history + 100) / (history + 1));
+  }
+
+  if (event.kind === "review_added") {
+    // Pull the running average toward the new rating, weighted by prior review
+    // volume (approximated from task history, capped so recent feedback still
+    // registers).
+    const priorReviews = Math.min(history, 200);
+    data.averageRating = round1(
+      (current.averageRating * priorReviews + event.rating) / (priorReviews + 1),
+    );
+  }
+
+  return data;
+}
+
+/**
+ * Apply a lifecycle event to an agent's stored aggregate metrics.
  *
  * Re-running `npm run db:seed` resets the baseline; this blend keeps the curated
  * numbers intact as lifecycle actions accumulate against them.
@@ -101,45 +161,7 @@ export async function recalculateAgentStats(agentId: string, event: AgentStatsEv
   });
   if (!agent) return null;
 
-  // The established history acts as the weight: a single new observation moves
-  // a 400-task average by ~0.25%, but meaningfully shifts a brand-new agent.
-  const history = Math.max(agent.totalTasksCompleted, 1);
-
-  const data: {
-    totalTasksCompleted?: number;
-    completionRate?: number;
-    disputeRate?: number;
-    averageRating?: number;
-  } = {};
-
-  if (event.kind === "task_completed") {
-    // A successful delivery: increment the count and nudge completion rate
-    // toward 100% (it never punishes for buyer-side cancellations because we no
-    // longer count cancelled tasks in any denominator).
-    data.totalTasksCompleted = agent.totalTasksCompleted + 1;
-    const blendedCompletion = (agent.completionRate * history + 100) / (history + 1);
-    data.completionRate = round1(blendedCompletion);
-  }
-
-  if (event.kind === "dispute_opened") {
-    // A dispute counts as a single negative engagement: nudge completion rate
-    // down slightly and dispute rate up slightly, weighted by history.
-    const blendedCompletion = (agent.completionRate * history) / (history + 1);
-    const blendedDispute = (agent.disputeRate * history + 100) / (history + 1);
-    data.completionRate = round1(blendedCompletion);
-    data.disputeRate = round1(blendedDispute);
-  }
-
-  if (event.kind === "review_added") {
-    // Update the running average rating toward the new rating, weighted by the
-    // (assumed) volume of prior reviews. We can't know the exact historical
-    // review count from the sparse table, so we approximate it from the task
-    // history, capped so the average still responds to recent feedback.
-    const priorReviews = Math.min(history, 200);
-    const blendedRating = (agent.averageRating * priorReviews + event.rating) / (priorReviews + 1);
-    data.averageRating = round1(blendedRating);
-  }
-
+  const data = computeStatsUpdate(agent, event);
   return prisma.agent.update({ where: { id: agentId }, data });
 }
 

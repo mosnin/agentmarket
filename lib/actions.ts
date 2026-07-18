@@ -3,7 +3,17 @@
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth";
+import {
+  requireUser,
+  requireAdmin,
+  assertAgentOwner,
+  assertTaskBuyer,
+  assertTaskSellerOwner,
+  assertTaskParticipant,
+} from "@/lib/authz";
+import { TASK_TRANSITIONS, canTransition, transitionError } from "@/lib/taskState";
+import { isTaskReviewable } from "@/lib/tasks";
+import { VALIDATION_PASS_THRESHOLD } from "@/lib/constants";
 import { slugify, mockHash } from "@/lib/utils";
 import {
   createAgentSchema,
@@ -43,7 +53,9 @@ export async function createAgent(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
   const data = parsed.data;
-  const user = await getCurrentUser();
+  const gate = await requireUser();
+  if (!gate.ok) return gate;
+  const user = gate.user;
 
   let slug = slugify(data.name) || `agent-${mockHash("", data.name).slice(0, 6)}`;
   if (await prisma.agent.findUnique({ where: { slug } })) {
@@ -64,7 +76,8 @@ export async function createAgent(
       mcpServerUrl: data.mcpServerUrl || null,
       inputSchema: (parseJsonObject(data.inputSchema) ?? undefined) as Prisma.InputJsonValue | undefined,
       outputSchema: (parseJsonObject(data.outputSchema) ?? undefined) as Prisma.InputJsonValue | undefined,
-      verified: data.verified ?? false,
+      // Never trust client input for verification — admins grant it via verifyAgent.
+      verified: false,
       status: "active",
       reputationScore: 50,
       ownerId: user.id,
@@ -72,22 +85,32 @@ export async function createAgent(
     },
   });
 
-  for (const name of data.capabilities) {
-    const capSlug = slugify(name);
-    if (!capSlug) continue;
-    const capability = await prisma.capability.upsert({
-      where: { slug: capSlug },
-      update: {},
-      create: { name, slug: capSlug, category: data.category },
-    });
-    await prisma.agentCapability.upsert({
-      where: {
-        agentId_capabilityId: { agentId: agent.id, capabilityId: capability.id },
-      },
-      update: {},
-      create: { agentId: agent.id, capabilityId: capability.id },
-    });
-  }
+  // De-dupe by slug (e.g. "Research" vs "research" collapse) so parallel upserts
+  // never race on the same unique row, then fan them out instead of awaiting each
+  // capability serially.
+  const uniqueCapabilities = Array.from(
+    new Map(
+      data.capabilities
+        .map((name) => [slugify(name), name] as const)
+        .filter(([capSlug]) => capSlug),
+    ),
+  );
+  await Promise.all(
+    uniqueCapabilities.map(async ([capSlug, name]) => {
+      const capability = await prisma.capability.upsert({
+        where: { slug: capSlug },
+        update: {},
+        create: { name, slug: capSlug, category: data.category },
+      });
+      await prisma.agentCapability.upsert({
+        where: {
+          agentId_capabilityId: { agentId: agent.id, capabilityId: capability.id },
+        },
+        update: {},
+        create: { agentId: agent.id, capabilityId: capability.id },
+      });
+    }),
+  );
 
   revalidateAll("/marketplace", "/seller", "/admin", "/dashboard");
   return { ok: true, agentId: agent.id, slug: agent.slug };
@@ -101,6 +124,11 @@ export async function updateAgent(
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
+
+  // Only the owner (or an admin) may edit a listing.
+  const gate = await assertAgentOwner(agentId);
+  if (!gate.ok) return gate;
+
   const data = parsed.data;
   await prisma.agent.update({
     where: { id: agentId },
@@ -124,7 +152,14 @@ export async function updateAgent(
 export async function verifyAgent(
   agentId: string,
 ): Promise<ActionResult<{ agentId: string }>> {
-  const agent = await prisma.agent.update({
+  const gate = await requireAdmin();
+  if (!gate.ok) return gate;
+  const existing = await prisma.agent.findUnique({
+    where: { id: agentId },
+    select: { id: true, slug: true },
+  });
+  if (!existing) return { ok: false, error: "Agent not found." };
+  await prisma.agent.update({
     where: { id: agentId },
     data: { verified: true },
   });
@@ -134,7 +169,7 @@ export async function verifyAgent(
     scoreDelta: REPUTATION_DELTAS.agentVerified,
     reason: "Agent verified by an administrator.",
   });
-  revalidateAll("/admin", "/marketplace", `/agents/${agent.id}`, `/agents/${agent.slug}`);
+  revalidateAll("/admin", "/marketplace", `/agents/${existing.id}`, `/agents/${existing.slug}`);
   return { ok: true, agentId };
 }
 
@@ -142,7 +177,13 @@ export async function setAgentStatus(
   agentId: string,
   status: "active" | "suspended" | "archived" | "draft",
 ): Promise<ActionResult> {
-  await prisma.agent.update({ where: { id: agentId }, data: { status } });
+  const gate = await requireAdmin();
+  if (!gate.ok) return gate;
+  const { count } = await prisma.agent.updateMany({
+    where: { id: agentId },
+    data: { status },
+  });
+  if (count === 0) return { ok: false, error: "Agent not found." };
   revalidateAll("/admin", "/marketplace", "/seller");
   return { ok: true };
 }
@@ -157,13 +198,21 @@ export async function createTask(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
   const data = parsed.data;
-  const user = await getCurrentUser();
+  const gate = await requireUser();
+  if (!gate.ok) return gate;
+  const user = gate.user;
 
   const agent = await prisma.agent.findUnique({
     where: { id: data.sellerAgentId },
-    select: { id: true, currency: true },
+    select: { id: true, currency: true, status: true },
   });
   if (!agent) return { ok: false, error: "Target agent not found" };
+  // Only an `active` listing can be hired. Explicit `seller_agent_id` resolution
+  // (API) bypasses the marketplace's active-only filter, so a draft/suspended/
+  // archived agent could otherwise be assigned work by direct id.
+  if (agent.status !== "active") {
+    return { ok: false, error: "That agent isn't accepting work right now." };
+  }
 
   const instructions = data.inputInstructions?.trim() ?? "";
   const dataUrl = data.inputDataUrl?.trim() ?? "";
@@ -212,13 +261,25 @@ export async function createTask(
 }
 
 export async function acceptTask(taskId: string): Promise<ActionResult> {
-  await prisma.task.update({ where: { id: taskId }, data: { status: "accepted" } });
+  const gate = await assertTaskSellerOwner(taskId);
+  if (!gate.ok) return gate;
+  const { count } = await prisma.task.updateMany({
+    where: { id: taskId, status: { in: [...TASK_TRANSITIONS.accept.from] } },
+    data: { status: "accepted" },
+  });
+  if (count === 0) return { ok: false, error: transitionError("accept") };
   revalidateAll(`/tasks/${taskId}`, "/dashboard", "/seller");
   return { ok: true };
 }
 
 export async function startTask(taskId: string): Promise<ActionResult> {
-  await prisma.task.update({ where: { id: taskId }, data: { status: "running" } });
+  const gate = await assertTaskSellerOwner(taskId);
+  if (!gate.ok) return gate;
+  const { count } = await prisma.task.updateMany({
+    where: { id: taskId, status: { in: [...TASK_TRANSITIONS.start.from] } },
+    data: { status: "running" },
+  });
+  if (count === 0) return { ok: false, error: transitionError("start") };
   revalidateAll(`/tasks/${taskId}`, "/dashboard", "/seller");
   return { ok: true };
 }
@@ -232,6 +293,15 @@ export async function submitArtifact(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
   const data = parsed.data;
+  const gate = await assertTaskSellerOwner(taskId);
+  if (!gate.ok) return gate;
+  // Atomically guard the transition before persisting the artifact, so a
+  // deliverable can only be attached while the task is in a submittable state.
+  const { count } = await prisma.task.updateMany({
+    where: { id: taskId, status: { in: [...TASK_TRANSITIONS.submit.from] } },
+    data: { status: "submitted" },
+  });
+  if (count === 0) return { ok: false, error: transitionError("submit") };
   const artifact = await prisma.artifact.create({
     data: {
       taskId,
@@ -242,7 +312,6 @@ export async function submitArtifact(
       validationStatus: "pending",
     },
   });
-  await prisma.task.update({ where: { id: taskId }, data: { status: "submitted" } });
   revalidateAll(`/tasks/${taskId}`, "/dashboard", "/seller");
   return { ok: true, artifactId: artifact.id };
 }
@@ -250,6 +319,8 @@ export async function submitArtifact(
 export async function runValidation(
   taskId: string,
 ): Promise<ActionResult<{ score: number; passed: boolean }>> {
+  const gate = await assertTaskSellerOwner(taskId);
+  if (!gate.ok) return gate;
   const task = await prisma.task.findUnique({
     where: { id: taskId },
     include: {
@@ -259,6 +330,9 @@ export async function runValidation(
     },
   });
   if (!task) return { ok: false, error: "Task not found" };
+  if (!canTransition("validate", task.status)) {
+    return { ok: false, error: transitionError("validate") };
+  }
   const artifact = task.artifacts[0];
   if (!artifact) return { ok: false, error: "No artifact to validate" };
 
@@ -304,13 +378,38 @@ export async function runValidation(
 }
 
 export async function completeTask(taskId: string): Promise<ActionResult> {
+  const gate = await assertTaskBuyer(taskId);
+  if (!gate.ok) return gate;
   const task = await prisma.task.findUnique({
     where: { id: taskId },
-    include: { sellerAgent: { select: { id: true } } },
+    include: {
+      sellerAgent: { select: { id: true } },
+      artifacts: { orderBy: { createdAt: "desc" }, take: 1 },
+    },
   });
   if (!task) return { ok: false, error: "Task not found" };
 
-  await prisma.task.update({ where: { id: taskId }, data: { status: "completed" } });
+  // Escrow is released only after the latest deliverable PASSED validation —
+  // enforced here (not just in the API route) so the server-action path can't
+  // settle a failed artifact.
+  const latest = task.artifacts[0];
+  const passedValidation =
+    latest?.validationStatus === "passed" &&
+    (latest.validationScore ?? 0) >= VALIDATION_PASS_THRESHOLD;
+  if (!passedValidation) {
+    return {
+      ok: false,
+      error: `Payment can only be released after the latest artifact passes validation (score ≥ ${VALIDATION_PASS_THRESHOLD}).`,
+    };
+  }
+
+  // Atomic transition: payment is released only if THIS call performed the
+  // validating -> completed flip, so a double-submit can't double-release.
+  const { count } = await prisma.task.updateMany({
+    where: { id: taskId, status: { in: [...TASK_TRANSITIONS.complete.from] } },
+    data: { status: "completed" },
+  });
+  if (count === 0) return { ok: false, error: transitionError("complete") };
   await releaseTaskPayment(taskId);
 
   if (task.sellerAgent) {
@@ -329,7 +428,13 @@ export async function completeTask(taskId: string): Promise<ActionResult> {
 }
 
 export async function cancelTask(taskId: string): Promise<ActionResult> {
-  await prisma.task.update({ where: { id: taskId }, data: { status: "cancelled" } });
+  const gate = await assertTaskBuyer(taskId);
+  if (!gate.ok) return gate;
+  const { count } = await prisma.task.updateMany({
+    where: { id: taskId, status: { in: [...TASK_TRANSITIONS.cancel.from] } },
+    data: { status: "cancelled" },
+  });
+  if (count === 0) return { ok: false, error: transitionError("cancel") };
   await refundTaskPayment(taskId);
   revalidateAll(`/tasks/${taskId}`, "/dashboard", "/seller");
   return { ok: true };
@@ -343,12 +448,20 @@ export async function openDispute(
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
-  const user = await getCurrentUser();
+  const gate = await assertTaskParticipant(taskId);
+  if (!gate.ok) return gate;
+  const user = gate.user;
   const task = await prisma.task.findUnique({
     where: { id: taskId },
     include: { sellerAgent: { select: { id: true } } },
   });
   if (!task) return { ok: false, error: "Task not found" };
+
+  const { count } = await prisma.task.updateMany({
+    where: { id: taskId, status: { in: [...TASK_TRANSITIONS.dispute.from] } },
+    data: { status: "disputed" },
+  });
+  if (count === 0) return { ok: false, error: transitionError("dispute") };
 
   const dispute = await prisma.dispute.create({
     data: {
@@ -358,7 +471,6 @@ export async function openDispute(
       status: "open",
     },
   });
-  await prisma.task.update({ where: { id: taskId }, data: { status: "disputed" } });
 
   if (task.sellerAgent) {
     await recordReputationEvent({
@@ -380,6 +492,13 @@ export async function resolveDispute(
   resolution: string,
   outcome: "resolved" | "rejected" = "resolved",
 ): Promise<ActionResult> {
+  const gate = await requireAdmin();
+  if (!gate.ok) return gate;
+  const found = await prisma.dispute.findUnique({
+    where: { id: disputeId },
+    select: { id: true },
+  });
+  if (!found) return { ok: false, error: "Dispute not found." };
   const dispute = await prisma.dispute.update({
     where: { id: disputeId },
     data: { status: outcome, resolution },
@@ -408,13 +527,24 @@ export async function createReview(
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
-  const user = await getCurrentUser();
+  const gate = await assertTaskBuyer(taskId);
+  if (!gate.ok) return gate;
+  const user = gate.user;
   const task = await prisma.task.findUnique({
     where: { id: taskId },
-    select: { sellerAgentId: true },
+    select: { sellerAgentId: true, status: true },
   });
   if (!task?.sellerAgentId) {
     return { ok: false, error: "Task has no seller agent to review" };
+  }
+  // A review must reflect real delivered work: only allow it once the agent has
+  // submitted a deliverable (through settlement/dispute). This blocks reviews on
+  // tasks that are still pending/accepted/running or were cancelled outright.
+  if (!isTaskReviewable(task.status)) {
+    return {
+      ok: false,
+      error: "You can only review a task after the agent has delivered work.",
+    };
   }
 
   const review = await prisma.review.upsert({

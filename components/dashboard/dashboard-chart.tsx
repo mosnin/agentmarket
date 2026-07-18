@@ -16,6 +16,7 @@ import {
   type TooltipContentProps,
 } from "recharts";
 import { LineChart as LineChartIcon } from "lucide-react";
+import { useReducedMotion } from "framer-motion";
 
 import {
   Card,
@@ -25,6 +26,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn, formatCompact, formatCurrency } from "@/lib/utils";
+import { hasChartData } from "./chart-data";
 
 export interface DashboardChartSeries {
   /** Key into each datum (e.g. "revenue"). */
@@ -128,13 +130,18 @@ export function DashboardChart({
   currency = false,
 }: DashboardChartProps) {
   const gradientId = React.useId();
+  // Honour prefers-reduced-motion: skip the chart entrance animation.
+  const reduceMotion = useReducedMotion();
 
   const seriesLabels = React.useMemo(
     () => Object.fromEntries(series.map((s) => [s.key, s.label])),
     [series],
   );
 
-  const hasData = data.length > 0 && series.length > 0;
+  // Treat an all-zero dataset as empty: a brand-new account has 14 days of
+  // {tasks: 0} (etc.), and a flat line hugging the axis reads as "broken" rather
+  // than "nothing yet". Only render the chart once at least one real value exists.
+  const hasData = hasChartData(data, series);
 
   const axisStyle = {
     fontSize: 11,
@@ -207,6 +214,7 @@ export function DashboardChart({
               fill={colorFor(s, index)}
               radius={[5, 5, 0, 0]}
               maxBarSize={48}
+              isAnimationActive={!reduceMotion}
             />
           ))}
         </BarChart>
@@ -231,6 +239,7 @@ export function DashboardChart({
                 stroke={color}
                 strokeWidth={2}
                 dot={false}
+                isAnimationActive={!reduceMotion}
                 activeDot={{
                   r: 4,
                   fill: color,
@@ -280,6 +289,7 @@ export function DashboardChart({
               stroke={color}
               strokeWidth={2}
               fill={`url(#${gradientId}-${s.key})`}
+              isAnimationActive={!reduceMotion}
               activeDot={{
                 r: 4,
                 fill: color,

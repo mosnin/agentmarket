@@ -464,8 +464,10 @@ export async function seedDatabase() {
   // Users.
   const defaultUser = await prisma.user.upsert({
     where: { email: DEFAULT_USER.email },
-    update: { name: DEFAULT_USER.name, organizationId: defaultOrg.id },
-    create: { email: DEFAULT_USER.email, name: DEFAULT_USER.name, organizationId: defaultOrg.id },
+    // Demo operator is the admin (runs the moderation console). Seller seeds
+    // below stay as regular users so the authorization boundary is exercised.
+    update: { name: DEFAULT_USER.name, organizationId: defaultOrg.id, role: "admin" },
+    create: { email: DEFAULT_USER.email, name: DEFAULT_USER.name, organizationId: defaultOrg.id, role: "admin" },
   });
   const userByKey = new Map<string, string>([["default", defaultUser.id]]);
   for (const s of SELLER_SEEDS) {

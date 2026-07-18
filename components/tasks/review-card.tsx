@@ -1,7 +1,8 @@
 import { Star } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { cn, formatRelativeTime, initials } from "@/lib/utils";
+import { cn, initials } from "@/lib/utils";
+import { RelativeTime } from "@/components/shared/relative-time";
 
 export type ReviewLike = {
   rating: number;
@@ -45,9 +46,10 @@ export function ReviewCard({
             <p className="truncate text-sm font-medium text-foreground">
               {displayName}
             </p>
-            <time className="text-xs text-muted-foreground">
-              {formatRelativeTime(review.createdAt)}
-            </time>
+            <RelativeTime
+              date={review.createdAt}
+              className="text-xs text-muted-foreground"
+            />
           </div>
         </div>
 
@@ -78,7 +80,7 @@ function StarRating({ rating }: { rating: number }) {
             className={cn(
               "size-3.5",
               filled
-                ? "fill-amber-400 text-amber-400"
+                ? "fill-warning text-warning"
                 : "fill-transparent text-muted-foreground/40",
             )}
             aria-hidden

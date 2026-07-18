@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -7,9 +8,7 @@ import {
   Bot,
   CheckCircle2,
   CircleDollarSign,
-  Coins,
   Gavel,
-  Hash,
   History,
   ScrollText,
   ShieldAlert,
@@ -26,7 +25,9 @@ import {
   PAYMENT_MODE_META,
   type PaymentModeValue,
 } from "@/lib/constants";
-import { cn, formatCurrency, formatDateTime, formatRelativeTime } from "@/lib/utils";
+import { cn, formatCurrency, formatDateTime } from "@/lib/utils";
+import { RelativeTime } from "@/components/shared/relative-time";
+import { CopyButton } from "@/components/shared/copy-button";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
@@ -52,6 +53,13 @@ import {
   VerifiedIndicator,
   VerifyAgentButton,
 } from "./admin-actions";
+import { requireAdmin } from "@/lib/authz";
+import { redirect } from "next/navigation";
+
+export const metadata: Metadata = {
+  title: "Admin — Agent Market",
+  robots: { index: false },
+};
 
 export const dynamic = "force-dynamic";
 
@@ -82,12 +90,12 @@ function humanizeEventType(type: string): string {
 
 /** Icon-tile color treatment per reputation-event type. */
 const REPUTATION_EVENT_TILE: Record<ReputationEventTypeValue, string> = {
-  task_completed: "bg-emerald-500/10 text-emerald-400",
-  review_received: "bg-amber-500/10 text-amber-400",
-  dispute_opened: "bg-rose-500/10 text-rose-400",
-  dispute_resolved: "bg-sky-500/10 text-sky-400",
-  validation_passed: "bg-lime-500/10 text-lime-400",
-  validation_failed: "bg-rose-500/10 text-rose-400",
+  task_completed: "bg-success/10 text-success",
+  review_received: "bg-warning/10 text-warning",
+  dispute_opened: "bg-destructive/10 text-destructive",
+  dispute_resolved: "bg-chart-2/10 text-chart-2",
+  validation_passed: "bg-success/10 text-success",
+  validation_failed: "bg-destructive/10 text-destructive",
   agent_verified: "bg-brand/10 text-brand",
   manual_adjustment: "bg-muted text-muted-foreground",
 };
@@ -117,6 +125,10 @@ function shortHash(hash: string | null): string | null {
 /* --------------------------------- Page --------------------------------- */
 
 export default async function AdminPage() {
+  // Gate the read surface too — not just the moderation actions. Non-admins
+  // never see the console (in the single-operator demo the operator is admin).
+  const gate = await requireAdmin();
+  if (!gate.ok) redirect("/dashboard");
   const data = await getAdminData();
   const { agents, disputes, payments, reputationEvents, suspiciousTasks, stats } =
     data;
@@ -188,21 +200,16 @@ export default async function AdminPage() {
           <MetricCard
             label="Total agents"
             value={stats.totalAgents}
-            icon={Users}
             hint={`${agents.filter((a) => a.status === "active").length} active in the marketplace`}
           />
           <MetricCard
             label="Verified"
             value={stats.verifiedAgents}
-            icon={ShieldCheck}
-            accent="text-brand"
             hint={`${verifiedShare}% of the catalog is verified`}
           />
           <MetricCard
             label="Open disputes"
             value={stats.openDisputes}
-            icon={Gavel}
-            accent={stats.openDisputes > 0 ? "text-amber-400" : undefined}
             hint={
               stats.openDisputes > 0
                 ? "Awaiting an admin decision"
@@ -212,7 +219,6 @@ export default async function AdminPage() {
           <MetricCard
             label="Escrow held"
             value={formatCurrency(escrowedTotal)}
-            icon={Coins}
             hint={`${stats.totalPayments} payments in the ledger`}
           />
         </div>
@@ -432,11 +438,11 @@ function DisputesPanel({ disputes }: { disputes: AdminDispute[] }) {
                     ) : null}
                     <span className="inline-flex items-center gap-1.5">
                       <History className="size-3.5" aria-hidden />
-                      {formatRelativeTime(dispute.createdAt)}
+                      <RelativeTime date={dispute.createdAt} />
                     </span>
                   </div>
                   {dispute.resolution ? (
-                    <div className="mt-1 flex items-start gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-xs text-emerald-300">
+                    <div className="mt-1 flex items-start gap-2 rounded-lg border border-success/20 bg-success/5 px-3 py-2 text-xs text-success">
                       <CheckCircle2 className="mt-0.5 size-3.5 shrink-0" aria-hidden />
                       <span className="leading-relaxed">{dispute.resolution}</span>
                     </div>
@@ -502,8 +508,8 @@ function SuspiciousTasksPanel({ tasks }: { tasks: AdminSuspiciousTask[] }) {
                 className={cn(
                   "flex size-9 shrink-0 items-center justify-center rounded-lg ring-1",
                   task.status === "disputed"
-                    ? "bg-rose-500/10 text-rose-400 ring-rose-500/20"
-                    : "bg-amber-500/10 text-amber-400 ring-amber-500/20",
+                    ? "bg-destructive/10 text-destructive ring-destructive/20"
+                    : "bg-warning/10 text-warning ring-warning/20",
                 )}
               >
                 <AlertTriangle className="size-4" aria-hidden />
@@ -618,13 +624,12 @@ function PaymentsTable({ payments }: { payments: AdminPayment[] }) {
 
                 <TableCell className="hidden md:table-cell">
                   {hash ? (
-                    <span
-                      className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground"
-                      title={payment.transactionHash ?? undefined}
-                    >
-                      <Hash className="size-3 shrink-0 text-muted-foreground/70" aria-hidden />
-                      {hash}
-                    </span>
+                    <CopyButton
+                      value={payment.transactionHash ?? ""}
+                      label={hash}
+                      srLabel="Copy transaction hash"
+                      className="font-mono"
+                    />
                   ) : (
                     <span className="text-xs text-muted-foreground/60">—</span>
                   )}
@@ -704,8 +709,8 @@ function ReputationFeed({ events }: { events: AdminReputationEvent[] }) {
                   className={cn(
                     "inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums",
                     positive
-                      ? "bg-emerald-500/10 text-emerald-400"
-                      : "bg-rose-500/10 text-rose-400",
+                      ? "bg-success/10 text-success"
+                      : "bg-destructive/10 text-destructive",
                   )}
                 >
                   {positive ? (
@@ -716,7 +721,7 @@ function ReputationFeed({ events }: { events: AdminReputationEvent[] }) {
                   {deltaLabel}
                 </span>
                 <span className="text-[11px] whitespace-nowrap text-muted-foreground">
-                  {formatRelativeTime(event.createdAt)}
+                  <RelativeTime date={event.createdAt} />
                 </span>
               </div>
             </li>

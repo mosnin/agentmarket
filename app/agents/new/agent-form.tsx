@@ -22,7 +22,7 @@ import {
 import { cn } from "@/lib/utils";
 import { createAgentSchema, type CreateAgentInput } from "@/lib/schemas";
 import type { Category } from "@/lib/constants";
-import { createAgent } from "@/lib/actions";
+import { createAgent, updateAgent } from "@/lib/actions";
 import {
   CATEGORIES,
   CATEGORY_META,
@@ -55,7 +55,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 
 const MAX_CAPABILITIES = 16;
@@ -142,7 +141,7 @@ function JsonHint({ value }: { value: string | undefined }) {
     <p
       className={cn(
         "flex items-center gap-1.5 text-sm",
-        valid ? "text-emerald-400" : "text-amber-400",
+        valid ? "text-success" : "text-warning",
       )}
     >
       {valid ? (
@@ -169,14 +168,35 @@ function JsonHint({ value }: { value: string | undefined }) {
  */
 type FormValues = CreateAgentInput;
 
+/** Pre-filled values when the form is editing an existing listing. */
+export interface AgentFormInitial {
+  id: string;
+  name: string;
+  shortDescription: string;
+  longDescription: string;
+  category: Category;
+  capabilities: string[];
+  pricingModel: string;
+  startingPrice: number;
+  currency: string;
+  endpointUrl: string;
+  mcpServerUrl: string;
+  inputSchema: string;
+  outputSchema: string;
+  verified: boolean;
+}
+
 export function AgentForm({
   organizationId,
   organizationName,
+  initial,
 }: {
   organizationId: string | null;
   organizationName: string | null;
+  initial?: AgentFormInitial;
 }) {
   const router = useRouter();
+  const isEdit = Boolean(initial);
   const [isPending, startTransition] = React.useTransition();
   const [capabilityDraft, setCapabilityDraft] = React.useState("");
 
@@ -184,20 +204,22 @@ export function AgentForm({
     resolver: zodResolver(createAgentSchema) as Resolver<FormValues>,
     mode: "onBlur",
     defaultValues: {
-      name: "",
-      shortDescription: "",
-      longDescription: "",
-      category: undefined as unknown as Category,
-      capabilities: [],
-      pricingModel: "per_task",
-      startingPrice: 0,
-      currency: "USD",
-      endpointUrl: "",
-      mcpServerUrl: "",
-      inputSchema: "",
-      outputSchema: "",
+      name: initial?.name ?? "",
+      shortDescription: initial?.shortDescription ?? "",
+      longDescription: initial?.longDescription ?? "",
+      category: (initial?.category ?? undefined) as unknown as Category,
+      capabilities: initial?.capabilities ?? [],
+      pricingModel: (initial?.pricingModel ??
+        "per_task") as CreateAgentInput["pricingModel"],
+      // A sensible non-zero starter so a paid model isn't accidentally published
+      // at $0 (which now reads as "Free"). Mirrors the task form's budget default.
+      startingPrice: initial?.startingPrice ?? 25,
+      currency: initial?.currency ?? "USD",
+      endpointUrl: initial?.endpointUrl ?? "",
+      mcpServerUrl: initial?.mcpServerUrl ?? "",
+      inputSchema: initial?.inputSchema ?? "",
+      outputSchema: initial?.outputSchema ?? "",
       organizationId: organizationId ?? undefined,
-      verified: false,
     },
   });
 
@@ -279,6 +301,16 @@ export function AgentForm({
   // --- Submit -----------------------------------------------------------
   const onSubmit = (values: CreateAgentInput) => {
     startTransition(async () => {
+      if (initial) {
+        const result = await updateAgent(initial.id, values);
+        if (result.ok) {
+          toast.success(`${values.name} updated.`);
+          router.push(`/agents/${initial.id}`);
+        } else {
+          toast.error(result.error);
+        }
+        return;
+      }
       const result = await createAgent(values);
       if (result.ok) {
         toast.success(`${values.name} is live in the marketplace.`);
@@ -313,6 +345,7 @@ export function AgentForm({
                   <FormLabel>Agent name</FormLabel>
                   <FormControl>
                     <Input
+                      autoFocus
                       placeholder="e.g. Atlas Research"
                       autoComplete="off"
                       {...field}
@@ -353,7 +386,7 @@ export function AgentForm({
               )}
             />
 
-            <div className="grid gap-6 sm:grid-cols-2">
+            <div className="grid gap-6">
               <FormField
                 control={form.control}
                 name="category"
@@ -381,33 +414,6 @@ export function AgentForm({
                       {field.value
                         ? CATEGORY_META[field.value].blurb
                         : "Determines where your agent surfaces in the marketplace."}
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="verified"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Verification</FormLabel>
-                    <div className="border-border bg-muted/30 flex h-8 items-center justify-between gap-3 rounded-lg border px-3">
-                      <span className="text-muted-foreground flex items-center gap-2 text-sm">
-                        <CheckCircle2 className="size-4" />
-                        Mark as verified
-                      </span>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </div>
-                    <FormDescription>
-                      Verified agents get a trust badge. Admins review this for
-                      production listings.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -572,6 +578,15 @@ export function AgentForm({
                         field.onChange(value);
                         if (value === "free") {
                           form.setValue("startingPrice", 0, {
+                            shouldValidate: true,
+                          });
+                        } else if (
+                          Number(form.getValues("startingPrice")) === 0
+                        ) {
+                          // Leaving "free" (price 0) for a paid model — restore a
+                          // sensible non-zero default so the listing isn't
+                          // accidentally published at $0, which reads as "Free".
+                          form.setValue("startingPrice", 25, {
                             shouldValidate: true,
                           });
                         }
@@ -782,7 +797,9 @@ export function AgentForm({
         {/* ----------------------------- Actions ------------------------------ */}
         <div className="border-border bg-card/60 supports-[backdrop-filter]:bg-card/40 sticky bottom-4 z-10 flex flex-col gap-3 rounded-xl border p-4 backdrop-blur sm:flex-row sm:items-center sm:justify-between">
           <p className="text-muted-foreground text-sm">
-            Your agent goes live immediately and can start accepting tasks.
+            {isEdit
+              ? "Changes save immediately and update everywhere your agent appears."
+              : "Your agent goes live immediately and can start accepting tasks."}
           </p>
           <div className="flex items-center gap-2">
             <Button
@@ -797,12 +814,12 @@ export function AgentForm({
               {isPending ? (
                 <>
                   <Loader2 className="size-4 animate-spin" />
-                  Publishing…
+                  {isEdit ? "Saving…" : "Publishing…"}
                 </>
               ) : (
                 <>
                   <Sparkles className="size-4" />
-                  Publish agent
+                  {isEdit ? "Save changes" : "Publish agent"}
                 </>
               )}
             </Button>
